@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-indigo-950">
+  <div class="container mx-auto px-6 pt-24 pb-12">
+    <div class="max-w-2xl">
+      <h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">Account settings</h1>
+      <p class="text-slate-600 dark:text-slate-300 mb-8">Update your profile details and preferences.</p>
+
+      <form method="post" action="/settings" enctype="multipart/form-data" class="bg-white dark:bg-slate-950 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm p-6 space-y-6">
+        {% if error == "username_taken" %}
+          <div class="rounded-lg border border-red-200 bg-red-50 text-red-700 px-4 py-3 text-sm">
+            That username is already taken. Please choose another.
+          </div>
+        {% endif %}
+        <div class="flex items-center gap-4">
+          {% if user.profile_pic_url %}
+            <img src="{{ user.profile_pic_url }}" alt="Profile" class="w-16 h-16 rounded-full object-cover border border-purple-200 dark:border-purple-400/40"/>
+          {% else %}
+            <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center text-purple-600 dark:text-purple-300 text-xl font-semibold">
+              {{ (user.display_name or user.name or "U")[0] }}
+            </div>
+          {% endif %}
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Profile photo</label>
+            <label class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold cursor-pointer shadow-lg shadow-purple-500/30">
+              Choose file
+              <input type="file" name="profile_pic" accept="image/*" class="hidden"/>
+            </label>
+          </div>
+        </div>
+
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Username</label>
+            <input name="username" value="{{ user.username or '' }}" class="w-full border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Display name</label>
+            <input name="display_name" value="{{ user.display_name or user.name or '' }}" class="w-full border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"/>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Bio</label>
+          <textarea name="bio" rows="3" class="w-full border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200">{{ user.bio or '' }}</textarea>
+        </div>
+
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Location</label>
+            <input name="location" value="{{ user.location or '' }}" class="w-full border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Timezone (GMT)</label>
+            {% set offsets = [
+              "-12:00","-11:00","-10:00","-09:30","-09:00","-08:00","-07:00","-06:00","-05:00","-04:00","-03:30","-03:00",
+              "-02:00","-01:00","+00:00","+01:00","+02:00","+03:00","+03:30","+04:00","+04:30","+05:00","+05:30","+05:45",
+              "+06:00","+06:30","+07:00","+08:00","+08:45","+09:00","+09:30","+10:00","+10:30","+11:00","+12:00","+12:45","+13:00","+14:00"
+            ] %}
+            <select name="timezone" class="w-full border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 appearance-none">
+              {% for offset in offsets %}
+                {% set label = "GMT" ~ offset %}
+                <option value="{{ label }}" {% if user.timezone == label %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button type="submit" class="px-6 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold shadow-lg shadow-purple-500/30">Save changes</button>
+          <a href="/" class="text-sm text-slate-600 dark:text-slate-300">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

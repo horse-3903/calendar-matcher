@@ -1,0 +1,24 @@
+{
+  "name": "calendar-matcher",
+  "private": true,
+  "devDependencies": {
+    "esbuild": "^0.27.2",
+    "tailwindcss": "^3.4.17"
+  },
+  "scripts": {
+    "build:css": "tailwindcss -c tailwind.config.js -i ./app/static/tailwind.input.css -o ./app/static/tailwind.css --minify",
+    "watch:css": "tailwindcss -c tailwind.config.js -i ./app/static/tailwind.input.css -o ./app/static/tailwind.css --watch",
+    "build:calendar": "node scripts/build-calendar.mjs",
+    "build:js": "node scripts/build-main.mjs",
+    "build:assets": "npm run build:calendar && npm run build:js",
+    "build": "npm run build:assets && npm run build:css"
+  },
+  "dependencies": {
+    "@schedule-x/calendar": "^4.1.0",
+    "@schedule-x/calendar-controls": "^4.1.0",
+    "@schedule-x/events-service": "^4.1.0",
+    "@schedule-x/scroll-controller": "^4.1.0",
+    "@schedule-x/theme-default": "^4.1.0",
+    "temporal-polyfill": "^0.3.0"
+  }
+}

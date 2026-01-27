@@ -1,0 +1,12987 @@
+// node_modules/temporal-polyfill/chunks/internal.js
+function clampProp(e5, n4, t5, o5, r5) {
+  return clampEntity(n4, ((e6, n5) => {
+    const t6 = e6[n5];
+    if (void 0 === t6) {
+      throw new TypeError(missingField(n5));
+    }
+    return t6;
+  })(e5, n4), t5, o5, r5);
+}
+function clampEntity(e5, n4, t5, o5, r5, i5) {
+  const a5 = clampNumber(n4, t5, o5);
+  if (r5 && n4 !== a5) {
+    throw new RangeError(numberOutOfRange(e5, n4, t5, o5, i5));
+  }
+  return a5;
+}
+function s(e5) {
+  return null !== e5 && /object|function/.test(typeof e5);
+}
+function on(e5, n4 = Map) {
+  const t5 = new n4();
+  return (n5, ...o5) => {
+    if (t5.has(n5)) {
+      return t5.get(n5);
+    }
+    const r5 = e5(n5, ...o5);
+    return t5.set(n5, r5), r5;
+  };
+}
+function r(e5) {
+  return n({
+    name: e5
+  }, 1);
+}
+function n(n4, t5) {
+  return e(((e5) => ({
+    value: e5,
+    configurable: 1,
+    writable: !t5
+  })), n4);
+}
+function t(n4) {
+  return e(((e5) => ({
+    get: e5,
+    configurable: 1
+  })), n4);
+}
+function o(e5) {
+  return {
+    [Symbol.toStringTag]: {
+      value: e5,
+      configurable: 1
+    }
+  };
+}
+function zipProps(e5, n4) {
+  const t5 = {};
+  let o5 = e5.length;
+  for (const r5 of n4) {
+    t5[e5[--o5]] = r5;
+  }
+  return t5;
+}
+function e(e5, n4, t5) {
+  const o5 = {};
+  for (const r5 in n4) {
+    o5[r5] = e5(n4[r5], r5, t5);
+  }
+  return o5;
+}
+function g(e5, n4, t5) {
+  const o5 = {};
+  for (let r5 = 0; r5 < n4.length; r5++) {
+    const i5 = n4[r5];
+    o5[i5] = e5(i5, r5, t5);
+  }
+  return o5;
+}
+function remapProps(e5, n4, t5) {
+  const o5 = {};
+  for (let r5 = 0; r5 < e5.length; r5++) {
+    o5[n4[r5]] = t5[e5[r5]];
+  }
+  return o5;
+}
+function nn(e5, n4) {
+  const t5 = /* @__PURE__ */ Object.create(null);
+  for (const o5 of e5) {
+    t5[o5] = n4[o5];
+  }
+  return t5;
+}
+function hasAnyPropsByName(e5, n4) {
+  for (const t5 of n4) {
+    if (t5 in e5) {
+      return 1;
+    }
+  }
+  return 0;
+}
+function allPropsEqual(e5, n4, t5) {
+  for (const o5 of e5) {
+    if (n4[o5] !== t5[o5]) {
+      return 0;
+    }
+  }
+  return 1;
+}
+function zeroOutProps(e5, n4, t5) {
+  const o5 = {
+    ...t5
+  };
+  for (let t6 = 0; t6 < n4; t6++) {
+    o5[e5[t6]] = 0;
+  }
+  return o5;
+}
+function Pt(e5, ...n4) {
+  return (...t5) => e5(...n4, ...t5);
+}
+function capitalize(e5) {
+  return e5[0].toUpperCase() + e5.substring(1);
+}
+function sortStrings(e5) {
+  return e5.slice().sort();
+}
+function padNumber(e5, n4) {
+  return String(n4).padStart(e5, "0");
+}
+function compareNumbers(e5, n4) {
+  return Math.sign(e5 - n4);
+}
+function clampNumber(e5, n4, t5) {
+  return Math.min(Math.max(e5, n4), t5);
+}
+function divModFloor(e5, n4) {
+  return [Math.floor(e5 / n4), modFloor(e5, n4)];
+}
+function modFloor(e5, n4) {
+  return (e5 % n4 + n4) % n4;
+}
+function divModTrunc(e5, n4) {
+  return [divTrunc(e5, n4), modTrunc(e5, n4)];
+}
+function divTrunc(e5, n4) {
+  return Math.trunc(e5 / n4) || 0;
+}
+function modTrunc(e5, n4) {
+  return e5 % n4 || 0;
+}
+function hasHalf(e5) {
+  return 0.5 === Math.abs(e5 % 1);
+}
+function givenFieldsToBigNano(e5, n4, t5) {
+  let o5 = 0, r5 = 0;
+  for (let i6 = 0; i6 <= n4; i6++) {
+    const n5 = e5[t5[i6]], a6 = Ao[i6], s5 = Uo / a6, [c5, u6] = divModTrunc(n5, s5);
+    o5 += u6 * a6, r5 += c5;
+  }
+  const [i5, a5] = divModTrunc(o5, Uo);
+  return [r5 + i5, a5];
+}
+function nanoToGivenFields(e5, n4, t5) {
+  const o5 = {};
+  for (let r5 = n4; r5 >= 0; r5--) {
+    const n5 = Ao[r5];
+    o5[t5[r5]] = divTrunc(e5, n5), e5 = modTrunc(e5, n5);
+  }
+  return o5;
+}
+function d(e5) {
+  if (void 0 !== e5) {
+    return m(e5);
+  }
+}
+function P(e5) {
+  if (void 0 !== e5) {
+    return h(e5);
+  }
+}
+function S(e5) {
+  if (void 0 !== e5) {
+    return T(e5);
+  }
+}
+function h(e5) {
+  return requireNumberIsPositive(T(e5));
+}
+function T(e5) {
+  return ze(cr(e5));
+}
+function requirePropDefined(e5, n4) {
+  if (null == n4) {
+    throw new RangeError(missingField(e5));
+  }
+  return n4;
+}
+function requireObjectLike(e5) {
+  if (!s(e5)) {
+    throw new TypeError(oo);
+  }
+  return e5;
+}
+function requireType(e5, n4, t5 = e5) {
+  if (typeof n4 !== e5) {
+    throw new TypeError(invalidEntity(t5, n4));
+  }
+  return n4;
+}
+function ze(e5, n4 = "number") {
+  if (!Number.isInteger(e5)) {
+    throw new RangeError(expectedInteger(n4, e5));
+  }
+  return e5 || 0;
+}
+function requireNumberIsPositive(e5, n4 = "number") {
+  if (e5 <= 0) {
+    throw new RangeError(expectedPositive(n4, e5));
+  }
+  return e5;
+}
+function toString(e5) {
+  if ("symbol" == typeof e5) {
+    throw new TypeError(no);
+  }
+  return String(e5);
+}
+function toStringViaPrimitive(e5, n4) {
+  return s(e5) ? String(e5) : m(e5, n4);
+}
+function toBigInt(e5) {
+  if ("string" == typeof e5) {
+    return BigInt(e5);
+  }
+  if ("bigint" != typeof e5) {
+    throw new TypeError(invalidBigInt(e5));
+  }
+  return e5;
+}
+function toNumber(e5, n4 = "number") {
+  if ("bigint" == typeof e5) {
+    throw new TypeError(forbiddenBigIntToNumber(n4));
+  }
+  if (e5 = Number(e5), !Number.isFinite(e5)) {
+    throw new RangeError(expectedFinite(n4, e5));
+  }
+  return e5;
+}
+function toInteger(e5, n4) {
+  return Math.trunc(toNumber(e5, n4)) || 0;
+}
+function toStrictInteger(e5, n4) {
+  return ze(toNumber(e5, n4), n4);
+}
+function toPositiveInteger(e5, n4) {
+  return requireNumberIsPositive(toInteger(e5, n4), n4);
+}
+function createBigNano(e5, n4) {
+  let [t5, o5] = divModTrunc(n4, Uo), r5 = e5 + t5;
+  const i5 = Math.sign(r5);
+  return i5 && i5 === -Math.sign(o5) && (r5 -= i5, o5 += i5 * Uo), [r5, o5];
+}
+function addBigNanos(e5, n4, t5 = 1) {
+  return createBigNano(e5[0] + n4[0] * t5, e5[1] + n4[1] * t5);
+}
+function moveBigNano(e5, n4) {
+  return createBigNano(e5[0], e5[1] + n4);
+}
+function diffBigNanos(e5, n4) {
+  return addBigNanos(n4, e5, -1);
+}
+function compareBigNanos(e5, n4) {
+  return compareNumbers(e5[0], n4[0]) || compareNumbers(e5[1], n4[1]);
+}
+function bigNanoOutside(e5, n4, t5) {
+  return -1 === compareBigNanos(e5, n4) || 1 === compareBigNanos(e5, t5);
+}
+function bigIntToBigNano(e5, n4 = 1) {
+  const t5 = BigInt(Uo / n4);
+  return [Number(e5 / t5), Number(e5 % t5) * n4];
+}
+function Ge(e5, n4 = 1) {
+  const t5 = Uo / n4, [o5, r5] = divModTrunc(e5, t5);
+  return [o5, r5 * n4];
+}
+function bigNanoToNumber(e5, n4 = 1, t5) {
+  const [o5, r5] = e5, [i5, a5] = divModTrunc(r5, n4);
+  return o5 * (Uo / n4) + (i5 + (t5 ? a5 / n4 : 0));
+}
+function divModBigNano(e5, n4, t5 = divModFloor) {
+  const [o5, r5] = e5, [i5, a5] = t5(r5, n4);
+  return [o5 * (Uo / n4) + i5, a5];
+}
+function checkIsoYearMonthInBounds(e5) {
+  return clampProp(e5, "isoYear", wr, Fr, 1), e5.isoYear === wr ? clampProp(e5, "isoMonth", 4, 12, 1) : e5.isoYear === Fr && clampProp(e5, "isoMonth", 1, 9, 1), e5;
+}
+function checkIsoDateInBounds(e5) {
+  return checkIsoDateTimeInBounds({
+    ...e5,
+    ...Nt,
+    isoHour: 12
+  }), e5;
+}
+function checkIsoDateTimeInBounds(e5) {
+  const n4 = clampProp(e5, "isoYear", wr, Fr, 1), t5 = n4 === wr ? 1 : n4 === Fr ? -1 : 0;
+  return t5 && checkEpochNanoInBounds(isoToEpochNano({
+    ...e5,
+    isoDay: e5.isoDay + t5,
+    isoNanosecond: e5.isoNanosecond - t5
+  })), e5;
+}
+function checkEpochNanoInBounds(e5) {
+  if (!e5 || bigNanoOutside(e5, Sr, Er)) {
+    throw new RangeError(Io);
+  }
+  return e5;
+}
+function isoTimeFieldsToNano(e5) {
+  return givenFieldsToBigNano(e5, 5, w)[1];
+}
+function nanoToIsoTimeAndDay(e5) {
+  const [n4, t5] = divModFloor(e5, Uo);
+  return [nanoToGivenFields(t5, 5, w), n4];
+}
+function epochNanoToSecMod(e5) {
+  return divModBigNano(e5, Ro);
+}
+function isoToEpochMilli(e5) {
+  return isoArgsToEpochMilli(e5.isoYear, e5.isoMonth, e5.isoDay, e5.isoHour, e5.isoMinute, e5.isoSecond, e5.isoMillisecond);
+}
+function isoToEpochNano(e5) {
+  const n4 = isoToEpochMilli(e5);
+  if (void 0 !== n4) {
+    const [t5, o5] = divModTrunc(n4, ko);
+    return [t5, o5 * Qe + (e5.isoMicrosecond || 0) * Yo + (e5.isoNanosecond || 0)];
+  }
+}
+function isoToEpochNanoWithOffset(e5, n4) {
+  const [t5, o5] = nanoToIsoTimeAndDay(isoTimeFieldsToNano(e5) - n4);
+  return checkEpochNanoInBounds(isoToEpochNano({
+    ...e5,
+    isoDay: e5.isoDay + o5,
+    ...t5
+  }));
+}
+function isoArgsToEpochSec(...e5) {
+  return isoArgsToEpochMilli(...e5) / Co;
+}
+function isoArgsToEpochMilli(...e5) {
+  const [n4, t5] = isoToLegacyDate(...e5), o5 = n4.valueOf();
+  if (!isNaN(o5)) {
+    return o5 - t5 * ko;
+  }
+}
+function isoToLegacyDate(e5, n4 = 1, t5 = 1, o5 = 0, r5 = 0, i5 = 0, a5 = 0) {
+  const s5 = e5 === wr ? 1 : e5 === Fr ? -1 : 0, c5 = /* @__PURE__ */ new Date();
+  return c5.setUTCHours(o5, r5, i5, a5), c5.setUTCFullYear(e5, n4 - 1, t5 + s5), [c5, s5];
+}
+function epochNanoToIso(e5, n4) {
+  let [t5, o5] = moveBigNano(e5, n4);
+  o5 < 0 && (o5 += Uo, t5 -= 1);
+  const [r5, i5] = divModFloor(o5, Qe), [a5, s5] = divModFloor(i5, Yo);
+  return epochMilliToIso(t5 * ko + r5, a5, s5);
+}
+function epochMilliToIso(e5, n4 = 0, t5 = 0) {
+  const o5 = Math.ceil(Math.max(0, Math.abs(e5) - Pr) / ko) * Math.sign(e5), r5 = new Date(e5 - o5 * ko);
+  return zipProps(Tr, [r5.getUTCFullYear(), r5.getUTCMonth() + 1, r5.getUTCDate() + o5, r5.getUTCHours(), r5.getUTCMinutes(), r5.getUTCSeconds(), r5.getUTCMilliseconds(), n4, t5]);
+}
+function hashIntlFormatParts(e5, n4) {
+  if (n4 < -Pr) {
+    throw new RangeError(Io);
+  }
+  const t5 = e5.formatToParts(n4), o5 = {};
+  for (const e6 of t5) {
+    o5[e6.type] = e6.value;
+  }
+  return o5;
+}
+function computeIsoDateParts(e5) {
+  return [e5.isoYear, e5.isoMonth, e5.isoDay];
+}
+function computeIsoMonthCodeParts(e5, n4) {
+  return [n4, 0];
+}
+function computeIsoMonthsInYear() {
+  return kr;
+}
+function computeIsoDaysInMonth(e5, n4) {
+  switch (n4) {
+    case 2:
+      return computeIsoInLeapYear(e5) ? 29 : 28;
+    case 4:
+    case 6:
+    case 9:
+    case 11:
+      return 30;
+  }
+  return 31;
+}
+function computeIsoDaysInYear(e5) {
+  return computeIsoInLeapYear(e5) ? 366 : 365;
+}
+function computeIsoInLeapYear(e5) {
+  return e5 % 4 == 0 && (e5 % 100 != 0 || e5 % 400 == 0);
+}
+function computeIsoDayOfWeek(e5) {
+  const [n4, t5] = isoToLegacyDate(e5.isoYear, e5.isoMonth, e5.isoDay);
+  return modFloor(n4.getUTCDay() - t5, 7) || 7;
+}
+function computeIsoEraParts(e5) {
+  return this.id === or ? (({ isoYear: e6 }) => e6 < 1 ? ["gregory-inverse", 1 - e6] : ["gregory", e6])(e5) : this.id === rr ? Yr(e5) : [];
+}
+function computeJapaneseEraParts(e5) {
+  const n4 = isoToEpochMilli(e5);
+  if (n4 < Cr) {
+    const { isoYear: n5 } = e5;
+    return n5 < 1 ? ["japanese-inverse", 1 - n5] : ["japanese", n5];
+  }
+  const t5 = hashIntlFormatParts(Ci(rr), n4), { era: o5, eraYear: r5 } = parseIntlYear(t5, rr);
+  return [o5, r5];
+}
+function checkIsoDateTimeFields(e5) {
+  return checkIsoDateFields(e5), constrainIsoTimeFields(e5, 1), e5;
+}
+function checkIsoDateFields(e5) {
+  return constrainIsoDateFields(e5, 1), e5;
+}
+function isIsoDateFieldsValid(e5) {
+  return allPropsEqual(Dr, e5, constrainIsoDateFields(e5));
+}
+function constrainIsoDateFields(e5, n4) {
+  const { isoYear: t5 } = e5, o5 = clampProp(e5, "isoMonth", 1, computeIsoMonthsInYear(), n4);
+  return {
+    isoYear: t5,
+    isoMonth: o5,
+    isoDay: clampProp(e5, "isoDay", 1, computeIsoDaysInMonth(t5, o5), n4)
+  };
+}
+function constrainIsoTimeFields(e5, n4) {
+  return zipProps(w, [clampProp(e5, "isoHour", 0, 23, n4), clampProp(e5, "isoMinute", 0, 59, n4), clampProp(e5, "isoSecond", 0, 59, n4), clampProp(e5, "isoMillisecond", 0, 999, n4), clampProp(e5, "isoMicrosecond", 0, 999, n4), clampProp(e5, "isoNanosecond", 0, 999, n4)]);
+}
+function mt(e5) {
+  return void 0 === e5 ? 0 : Xr(requireObjectLike(e5));
+}
+function je(e5, n4 = 0) {
+  e5 = normalizeOptions(e5);
+  const t5 = ei(e5), o5 = ni(e5, n4);
+  return [Xr(e5), o5, t5];
+}
+function refineDiffOptions(e5, n4, t5, o5 = 9, r5 = 0, i5 = 4) {
+  n4 = normalizeOptions(n4);
+  let a5 = Kr(n4, o5, r5), s5 = parseRoundingIncInteger(n4), c5 = ii(n4, i5);
+  const u6 = Jr(n4, o5, r5, 1);
+  return null == a5 ? a5 = Math.max(t5, u6) : checkLargestSmallestUnit(a5, u6), s5 = refineRoundingInc(s5, u6, 1), e5 && (c5 = ((e6) => e6 < 4 ? (e6 + 2) % 4 : e6)(c5)), [a5, u6, s5, c5];
+}
+function refineRoundingOptions(e5, n4 = 6, t5) {
+  let o5 = parseRoundingIncInteger(e5 = normalizeOptionsOrString(e5, Rr));
+  const r5 = ii(e5, 7);
+  let i5 = Jr(e5, n4);
+  return i5 = requirePropDefined(Rr, i5), o5 = refineRoundingInc(o5, i5, void 0, t5), [i5, o5, r5];
+}
+function refineDateDisplayOptions(e5) {
+  return ti(normalizeOptions(e5));
+}
+function refineTimeDisplayOptions(e5, n4) {
+  return refineTimeDisplayTuple(normalizeOptions(e5), n4);
+}
+function Me(e5) {
+  const n4 = normalizeOptionsOrString(e5, qr), t5 = refineChoiceOption(qr, _r, n4, 0);
+  if (!t5) {
+    throw new RangeError(invalidEntity(qr, t5));
+  }
+  return t5;
+}
+function refineTimeDisplayTuple(e5, n4 = 4) {
+  const t5 = refineSubsecDigits(e5);
+  return [ii(e5, 4), ...refineSmallestUnitAndSubsecDigits(Jr(e5, n4), t5)];
+}
+function refineSmallestUnitAndSubsecDigits(e5, n4) {
+  return null != e5 ? [Ao[e5], e5 < 4 ? 9 - 3 * e5 : -1] : [void 0 === n4 ? 1 : 10 ** (9 - n4), n4];
+}
+function parseRoundingIncInteger(e5) {
+  const n4 = e5[zr];
+  return void 0 === n4 ? 1 : toInteger(n4, zr);
+}
+function refineRoundingInc(e5, n4, t5, o5) {
+  const r5 = o5 ? Uo : Ao[n4 + 1];
+  if (r5) {
+    const t6 = Ao[n4];
+    if (r5 % ((e5 = clampEntity(zr, e5, 1, r5 / t6 - (o5 ? 0 : 1), 1)) * t6)) {
+      throw new RangeError(invalidEntity(zr, e5));
+    }
+  } else {
+    e5 = clampEntity(zr, e5, 1, t5 ? 10 ** 9 : 1, 1);
+  }
+  return e5;
+}
+function refineSubsecDigits(e5) {
+  let n4 = e5[Ur];
+  if (void 0 !== n4) {
+    if ("number" != typeof n4) {
+      if ("auto" === toString(n4)) {
+        return;
+      }
+      throw new RangeError(invalidEntity(Ur, n4));
+    }
+    n4 = clampEntity(Ur, Math.floor(n4), 0, 9, 1);
+  }
+  return n4;
+}
+function normalizeOptions(e5) {
+  return void 0 === e5 ? {} : requireObjectLike(e5);
+}
+function normalizeOptionsOrString(e5, n4) {
+  return "string" == typeof e5 ? {
+    [n4]: e5
+  } : requireObjectLike(e5);
+}
+function fabricateOverflowOptions(e5) {
+  return {
+    overflow: jr[e5]
+  };
+}
+function refineUnitOption(e5, n4, t5 = 9, o5 = 0, r5) {
+  let i5 = n4[e5];
+  if (void 0 === i5) {
+    return r5 ? o5 : void 0;
+  }
+  if (i5 = toString(i5), "auto" === i5) {
+    return r5 ? o5 : null;
+  }
+  let a5 = Oo[i5];
+  if (void 0 === a5 && (a5 = mr[i5]), void 0 === a5) {
+    throw new RangeError(invalidChoice(e5, i5, Oo));
+  }
+  return clampEntity(e5, a5, o5, t5, 1, Bo), a5;
+}
+function refineChoiceOption(e5, n4, t5, o5 = 0) {
+  const r5 = t5[e5];
+  if (void 0 === r5) {
+    return o5;
+  }
+  const i5 = toString(r5), a5 = n4[i5];
+  if (void 0 === a5) {
+    throw new RangeError(invalidChoice(e5, i5, n4));
+  }
+  return a5;
+}
+function checkLargestSmallestUnit(e5, n4) {
+  if (n4 > e5) {
+    throw new RangeError(Eo);
+  }
+}
+function xe(e5) {
+  return {
+    branding: Re,
+    epochNanoseconds: e5
+  };
+}
+function _e(e5, n4, t5) {
+  return {
+    branding: z,
+    calendar: t5,
+    timeZone: n4,
+    epochNanoseconds: e5
+  };
+}
+function jt(e5, n4 = e5.calendar) {
+  return {
+    branding: x,
+    calendar: n4,
+    ...nn(Nr, e5)
+  };
+}
+function W(e5, n4 = e5.calendar) {
+  return {
+    branding: G,
+    calendar: n4,
+    ...nn(Ir, e5)
+  };
+}
+function createPlainYearMonthSlots(e5, n4 = e5.calendar) {
+  return {
+    branding: Ut,
+    calendar: n4,
+    ...nn(Ir, e5)
+  };
+}
+function createPlainMonthDaySlots(e5, n4 = e5.calendar) {
+  return {
+    branding: qt,
+    calendar: n4,
+    ...nn(Ir, e5)
+  };
+}
+function St(e5) {
+  return {
+    branding: ft,
+    ...nn(Mr, e5)
+  };
+}
+function Oe(e5) {
+  return {
+    branding: N,
+    sign: computeDurationSign(e5),
+    ...nn(ur, e5)
+  };
+}
+function I(e5) {
+  return divModBigNano(e5.epochNanoseconds, Qe)[0];
+}
+function v(e5) {
+  return ((e6, n4 = 1) => {
+    const [t5, o5] = e6, r5 = Math.floor(o5 / n4), i5 = Uo / n4;
+    return BigInt(t5) * BigInt(i5) + BigInt(r5);
+  })(e5.epochNanoseconds);
+}
+function extractEpochNano(e5) {
+  return e5.epochNanoseconds;
+}
+function J(e5, n4, t5, o5, r5) {
+  const i5 = getMaxDurationUnit(o5), [a5, s5] = ((e6, n5) => {
+    const t6 = n5((e6 = normalizeOptionsOrString(e6, Zr))[Ar]);
+    let o6 = Qr(e6);
+    return o6 = requirePropDefined(Zr, o6), [o6, t6];
+  })(r5, e5), c5 = Math.max(a5, i5);
+  if (!s5 && isUniformUnit(c5, s5)) {
+    return totalDayTimeDuration(o5, a5);
+  }
+  if (!s5) {
+    throw new RangeError(yo);
+  }
+  if (!o5.sign) {
+    return 0;
+  }
+  const [u6, f6, l5] = createMarkerSystem(n4, t5, s5), d6 = createMarkerToEpochNano(l5), m5 = createMoveMarker(l5), h6 = createDiffMarkers(l5), g7 = m5(f6, u6, o5);
+  isZonedEpochSlots(s5) || (checkIsoDateTimeInBounds(u6), checkIsoDateTimeInBounds(g7));
+  const D4 = h6(f6, u6, g7, a5);
+  return isUniformUnit(a5, s5) ? totalDayTimeDuration(D4, a5) : ((e6, n5, t6, o6, r6, i6, a6) => {
+    const s6 = computeDurationSign(e6), [c6, u7] = clampRelativeDuration(o6, gr(t6, e6), t6, s6, r6, i6, a6), f7 = computeEpochNanoFrac(n5, c6, u7);
+    return e6[p[t6]] + f7 * s6;
+  })(D4, d6(g7), a5, f6, u6, d6, m5);
+}
+function totalDayTimeDuration(e5, n4) {
+  return bigNanoToNumber(durationFieldsToBigNano(e5), Ao[n4], 1);
+}
+function clampRelativeDuration(e5, n4, t5, o5, r5, i5, a5) {
+  const s5 = p[t5], c5 = {
+    ...n4,
+    [s5]: n4[s5] + o5
+  }, u6 = a5(e5, r5, n4), f6 = a5(e5, r5, c5);
+  return [i5(u6), i5(f6)];
+}
+function computeEpochNanoFrac(e5, n4, t5) {
+  const o5 = bigNanoToNumber(diffBigNanos(n4, t5));
+  if (!o5) {
+    throw new RangeError(fo);
+  }
+  return bigNanoToNumber(diffBigNanos(n4, e5)) / o5;
+}
+function Le(e5, n4) {
+  const [t5, o5, r5] = refineRoundingOptions(n4, 5, 1);
+  return xe(roundBigNano(e5.epochNanoseconds, t5, o5, r5, 1));
+}
+function Ie(e5, n4, t5) {
+  let { epochNanoseconds: o5, timeZone: r5, calendar: i5 } = n4;
+  const [a5, s5, c5] = refineRoundingOptions(t5);
+  if (0 === a5 && 1 === s5) {
+    return n4;
+  }
+  const u6 = e5(r5);
+  if (6 === a5) {
+    o5 = ((e6, n5, t6, o6) => {
+      const r6 = he(t6, n5), [i6, a6] = e6(r6), s6 = t6.epochNanoseconds, c6 = getStartOfDayInstantFor(n5, i6), u7 = getStartOfDayInstantFor(n5, a6);
+      if (bigNanoOutside(s6, c6, u7)) {
+        throw new RangeError(fo);
+      }
+      return roundWithMode(computeEpochNanoFrac(s6, c6, u7), o6) ? u7 : c6;
+    })(computeDayInterval, u6, n4, c5);
+  } else {
+    const e6 = u6.R(o5);
+    o5 = getMatchingInstantFor(u6, roundDateTime(epochNanoToIso(o5, e6), a5, s5, c5), e6, 2, 0, 1);
+  }
+  return _e(o5, r5, i5);
+}
+function vt(e5, n4) {
+  return jt(roundDateTime(e5, ...refineRoundingOptions(n4)), e5.calendar);
+}
+function lt(e5, n4) {
+  const [t5, o5, r5] = refineRoundingOptions(n4, 5);
+  var i5;
+  return St((i5 = r5, roundTimeToNano(e5, computeNanoInc(t5, o5), i5)[0]));
+}
+function Te(e5, n4) {
+  const t5 = e5(n4.timeZone), o5 = he(n4, t5), [r5, i5] = computeDayInterval(o5), a5 = bigNanoToNumber(diffBigNanos(getStartOfDayInstantFor(t5, r5), getStartOfDayInstantFor(t5, i5)), zo, 1);
+  if (a5 <= 0) {
+    throw new RangeError(fo);
+  }
+  return a5;
+}
+function ve(e5, n4) {
+  const { timeZone: t5, calendar: o5 } = n4, r5 = ((e6, n5, t6) => getStartOfDayInstantFor(n5, e6(he(t6, n5))))(computeDayFloor, e5(t5), n4);
+  return _e(r5, t5, o5);
+}
+function roundDateTime(e5, n4, t5, o5) {
+  return roundDateTimeToNano(e5, computeNanoInc(n4, t5), o5);
+}
+function roundDateTimeToNano(e5, n4, t5) {
+  const [o5, r5] = roundTimeToNano(e5, n4, t5);
+  return checkIsoDateTimeInBounds({
+    ...moveByDays(e5, r5),
+    ...o5
+  });
+}
+function roundTimeToNano(e5, n4, t5) {
+  return nanoToIsoTimeAndDay(roundByInc(isoTimeFieldsToNano(e5), n4, t5));
+}
+function roundToMinute(e5) {
+  return roundByInc(e5, Zo, 7);
+}
+function computeNanoInc(e5, n4) {
+  return Ao[e5] * n4;
+}
+function computeDayInterval(e5) {
+  const n4 = computeDayFloor(e5);
+  return [n4, moveByDays(n4, 1)];
+}
+function computeDayFloor(e5) {
+  return yr(6, e5);
+}
+function roundDayTimeDurationByInc(e5, n4, t5) {
+  const o5 = Math.min(getMaxDurationUnit(e5), 6);
+  return nanoToDurationDayTimeFields(roundBigNanoByInc(durationFieldsToBigNano(e5, o5), n4, t5), o5);
+}
+function roundRelativeDuration(e5, n4, t5, o5, r5, i5, a5, s5, c5, u6) {
+  if (0 === o5 && 1 === r5) {
+    return e5;
+  }
+  const f6 = isUniformUnit(o5, s5) ? isZonedEpochSlots(s5) && o5 < 6 && t5 >= 6 ? nudgeZonedTimeDuration : nudgeDayTimeDuration : nudgeRelativeDuration;
+  let [l5, d6, m5] = f6(e5, n4, t5, o5, r5, i5, a5, s5, c5, u6);
+  return m5 && 7 !== o5 && (l5 = ((e6, n5, t6, o6, r6, i6, a6, s6) => {
+    const c6 = computeDurationSign(e6);
+    for (let u7 = o6 + 1; u7 <= t6; u7++) {
+      if (7 === u7 && 7 !== t6) {
+        continue;
+      }
+      const o7 = gr(u7, e6);
+      o7[p[u7]] += c6;
+      const f7 = bigNanoToNumber(diffBigNanos(a6(s6(r6, i6, o7)), n5));
+      if (f7 && Math.sign(f7) !== c6) {
+        break;
+      }
+      e6 = o7;
+    }
+    return e6;
+  })(l5, d6, t5, Math.max(6, o5), a5, s5, c5, u6)), l5;
+}
+function roundBigNano(e5, n4, t5, o5, r5) {
+  if (6 === n4) {
+    const n5 = ((e6) => e6[0] + e6[1] / Uo)(e5);
+    return [roundByInc(n5, t5, o5), 0];
+  }
+  return roundBigNanoByInc(e5, computeNanoInc(n4, t5), o5, r5);
+}
+function roundBigNanoByInc(e5, n4, t5, o5) {
+  let [r5, i5] = e5;
+  o5 && i5 < 0 && (i5 += Uo, r5 -= 1);
+  const [a5, s5] = divModFloor(roundByInc(i5, n4, t5), Uo);
+  return createBigNano(r5 + a5, s5);
+}
+function roundByInc(e5, n4, t5) {
+  return roundWithMode(e5 / n4, t5) * n4;
+}
+function roundWithMode(e5, n4) {
+  return ai[n4](e5);
+}
+function nudgeDayTimeDuration(e5, n4, t5, o5, r5, i5) {
+  const a5 = computeDurationSign(e5), s5 = durationFieldsToBigNano(e5), c5 = roundBigNano(s5, o5, r5, i5), u6 = diffBigNanos(s5, c5), f6 = Math.sign(c5[0] - s5[0]) === a5, l5 = nanoToDurationDayTimeFields(c5, Math.min(t5, 6));
+  return [{
+    ...e5,
+    ...l5
+  }, addBigNanos(n4, u6), f6];
+}
+function nudgeZonedTimeDuration(e5, n4, t5, o5, r5, i5, a5, s5, c5, u6) {
+  const f6 = computeDurationSign(e5) || 1, l5 = bigNanoToNumber(durationFieldsToBigNano(e5, 5)), d6 = computeNanoInc(o5, r5);
+  let m5 = roundByInc(l5, d6, i5);
+  const [p6, h6] = clampRelativeDuration(a5, {
+    ...e5,
+    ...hr
+  }, 6, f6, s5, c5, u6), g7 = m5 - bigNanoToNumber(diffBigNanos(p6, h6));
+  let D4 = 0;
+  g7 && Math.sign(g7) !== f6 ? n4 = moveBigNano(p6, m5) : (D4 += f6, m5 = roundByInc(g7, d6, i5), n4 = moveBigNano(h6, m5));
+  const T6 = nanoToDurationTimeFields(m5);
+  return [{
+    ...e5,
+    ...T6,
+    days: e5.days + D4
+  }, n4, Boolean(D4)];
+}
+function nudgeRelativeDuration(e5, n4, t5, o5, r5, i5, a5, s5, c5, u6) {
+  const f6 = computeDurationSign(e5), l5 = p[o5], d6 = gr(o5, e5);
+  7 === o5 && (e5 = {
+    ...e5,
+    weeks: e5.weeks + Math.trunc(e5.days / 7)
+  });
+  const m5 = divTrunc(e5[l5], r5) * r5;
+  d6[l5] = m5;
+  const [h6, g7] = clampRelativeDuration(a5, d6, o5, r5 * f6, s5, c5, u6), D4 = m5 + computeEpochNanoFrac(n4, h6, g7) * f6 * r5, T6 = roundByInc(D4, r5, i5), I3 = Math.sign(T6 - D4) === f6;
+  return d6[l5] = T6, [d6, I3 ? g7 : h6, I3];
+}
+function ke(e5, n4, t5, o5) {
+  const [r5, i5, a5, s5] = ((e6) => {
+    const n5 = refineTimeDisplayTuple(e6 = normalizeOptions(e6));
+    return [e6.timeZone, ...n5];
+  })(o5), c5 = void 0 !== r5;
+  return ((e6, n5, t6, o6, r6, i6) => {
+    t6 = roundBigNanoByInc(t6, r6, o6, 1);
+    const a6 = n5.R(t6);
+    return formatIsoDateTimeFields(epochNanoToIso(t6, a6), i6) + (e6 ? Se(roundToMinute(a6)) : "Z");
+  })(c5, n4(c5 ? e5(r5) : si), t5.epochNanoseconds, i5, a5, s5);
+}
+function Fe(e5, n4, t5) {
+  const [o5, r5, i5, a5, s5, c5] = ((e6) => {
+    e6 = normalizeOptions(e6);
+    const n5 = ti(e6), t6 = refineSubsecDigits(e6), o6 = ri(e6), r6 = ii(e6, 4), i6 = Jr(e6, 4);
+    return [n5, oi(e6), o6, r6, ...refineSmallestUnitAndSubsecDigits(i6, t6)];
+  })(t5);
+  return ((e6, n5, t6, o6, r6, i6, a6, s6, c6, u6) => {
+    o6 = roundBigNanoByInc(o6, c6, s6, 1);
+    const f6 = e6(t6).R(o6);
+    return formatIsoDateTimeFields(epochNanoToIso(o6, f6), u6) + Se(roundToMinute(f6), a6) + ((e7, n6) => 1 !== n6 ? "[" + (2 === n6 ? "!" : "") + e7 + "]" : "")(t6, i6) + formatCalendar(n5, r6);
+  })(e5, n4.calendar, n4.timeZone, n4.epochNanoseconds, o5, r5, i5, a5, s5, c5);
+}
+function Ft(e5, n4) {
+  const [t5, o5, r5, i5] = ((e6) => (e6 = normalizeOptions(e6), [ti(e6), ...refineTimeDisplayTuple(e6)]))(n4);
+  return a5 = e5.calendar, s5 = t5, c5 = i5, formatIsoDateTimeFields(roundDateTimeToNano(e5, r5, o5), c5) + formatCalendar(a5, s5);
+  var a5, s5, c5;
+}
+function ce(e5, n4) {
+  return t5 = e5.calendar, o5 = e5, r5 = refineDateDisplayOptions(n4), formatIsoDateFields(o5) + formatCalendar(t5, r5);
+  var t5, o5, r5;
+}
+function Kt(e5, n4) {
+  return formatDateLikeIso(e5.calendar, formatIsoYearMonthFields, e5, refineDateDisplayOptions(n4));
+}
+function Jt(e5, n4) {
+  return formatDateLikeIso(e5.calendar, formatIsoMonthDayFields, e5, refineDateDisplayOptions(n4));
+}
+function ct(e5, n4) {
+  const [t5, o5, r5] = refineTimeDisplayOptions(n4);
+  return i5 = r5, formatIsoTimeFields(roundTimeToNano(e5, o5, t5)[0], i5);
+  var i5;
+}
+function k(e5, n4) {
+  const [t5, o5, r5] = refineTimeDisplayOptions(n4, 3);
+  return o5 > 1 && checkDurationUnits(e5 = {
+    ...e5,
+    ...roundDayTimeDurationByInc(e5, o5, t5)
+  }), ((e6, n5) => {
+    const { sign: t6 } = e6, o6 = -1 === t6 ? negateDurationFields(e6) : e6, { hours: r6, minutes: i5 } = o6, [a5, s5] = divModBigNano(durationFieldsToBigNano(o6, 3), Ro, divModTrunc);
+    checkDurationTimeUnit(a5);
+    const c5 = formatSubsecNano(s5, n5), u6 = n5 >= 0 || !t6 || c5;
+    return (t6 < 0 ? "-" : "") + "P" + formatDurationFragments({
+      Y: formatDurationNumber(o6.years),
+      M: formatDurationNumber(o6.months),
+      W: formatDurationNumber(o6.weeks),
+      D: formatDurationNumber(o6.days)
+    }) + (r6 || i5 || a5 || u6 ? "T" + formatDurationFragments({
+      H: formatDurationNumber(r6),
+      M: formatDurationNumber(i5),
+      S: formatDurationNumber(a5, u6) + c5
+    }) : "");
+  })(e5, r5);
+}
+function formatDateLikeIso(e5, n4, t5, o5) {
+  const r5 = o5 > 1 || 0 === o5 && e5 !== l;
+  return 1 === o5 ? e5 === l ? n4(t5) : formatIsoDateFields(t5) : r5 ? formatIsoDateFields(t5) + formatCalendarId(e5, 2 === o5) : n4(t5);
+}
+function formatDurationFragments(e5) {
+  const n4 = [];
+  for (const t5 in e5) {
+    const o5 = e5[t5];
+    o5 && n4.push(o5, t5);
+  }
+  return n4.join("");
+}
+function formatIsoDateTimeFields(e5, n4) {
+  return formatIsoDateFields(e5) + "T" + formatIsoTimeFields(e5, n4);
+}
+function formatIsoDateFields(e5) {
+  return formatIsoYearMonthFields(e5) + "-" + bo(e5.isoDay);
+}
+function formatIsoYearMonthFields(e5) {
+  const { isoYear: n4 } = e5;
+  return (n4 < 0 || n4 > 9999 ? getSignStr(n4) + padNumber(6, Math.abs(n4)) : padNumber(4, n4)) + "-" + bo(e5.isoMonth);
+}
+function formatIsoMonthDayFields(e5) {
+  return bo(e5.isoMonth) + "-" + bo(e5.isoDay);
+}
+function formatIsoTimeFields(e5, n4) {
+  const t5 = [bo(e5.isoHour), bo(e5.isoMinute)];
+  return -1 !== n4 && t5.push(bo(e5.isoSecond) + ((e6, n5, t6, o5) => formatSubsecNano(e6 * Qe + n5 * Yo + t6, o5))(e5.isoMillisecond, e5.isoMicrosecond, e5.isoNanosecond, n4)), t5.join(":");
+}
+function Se(e5, n4 = 0) {
+  if (1 === n4) {
+    return "";
+  }
+  const [t5, o5] = divModFloor(Math.abs(e5), zo), [r5, i5] = divModFloor(o5, Zo), [a5, s5] = divModFloor(i5, Ro);
+  return getSignStr(e5) + bo(t5) + ":" + bo(r5) + (a5 || s5 ? ":" + bo(a5) + formatSubsecNano(s5) : "");
+}
+function formatCalendar(e5, n4) {
+  return 1 !== n4 && (n4 > 1 || 0 === n4 && e5 !== l) ? formatCalendarId(e5, 2 === n4) : "";
+}
+function formatCalendarId(e5, n4) {
+  return "[" + (n4 ? "!" : "") + "u-ca=" + e5 + "]";
+}
+function formatSubsecNano(e5, n4) {
+  let t5 = padNumber(9, e5);
+  return t5 = void 0 === n4 ? t5.replace(li, "") : t5.slice(0, n4), t5 ? "." + t5 : "";
+}
+function getSignStr(e5) {
+  return e5 < 0 ? "-" : "+";
+}
+function formatDurationNumber(e5, n4) {
+  return e5 || n4 ? e5.toLocaleString("fullwide", {
+    useGrouping: 0
+  }) : "";
+}
+function _zonedEpochSlotsToIso(e5, n4) {
+  const { epochNanoseconds: t5 } = e5, o5 = (n4.R ? n4 : n4(e5.timeZone)).R(t5), r5 = epochNanoToIso(t5, o5);
+  return {
+    calendar: e5.calendar,
+    ...r5,
+    offsetNanoseconds: o5
+  };
+}
+function getMatchingInstantFor(e5, n4, t5, o5 = 0, r5 = 0, i5, a5) {
+  if (void 0 !== t5 && 1 === o5 && (1 === o5 || a5)) {
+    return isoToEpochNanoWithOffset(n4, t5);
+  }
+  const s5 = e5.I(n4);
+  if (void 0 !== t5 && 3 !== o5) {
+    const e6 = ((e7, n5, t6, o6) => {
+      const r6 = isoToEpochNano(n5);
+      o6 && (t6 = roundToMinute(t6));
+      for (const n6 of e7) {
+        let e8 = bigNanoToNumber(diffBigNanos(n6, r6));
+        if (o6 && (e8 = roundToMinute(e8)), e8 === t6) {
+          return n6;
+        }
+      }
+    })(s5, n4, t5, i5);
+    if (void 0 !== e6) {
+      return e6;
+    }
+    if (0 === o5) {
+      throw new RangeError(Do);
+    }
+  }
+  return a5 ? isoToEpochNano(n4) : getSingleInstantFor(e5, n4, r5, s5);
+}
+function getSingleInstantFor(e5, n4, t5 = 0, o5 = e5.I(n4)) {
+  if (1 === o5.length) {
+    return o5[0];
+  }
+  if (1 === t5) {
+    throw new RangeError(To);
+  }
+  if (o5.length) {
+    return o5[3 === t5 ? 1 : 0];
+  }
+  const r5 = isoToEpochNano(n4), i5 = ((e6, n5) => {
+    const t6 = e6.R(moveBigNano(n5, -Uo));
+    return ((e7) => {
+      if (e7 > Uo) {
+        throw new RangeError(go);
+      }
+      return e7;
+    })(e6.R(moveBigNano(n5, Uo)) - t6);
+  })(e5, r5), a5 = i5 * (2 === t5 ? -1 : 1);
+  return (o5 = e5.I(epochNanoToIso(r5, a5)))[2 === t5 ? 0 : o5.length - 1];
+}
+function getStartOfDayInstantFor(e5, n4) {
+  const t5 = e5.I(n4);
+  if (t5.length) {
+    return t5[0];
+  }
+  const o5 = moveBigNano(isoToEpochNano(n4), -Uo);
+  return e5.O(o5, 1);
+}
+function Ye(e5, n4, t5) {
+  return xe(checkEpochNanoInBounds(addBigNanos(n4.epochNanoseconds, ((e6) => {
+    if (durationHasDateParts(e6)) {
+      throw new RangeError(vo);
+    }
+    return durationFieldsToBigNano(e6, 5);
+  })(e5 ? negateDurationFields(t5) : t5))));
+}
+function pe(e5, n4, t5, o5, r5, i5 = /* @__PURE__ */ Object.create(null)) {
+  const a5 = n4(o5.timeZone), s5 = e5(o5.calendar);
+  return {
+    ...o5,
+    ...moveZonedEpochs(a5, s5, o5, t5 ? negateDurationFields(r5) : r5, i5)
+  };
+}
+function wt(e5, n4, t5, o5, r5 = /* @__PURE__ */ Object.create(null)) {
+  const { calendar: i5 } = t5;
+  return jt(moveDateTime(e5(i5), t5, n4 ? negateDurationFields(o5) : o5, r5), i5);
+}
+function ne(e5, n4, t5, o5, r5) {
+  const { calendar: i5 } = t5;
+  return W(moveDate(e5(i5), t5, n4 ? negateDurationFields(o5) : o5, r5), i5);
+}
+function Gt(e5, n4, t5, o5, r5) {
+  const i5 = t5.calendar, a5 = e5(i5);
+  let s5 = checkIsoDateInBounds(moveToDayOfMonthUnsafe(a5, t5));
+  n4 && (o5 = B(o5)), o5.sign < 0 && (s5 = a5.P(s5, {
+    ...pr,
+    months: 1
+  }), s5 = moveByDays(s5, -1));
+  const c5 = a5.P(s5, o5, r5);
+  return createPlainYearMonthSlots(moveToDayOfMonthUnsafe(a5, c5), i5);
+}
+function at(e5, n4, t5) {
+  return St(moveTime(n4, e5 ? negateDurationFields(t5) : t5)[0]);
+}
+function moveZonedEpochs(e5, n4, t5, o5, r5) {
+  const i5 = durationFieldsToBigNano(o5, 5);
+  let a5 = t5.epochNanoseconds;
+  if (durationHasDateParts(o5)) {
+    const s5 = he(t5, e5);
+    a5 = addBigNanos(getSingleInstantFor(e5, {
+      ...moveDate(n4, s5, {
+        ...o5,
+        ...hr
+      }, r5),
+      ...nn(w, s5)
+    }), i5);
+  } else {
+    a5 = addBigNanos(a5, i5), mt(r5);
+  }
+  return {
+    epochNanoseconds: checkEpochNanoInBounds(a5)
+  };
+}
+function moveDateTime(e5, n4, t5, o5) {
+  const [r5, i5] = moveTime(n4, t5);
+  return checkIsoDateTimeInBounds({
+    ...moveDate(e5, n4, {
+      ...t5,
+      ...hr,
+      days: t5.days + i5
+    }, o5),
+    ...r5
+  });
+}
+function moveDate(e5, n4, t5, o5) {
+  if (t5.years || t5.months || t5.weeks) {
+    return e5.P(n4, t5, o5);
+  }
+  mt(o5);
+  const r5 = t5.days + durationFieldsToBigNano(t5, 5)[0];
+  return r5 ? checkIsoDateInBounds(moveByDays(n4, r5)) : n4;
+}
+function moveToDayOfMonthUnsafe(e5, n4, t5 = 1) {
+  return moveByDays(n4, t5 - e5.day(n4));
+}
+function moveTime(e5, n4) {
+  const [t5, o5] = durationFieldsToBigNano(n4, 5), [r5, i5] = nanoToIsoTimeAndDay(isoTimeFieldsToNano(e5) + o5);
+  return [r5, t5 + i5];
+}
+function moveByDays(e5, n4) {
+  return n4 ? {
+    ...e5,
+    ...epochMilliToIso(isoToEpochMilli(e5) + n4 * ko)
+  } : e5;
+}
+function createMarkerSystem(e5, n4, t5) {
+  const o5 = e5(t5.calendar);
+  return isZonedEpochSlots(t5) ? [t5, o5, n4(t5.timeZone)] : [{
+    ...t5,
+    ...Nt
+  }, o5];
+}
+function createMarkerToEpochNano(e5) {
+  return e5 ? extractEpochNano : isoToEpochNano;
+}
+function createMoveMarker(e5) {
+  return e5 ? Pt(moveZonedEpochs, e5) : moveDateTime;
+}
+function createDiffMarkers(e5) {
+  return e5 ? Pt(diffZonedEpochsExact, e5) : diffDateTimesExact;
+}
+function isZonedEpochSlots(e5) {
+  return e5 && e5.epochNanoseconds;
+}
+function isUniformUnit(e5, n4) {
+  return e5 <= 6 - (isZonedEpochSlots(n4) ? 1 : 0);
+}
+function E(e5, n4, t5, o5, r5, i5, a5) {
+  const s5 = e5(normalizeOptions(a5).relativeTo), c5 = Math.max(getMaxDurationUnit(r5), getMaxDurationUnit(i5));
+  if (isUniformUnit(c5, s5)) {
+    return Oe(checkDurationUnits(((e6, n5, t6, o6) => {
+      const r6 = addBigNanos(durationFieldsToBigNano(e6), durationFieldsToBigNano(n5), o6 ? -1 : 1);
+      if (!Number.isFinite(r6[0])) {
+        throw new RangeError(Io);
+      }
+      return {
+        ...pr,
+        ...nanoToDurationDayTimeFields(r6, t6)
+      };
+    })(r5, i5, c5, o5)));
+  }
+  if (!s5) {
+    throw new RangeError(yo);
+  }
+  o5 && (i5 = negateDurationFields(i5));
+  const [u6, f6, l5] = createMarkerSystem(n4, t5, s5), d6 = createMoveMarker(l5), m5 = createDiffMarkers(l5), p6 = d6(f6, u6, r5);
+  return Oe(m5(f6, u6, d6(f6, p6, i5), c5));
+}
+function V(e5, n4, t5, o5, r5) {
+  const i5 = getMaxDurationUnit(o5), [a5, s5, c5, u6, f6] = ((e6, n5, t6) => {
+    e6 = normalizeOptionsOrString(e6, Rr);
+    let o6 = Kr(e6);
+    const r6 = t6(e6[Ar]);
+    let i6 = parseRoundingIncInteger(e6);
+    const a6 = ii(e6, 7);
+    let s6 = Jr(e6);
+    if (void 0 === o6 && void 0 === s6) {
+      throw new RangeError(Po);
+    }
+    if (null == s6 && (s6 = 0), null == o6 && (o6 = Math.max(s6, n5)), checkLargestSmallestUnit(o6, s6), i6 = refineRoundingInc(i6, s6, 1), i6 > 1 && s6 > 5 && o6 !== s6) {
+      throw new RangeError("For calendar units with roundingIncrement > 1, use largestUnit = smallestUnit");
+    }
+    return [o6, s6, i6, a6, r6];
+  })(r5, i5, e5), l5 = Math.max(i5, a5);
+  if (!f6 && l5 <= 6) {
+    return Oe(checkDurationUnits(((e6, n5, t6, o6, r6) => {
+      const i6 = roundBigNano(durationFieldsToBigNano(e6), t6, o6, r6);
+      return {
+        ...pr,
+        ...nanoToDurationDayTimeFields(i6, n5)
+      };
+    })(o5, a5, s5, c5, u6)));
+  }
+  if (!isZonedEpochSlots(f6) && !o5.sign) {
+    return o5;
+  }
+  if (!f6) {
+    throw new RangeError(yo);
+  }
+  const [d6, m5, p6] = createMarkerSystem(n4, t5, f6), h6 = createMarkerToEpochNano(p6), g7 = createMoveMarker(p6), D4 = createDiffMarkers(p6), T6 = g7(m5, d6, o5);
+  isZonedEpochSlots(f6) || (checkIsoDateTimeInBounds(d6), checkIsoDateTimeInBounds(T6));
+  let I3 = D4(m5, d6, T6, a5);
+  const M4 = o5.sign, N4 = computeDurationSign(I3);
+  if (M4 && N4 && M4 !== N4) {
+    throw new RangeError(fo);
+  }
+  return I3 = roundRelativeDuration(I3, h6(T6), a5, s5, c5, u6, m5, d6, h6, g7), Oe(I3);
+}
+function Y(e5) {
+  return -1 === e5.sign ? B(e5) : e5;
+}
+function B(e5) {
+  return Oe(negateDurationFields(e5));
+}
+function negateDurationFields(e5) {
+  const n4 = {};
+  for (const t5 of p) {
+    n4[t5] = -1 * e5[t5] || 0;
+  }
+  return n4;
+}
+function y(e5) {
+  return !e5.sign;
+}
+function computeDurationSign(e5, n4 = p) {
+  let t5 = 0;
+  for (const o5 of n4) {
+    const n5 = Math.sign(e5[o5]);
+    if (n5) {
+      if (t5 && t5 !== n5) {
+        throw new RangeError(No);
+      }
+      t5 = n5;
+    }
+  }
+  return t5;
+}
+function checkDurationUnits(e5) {
+  for (const n4 of dr) {
+    clampEntity(n4, e5[n4], -di, di, 1);
+  }
+  return checkDurationTimeUnit(bigNanoToNumber(durationFieldsToBigNano(e5), Ro)), e5;
+}
+function checkDurationTimeUnit(e5) {
+  if (!Number.isSafeInteger(e5)) {
+    throw new RangeError(Mo);
+  }
+}
+function durationFieldsToBigNano(e5, n4 = 6) {
+  return givenFieldsToBigNano(e5, n4, p);
+}
+function nanoToDurationDayTimeFields(e5, n4 = 6) {
+  const [t5, o5] = e5, r5 = nanoToGivenFields(o5, n4, p);
+  if (r5[p[n4]] += t5 * (Uo / Ao[n4]), !Number.isFinite(r5[p[n4]])) {
+    throw new RangeError(Io);
+  }
+  return r5;
+}
+function nanoToDurationTimeFields(e5, n4 = 5) {
+  return nanoToGivenFields(e5, n4, p);
+}
+function durationHasDateParts(e5) {
+  return Boolean(computeDurationSign(e5, lr));
+}
+function getMaxDurationUnit(e5) {
+  let n4 = 9;
+  for (; n4 > 0 && !e5[p[n4]]; n4--) {
+  }
+  return n4;
+}
+function createSplitTuple(e5, n4) {
+  return [e5, n4];
+}
+function computePeriod(e5) {
+  const n4 = Math.floor(e5 / ci) * ci;
+  return [n4, n4 + ci];
+}
+function We(e5) {
+  const n4 = parseDateTimeLike(e5 = toStringViaPrimitive(e5));
+  if (!n4) {
+    throw new RangeError(failedParse(e5));
+  }
+  let t5;
+  if (n4.j) {
+    t5 = 0;
+  } else {
+    if (!n4.offset) {
+      throw new RangeError(failedParse(e5));
+    }
+    t5 = parseOffsetNano(n4.offset);
+  }
+  return n4.timeZone && parseOffsetNanoMaybe(n4.timeZone, 1), xe(isoToEpochNanoWithOffset(checkIsoDateTimeFields(n4), t5));
+}
+function H(e5) {
+  const n4 = parseDateTimeLike(m(e5));
+  if (!n4) {
+    throw new RangeError(failedParse(e5));
+  }
+  if (n4.timeZone) {
+    return finalizeZonedDateTime(n4, n4.offset ? parseOffsetNano(n4.offset) : void 0);
+  }
+  if (n4.j) {
+    throw new RangeError(failedParse(e5));
+  }
+  return finalizeDate(n4);
+}
+function Ae(e5, n4) {
+  const t5 = parseDateTimeLike(m(e5));
+  if (!t5 || !t5.timeZone) {
+    throw new RangeError(failedParse(e5));
+  }
+  const { offset: o5 } = t5, r5 = o5 ? parseOffsetNano(o5) : void 0, [, i5, a5] = je(n4);
+  return finalizeZonedDateTime(t5, r5, i5, a5);
+}
+function parseOffsetNano(e5) {
+  const n4 = parseOffsetNanoMaybe(e5);
+  if (void 0 === n4) {
+    throw new RangeError(failedParse(e5));
+  }
+  return n4;
+}
+function Bt(e5) {
+  const n4 = parseDateTimeLike(m(e5));
+  if (!n4 || n4.j) {
+    throw new RangeError(failedParse(e5));
+  }
+  return jt(finalizeDateTime(n4));
+}
+function de(e5, n4, t5) {
+  let o5 = parseDateTimeLike(m(e5));
+  if (!o5 || o5.j) {
+    throw new RangeError(failedParse(e5));
+  }
+  return n4 ? o5.calendar === l && (o5 = -271821 === o5.isoYear && 4 === o5.isoMonth ? {
+    ...o5,
+    isoDay: 20,
+    ...Nt
+  } : {
+    ...o5,
+    isoDay: 1,
+    ...Nt
+  }) : t5 && o5.calendar === l && (o5 = {
+    ...o5,
+    isoYear: Br
+  }), W(o5.C ? finalizeDateTime(o5) : finalizeDate(o5));
+}
+function _t(e5, n4) {
+  const t5 = parseYearMonthOnly(m(n4));
+  if (t5) {
+    return requireIsoCalendar(t5), createPlainYearMonthSlots(checkIsoYearMonthInBounds(checkIsoDateFields(t5)));
+  }
+  const o5 = de(n4, 1);
+  return createPlainYearMonthSlots(moveToDayOfMonthUnsafe(e5(o5.calendar), o5));
+}
+function requireIsoCalendar(e5) {
+  if (e5.calendar !== l) {
+    throw new RangeError(invalidSubstring(e5.calendar));
+  }
+}
+function xt(e5, n4) {
+  const t5 = parseMonthDayOnly(m(n4));
+  if (t5) {
+    return requireIsoCalendar(t5), createPlainMonthDaySlots(checkIsoDateFields(t5));
+  }
+  const o5 = de(n4, 0, 1), { calendar: r5 } = o5, i5 = e5(r5), [a5, s5, c5] = i5.v(o5), [u6, f6] = i5.q(a5, s5), [l5, d6] = i5.G(u6, f6, c5);
+  return createPlainMonthDaySlots(checkIsoDateInBounds(i5.V(l5, d6, c5)), r5);
+}
+function ht(e5) {
+  let n4, t5 = ((e6) => {
+    const n5 = Pi.exec(e6);
+    return n5 ? (organizeAnnotationParts(n5[10]), organizeTimeParts(n5)) : void 0;
+  })(m(e5));
+  if (!t5) {
+    if (t5 = parseDateTimeLike(e5), !t5) {
+      throw new RangeError(failedParse(e5));
+    }
+    if (!t5.C) {
+      throw new RangeError(failedParse(e5));
+    }
+    if (t5.j) {
+      throw new RangeError(invalidSubstring("Z"));
+    }
+    requireIsoCalendar(t5);
+  }
+  if ((n4 = parseYearMonthOnly(e5)) && isIsoDateFieldsValid(n4)) {
+    throw new RangeError(failedParse(e5));
+  }
+  if ((n4 = parseMonthDayOnly(e5)) && isIsoDateFieldsValid(n4)) {
+    throw new RangeError(failedParse(e5));
+  }
+  return St(constrainIsoTimeFields(t5, 1));
+}
+function R(e5) {
+  const n4 = ((e6) => {
+    const n5 = Fi.exec(e6);
+    return n5 ? ((e7) => {
+      function parseUnit(e8, r6, i5) {
+        let a5 = 0, s5 = 0;
+        if (i5 && ([a5, o5] = divModFloor(o5, Ao[i5])), void 0 !== e8) {
+          if (t5) {
+            throw new RangeError(invalidSubstring(e8));
+          }
+          s5 = ((e9) => {
+            const n7 = parseInt(e9);
+            if (!Number.isFinite(n7)) {
+              throw new RangeError(invalidSubstring(e9));
+            }
+            return n7;
+          })(e8), n6 = 1, r6 && (o5 = parseSubsecNano(r6) * (Ao[i5] / Ro), t5 = 1);
+        }
+        return a5 + s5;
+      }
+      let n6 = 0, t5 = 0, o5 = 0, r5 = {
+        ...zipProps(p, [parseUnit(e7[2]), parseUnit(e7[3]), parseUnit(e7[4]), parseUnit(e7[5]), parseUnit(e7[6], e7[7], 5), parseUnit(e7[8], e7[9], 4), parseUnit(e7[10], e7[11], 3)]),
+        ...nanoToGivenFields(o5, 2, p)
+      };
+      if (!n6) {
+        throw new RangeError(noValidFields(p));
+      }
+      return parseSign(e7[1]) < 0 && (r5 = negateDurationFields(r5)), r5;
+    })(n5) : void 0;
+  })(m(e5));
+  if (!n4) {
+    throw new RangeError(failedParse(e5));
+  }
+  return Oe(checkDurationUnits(n4));
+}
+function f(e5) {
+  const n4 = parseDateTimeLike(e5) || parseYearMonthOnly(e5) || parseMonthDayOnly(e5);
+  return n4 ? n4.calendar : e5;
+}
+function Z(e5) {
+  const n4 = parseDateTimeLike(e5);
+  return n4 && (n4.timeZone || n4.j && si || n4.offset) || e5;
+}
+function finalizeZonedDateTime(e5, n4, t5 = 0, o5 = 0) {
+  const r5 = M(e5.timeZone), i5 = L(r5);
+  let a5;
+  return checkIsoDateTimeFields(e5), a5 = e5.C ? getMatchingInstantFor(i5, e5, n4, t5, o5, !i5.$, e5.j) : getStartOfDayInstantFor(i5, e5), _e(a5, r5, u(e5.calendar));
+}
+function finalizeDateTime(e5) {
+  return resolveSlotsCalendar(checkIsoDateTimeInBounds(checkIsoDateTimeFields(e5)));
+}
+function finalizeDate(e5) {
+  return resolveSlotsCalendar(checkIsoDateInBounds(checkIsoDateFields(e5)));
+}
+function resolveSlotsCalendar(e5) {
+  return {
+    ...e5,
+    calendar: u(e5.calendar)
+  };
+}
+function parseDateTimeLike(e5) {
+  const n4 = vi.exec(e5);
+  return n4 ? ((e6) => {
+    const n5 = e6[10], t5 = "Z" === (n5 || "").toUpperCase();
+    return {
+      isoYear: organizeIsoYearParts(e6),
+      isoMonth: parseInt(e6[4]),
+      isoDay: parseInt(e6[5]),
+      ...organizeTimeParts(e6.slice(5)),
+      ...organizeAnnotationParts(e6[16]),
+      C: Boolean(e6[6]),
+      j: t5,
+      offset: t5 ? void 0 : n5
+    };
+  })(n4) : void 0;
+}
+function parseYearMonthOnly(e5) {
+  const n4 = Ni.exec(e5);
+  return n4 ? ((e6) => ({
+    isoYear: organizeIsoYearParts(e6),
+    isoMonth: parseInt(e6[4]),
+    isoDay: 1,
+    ...organizeAnnotationParts(e6[5])
+  }))(n4) : void 0;
+}
+function parseMonthDayOnly(e5) {
+  const n4 = yi.exec(e5);
+  return n4 ? ((e6) => ({
+    isoYear: Br,
+    isoMonth: parseInt(e6[1]),
+    isoDay: parseInt(e6[2]),
+    ...organizeAnnotationParts(e6[3])
+  }))(n4) : void 0;
+}
+function parseOffsetNanoMaybe(e5, n4) {
+  const t5 = Ei.exec(e5);
+  return t5 ? ((e6, n5) => {
+    const t6 = e6[4] || e6[5];
+    if (n5 && t6) {
+      throw new RangeError(invalidSubstring(t6));
+    }
+    return ((e7) => {
+      if (Math.abs(e7) >= Uo) {
+        throw new RangeError(ho);
+      }
+      return e7;
+    })((parseInt0(e6[2]) * zo + parseInt0(e6[3]) * Zo + parseInt0(e6[4]) * Ro + parseSubsecNano(e6[5] || "")) * parseSign(e6[1]));
+  })(t5, n4) : void 0;
+}
+function organizeIsoYearParts(e5) {
+  const n4 = parseSign(e5[1]), t5 = parseInt(e5[2] || e5[3]);
+  if (n4 < 0 && !t5) {
+    throw new RangeError(invalidSubstring(-0));
+  }
+  return n4 * t5;
+}
+function organizeTimeParts(e5) {
+  const n4 = parseInt0(e5[3]);
+  return {
+    ...nanoToIsoTimeAndDay(parseSubsecNano(e5[4] || ""))[0],
+    isoHour: parseInt0(e5[1]),
+    isoMinute: parseInt0(e5[2]),
+    isoSecond: 60 === n4 ? 59 : n4
+  };
+}
+function organizeAnnotationParts(e5) {
+  let n4, t5;
+  const o5 = [];
+  if (e5.replace(Si, ((e6, r5, i5) => {
+    const a5 = Boolean(r5), [s5, c5] = i5.split("=").reverse();
+    if (c5) {
+      if ("u-ca" === c5) {
+        o5.push(s5), n4 || (n4 = a5);
+      } else if (a5 || /[A-Z]/.test(c5)) {
+        throw new RangeError(invalidSubstring(e6));
+      }
+    } else {
+      if (t5) {
+        throw new RangeError(invalidSubstring(e6));
+      }
+      t5 = s5;
+    }
+    return "";
+  })), o5.length > 1 && n4) {
+    throw new RangeError(invalidSubstring(e5));
+  }
+  return {
+    timeZone: t5,
+    calendar: o5[0] || l
+  };
+}
+function parseSubsecNano(e5) {
+  return parseInt(e5.padEnd(9, "0"));
+}
+function createRegExp(e5) {
+  return new RegExp(`^${e5}$`, "i");
+}
+function parseSign(e5) {
+  return e5 && "+" !== e5 ? -1 : 1;
+}
+function parseInt0(e5) {
+  return void 0 === e5 ? 0 : parseInt(e5);
+}
+function Ze(e5) {
+  return M(m(e5));
+}
+function M(e5) {
+  const n4 = getTimeZoneEssence(e5);
+  return "number" == typeof n4 ? Se(n4) : n4 ? ((e6) => {
+    if (Oi.test(e6)) {
+      throw new RangeError(F(e6));
+    }
+    if (bi.test(e6)) {
+      throw new RangeError(po);
+    }
+    return e6.toLowerCase().split("/").map(((e7, n5) => (e7.length <= 3 || /\d/.test(e7)) && !/etc|yap/.test(e7) ? e7.toUpperCase() : e7.replace(/baja|dumont|[a-z]+/g, ((e8, t5) => e8.length <= 2 && !n5 || "in" === e8 || "chat" === e8 ? e8.toUpperCase() : e8.length > 2 || !t5 ? capitalize(e8).replace(/island|noronha|murdo|rivadavia|urville/, capitalize) : e8)))).join("/");
+  })(e5) : si;
+}
+function getTimeZoneAtomic(e5) {
+  const n4 = getTimeZoneEssence(e5);
+  return "number" == typeof n4 ? n4 : n4 ? n4.resolvedOptions().timeZone : si;
+}
+function getTimeZoneEssence(e5) {
+  const n4 = parseOffsetNanoMaybe(e5 = e5.toUpperCase(), 1);
+  return void 0 !== n4 ? n4 : e5 !== si ? wi(e5) : void 0;
+}
+function Ke(e5, n4) {
+  return compareBigNanos(e5.epochNanoseconds, n4.epochNanoseconds);
+}
+function Be(e5, n4) {
+  return compareBigNanos(e5.epochNanoseconds, n4.epochNanoseconds);
+}
+function K(e5, n4, t5, o5, r5, i5) {
+  const a5 = e5(normalizeOptions(i5).relativeTo), s5 = Math.max(getMaxDurationUnit(o5), getMaxDurationUnit(r5));
+  if (allPropsEqual(p, o5, r5)) {
+    return 0;
+  }
+  if (isUniformUnit(s5, a5)) {
+    return compareBigNanos(durationFieldsToBigNano(o5), durationFieldsToBigNano(r5));
+  }
+  if (!a5) {
+    throw new RangeError(yo);
+  }
+  const [c5, u6, f6] = createMarkerSystem(n4, t5, a5), l5 = createMarkerToEpochNano(f6), d6 = createMoveMarker(f6);
+  return compareBigNanos(l5(d6(u6, c5, o5)), l5(d6(u6, c5, r5)));
+}
+function Yt(e5, n4) {
+  return te(e5, n4) || Dt(e5, n4);
+}
+function te(e5, n4) {
+  return compareNumbers(isoToEpochMilli(e5), isoToEpochMilli(n4));
+}
+function Dt(e5, n4) {
+  return compareNumbers(isoTimeFieldsToNano(e5), isoTimeFieldsToNano(n4));
+}
+function Ve(e5, n4) {
+  return !Ke(e5, n4);
+}
+function Ce(e5, n4) {
+  return !Be(e5, n4) && !!isTimeZoneIdsEqual(e5.timeZone, n4.timeZone) && e5.calendar === n4.calendar;
+}
+function Ct(e5, n4) {
+  return !Yt(e5, n4) && e5.calendar === n4.calendar;
+}
+function re(e5, n4) {
+  return !te(e5, n4) && e5.calendar === n4.calendar;
+}
+function $t(e5, n4) {
+  return !te(e5, n4) && e5.calendar === n4.calendar;
+}
+function Lt(e5, n4) {
+  return !te(e5, n4) && e5.calendar === n4.calendar;
+}
+function st(e5, n4) {
+  return !Dt(e5, n4);
+}
+function isTimeZoneIdsEqual(e5, n4) {
+  if (e5 === n4) {
+    return 1;
+  }
+  try {
+    return getTimeZoneAtomic(e5) === getTimeZoneAtomic(n4);
+  } catch (e6) {
+  }
+}
+function Ee(e5, n4, t5, o5) {
+  const r5 = refineDiffOptions(e5, o5, 3, 5), i5 = diffEpochNanos(n4.epochNanoseconds, t5.epochNanoseconds, ...r5);
+  return Oe(e5 ? negateDurationFields(i5) : i5);
+}
+function we(e5, n4, t5, o5, r5, i5) {
+  const a5 = getCommonCalendarId(o5.calendar, r5.calendar), [s5, c5, u6, f6] = refineDiffOptions(t5, i5, 5), l5 = o5.epochNanoseconds, d6 = r5.epochNanoseconds, m5 = compareBigNanos(d6, l5);
+  let p6;
+  if (m5) {
+    if (s5 < 6) {
+      p6 = diffEpochNanos(l5, d6, s5, c5, u6, f6);
+    } else {
+      const t6 = n4(((e6, n5) => {
+        if (!isTimeZoneIdsEqual(e6, n5)) {
+          throw new RangeError(mo);
+        }
+        return e6;
+      })(o5.timeZone, r5.timeZone)), l6 = e5(a5);
+      p6 = diffZonedEpochsBig(l6, t6, o5, r5, m5, s5, i5), p6 = roundRelativeDuration(p6, d6, s5, c5, u6, f6, l6, o5, extractEpochNano, Pt(moveZonedEpochs, t6));
+    }
+  } else {
+    p6 = pr;
+  }
+  return Oe(t5 ? negateDurationFields(p6) : p6);
+}
+function It(e5, n4, t5, o5, r5) {
+  const i5 = getCommonCalendarId(t5.calendar, o5.calendar), [a5, s5, c5, u6] = refineDiffOptions(n4, r5, 6), f6 = isoToEpochNano(t5), l5 = isoToEpochNano(o5), d6 = compareBigNanos(l5, f6);
+  let m5;
+  if (d6) {
+    if (a5 <= 6) {
+      m5 = diffEpochNanos(f6, l5, a5, s5, c5, u6);
+    } else {
+      const n5 = e5(i5);
+      m5 = diffDateTimesBig(n5, t5, o5, d6, a5, r5), m5 = roundRelativeDuration(m5, l5, a5, s5, c5, u6, n5, t5, isoToEpochNano, moveDateTime);
+    }
+  } else {
+    m5 = pr;
+  }
+  return Oe(n4 ? negateDurationFields(m5) : m5);
+}
+function oe(e5, n4, t5, o5, r5) {
+  const i5 = getCommonCalendarId(t5.calendar, o5.calendar);
+  return diffDateLike(n4, (() => e5(i5)), t5, o5, ...refineDiffOptions(n4, r5, 6, 9, 6));
+}
+function zt(e5, n4, t5, o5, r5) {
+  const i5 = getCommonCalendarId(t5.calendar, o5.calendar), a5 = refineDiffOptions(n4, r5, 9, 9, 8), s5 = e5(i5), c5 = moveToDayOfMonthUnsafe(s5, t5), u6 = moveToDayOfMonthUnsafe(s5, o5);
+  return c5.isoYear === u6.isoYear && c5.isoMonth === u6.isoMonth && c5.isoDay === u6.isoDay ? Oe(pr) : diffDateLike(n4, (() => s5), checkIsoDateInBounds(c5), checkIsoDateInBounds(u6), ...a5, 8);
+}
+function diffDateLike(e5, n4, t5, o5, r5, i5, a5, s5, c5 = 6) {
+  const u6 = isoToEpochNano(t5), f6 = isoToEpochNano(o5);
+  if (void 0 === u6 || void 0 === f6) {
+    throw new RangeError(Io);
+  }
+  let l5;
+  if (compareBigNanos(f6, u6)) {
+    if (6 === r5) {
+      l5 = diffEpochNanos(u6, f6, r5, i5, a5, s5);
+    } else {
+      const e6 = n4();
+      l5 = e6.N(t5, o5, r5), i5 === c5 && 1 === a5 || (l5 = roundRelativeDuration(l5, f6, r5, i5, a5, s5, e6, t5, isoToEpochNano, moveDate));
+    }
+  } else {
+    l5 = pr;
+  }
+  return Oe(e5 ? negateDurationFields(l5) : l5);
+}
+function it(e5, n4, t5, o5) {
+  const [r5, i5, a5, s5] = refineDiffOptions(e5, o5, 5, 5), c5 = roundByInc(diffTimes(n4, t5), computeNanoInc(i5, a5), s5), u6 = {
+    ...pr,
+    ...nanoToDurationTimeFields(c5, r5)
+  };
+  return Oe(e5 ? negateDurationFields(u6) : u6);
+}
+function diffZonedEpochsExact(e5, n4, t5, o5, r5, i5) {
+  const a5 = compareBigNanos(o5.epochNanoseconds, t5.epochNanoseconds);
+  return a5 ? r5 < 6 ? diffEpochNanosExact(t5.epochNanoseconds, o5.epochNanoseconds, r5) : diffZonedEpochsBig(n4, e5, t5, o5, a5, r5, i5) : pr;
+}
+function diffDateTimesExact(e5, n4, t5, o5, r5) {
+  const i5 = isoToEpochNano(n4), a5 = isoToEpochNano(t5), s5 = compareBigNanos(a5, i5);
+  return s5 ? o5 <= 6 ? diffEpochNanosExact(i5, a5, o5) : diffDateTimesBig(e5, n4, t5, s5, o5, r5) : pr;
+}
+function diffZonedEpochsBig(e5, n4, t5, o5, r5, i5, a5) {
+  const [s5, c5, u6] = ((e6, n5, t6, o6) => {
+    function updateMid() {
+      return f7 = {
+        ...moveByDays(a6, c6++ * -o6),
+        ...i6
+      }, l6 = getSingleInstantFor(e6, f7), compareBigNanos(s6, l6) === -o6;
+    }
+    const r6 = he(n5, e6), i6 = nn(w, r6), a6 = he(t6, e6), s6 = t6.epochNanoseconds;
+    let c6 = 0;
+    const u7 = diffTimes(r6, a6);
+    let f7, l6;
+    if (Math.sign(u7) === -o6 && c6++, updateMid() && (-1 === o6 || updateMid())) {
+      throw new RangeError(fo);
+    }
+    const d6 = bigNanoToNumber(diffBigNanos(l6, s6));
+    return [r6, f7, d6];
+  })(n4, t5, o5, r5);
+  var f6, l5;
+  return {
+    ...6 === i5 ? (f6 = s5, l5 = c5, {
+      ...pr,
+      days: diffDays(f6, l5)
+    }) : e5.N(s5, c5, i5, a5),
+    ...nanoToDurationTimeFields(u6)
+  };
+}
+function diffDateTimesBig(e5, n4, t5, o5, r5, i5) {
+  const [a5, s5, c5] = ((e6, n5, t6) => {
+    let o6 = n5, r6 = diffTimes(e6, n5);
+    return Math.sign(r6) === -t6 && (o6 = moveByDays(n5, -t6), r6 += Uo * t6), [e6, o6, r6];
+  })(n4, t5, o5);
+  return {
+    ...e5.N(a5, s5, r5, i5),
+    ...nanoToDurationTimeFields(c5)
+  };
+}
+function diffEpochNanos(e5, n4, t5, o5, r5, i5) {
+  return {
+    ...pr,
+    ...nanoToDurationDayTimeFields(roundBigNano(diffBigNanos(e5, n4), o5, r5, i5), t5)
+  };
+}
+function diffEpochNanosExact(e5, n4, t5) {
+  return {
+    ...pr,
+    ...nanoToDurationDayTimeFields(diffBigNanos(e5, n4), t5)
+  };
+}
+function diffDays(e5, n4) {
+  return diffEpochMilliByDay(isoToEpochMilli(e5), isoToEpochMilli(n4));
+}
+function diffEpochMilliByDay(e5, n4) {
+  return Math.trunc((n4 - e5) / ko);
+}
+function diffTimes(e5, n4) {
+  return isoTimeFieldsToNano(n4) - isoTimeFieldsToNano(e5);
+}
+function getCommonCalendarId(e5, n4) {
+  if (e5 !== n4) {
+    throw new RangeError(lo);
+  }
+  return e5;
+}
+function computeNativeWeekOfYear(e5) {
+  return this.m(e5)[0];
+}
+function computeNativeYearOfWeek(e5) {
+  return this.m(e5)[1];
+}
+function computeNativeDayOfYear(e5) {
+  const [n4] = this.v(e5);
+  return diffEpochMilliByDay(this.p(n4), isoToEpochMilli(e5)) + 1;
+}
+function parseMonthCode(e5) {
+  const n4 = Bi.exec(e5);
+  if (!n4) {
+    throw new RangeError(invalidMonthCode(e5));
+  }
+  return [parseInt(n4[1]), Boolean(n4[2])];
+}
+function formatMonthCode(e5, n4) {
+  return "M" + bo(e5) + (n4 ? "L" : "");
+}
+function monthCodeNumberToMonth(e5, n4, t5) {
+  return e5 + (n4 || t5 && e5 >= t5 ? 1 : 0);
+}
+function monthToMonthCodeNumber(e5, n4) {
+  return e5 - (n4 && e5 >= n4 ? 1 : 0);
+}
+function eraYearToYear(e5, n4) {
+  return (n4 + e5) * (Math.sign(n4) || 1) || 0;
+}
+function getCalendarEraOrigins(e5) {
+  return ir[getCalendarIdBase(e5)];
+}
+function getCalendarLeapMonthMeta(e5) {
+  return sr[getCalendarIdBase(e5)];
+}
+function getCalendarIdBase(e5) {
+  return computeCalendarIdBase(e5.id || l);
+}
+function createIntlCalendar(e5) {
+  function epochMilliToIntlFields(e6) {
+    return ((e7, n5) => ({
+      ...parseIntlYear(e7, n5),
+      o: e7.month,
+      day: parseInt(e7.day)
+    }))(hashIntlFormatParts(n4, e6), t5);
+  }
+  const n4 = Ci(e5), t5 = computeCalendarIdBase(e5);
+  return {
+    id: e5,
+    h: createIntlFieldCache(epochMilliToIntlFields),
+    l: createIntlYearDataCache(epochMilliToIntlFields)
+  };
+}
+function createIntlFieldCache(e5) {
+  return on(((n4) => {
+    const t5 = isoToEpochMilli(n4);
+    return e5(t5);
+  }), WeakMap);
+}
+function createIntlYearDataCache(e5) {
+  const n4 = e5(0).year - Or;
+  return on(((t5) => {
+    let o5, r5 = isoArgsToEpochMilli(t5 - n4), i5 = 0;
+    const a5 = [], s5 = [];
+    do {
+      r5 += 400 * ko;
+    } while ((o5 = e5(r5)).year <= t5);
+    do {
+      if (r5 += (1 - o5.day) * ko, o5.year === t5 && (a5.push(r5), s5.push(o5.o)), r5 -= ko, ++i5 > 100 || r5 < -Pr) {
+        throw new RangeError(fo);
+      }
+    } while ((o5 = e5(r5)).year >= t5);
+    return {
+      i: a5.reverse(),
+      u: Fo(s5.reverse())
+    };
+  }));
+}
+function parseIntlYear(e5, n4) {
+  let t5, o5, r5 = parseIntlPartsYear(e5);
+  if (e5.era) {
+    const i5 = ir[n4], a5 = ar[n4] || {};
+    void 0 !== i5 && (t5 = "islamic" === n4 ? "ah" : e5.era.normalize("NFD").toLowerCase().replace(/[^a-z0-9]/g, ""), "bc" === t5 || "b" === t5 ? t5 = "bce" : "ad" === t5 || "a" === t5 ? t5 = "ce" : "beforeroc" === t5 && (t5 = "broc"), t5 = a5[t5] || t5, o5 = r5, r5 = eraYearToYear(o5, i5[t5] || 0));
+  }
+  return {
+    era: t5,
+    eraYear: o5,
+    year: r5
+  };
+}
+function parseIntlPartsYear(e5) {
+  return parseInt(e5.relatedYear || e5.year);
+}
+function computeIntlDateParts(e5) {
+  const { year: n4, o: t5, day: o5 } = this.h(e5), { u: r5 } = this.l(n4);
+  return [n4, r5[t5] + 1, o5];
+}
+function computeIntlEpochMilli(e5, n4 = 1, t5 = 1) {
+  return this.l(e5).i[n4 - 1] + (t5 - 1) * ko;
+}
+function computeIntlMonthCodeParts(e5, n4) {
+  const t5 = computeIntlLeapMonth.call(this, e5);
+  return [monthToMonthCodeNumber(n4, t5), t5 === n4];
+}
+function computeIntlLeapMonth(e5) {
+  const n4 = queryMonthStrings(this, e5), t5 = queryMonthStrings(this, e5 - 1), o5 = n4.length;
+  if (o5 > t5.length) {
+    const e6 = getCalendarLeapMonthMeta(this);
+    if (e6 < 0) {
+      return -e6;
+    }
+    for (let e7 = 0; e7 < o5; e7++) {
+      if (n4[e7] !== t5[e7]) {
+        return e7 + 1;
+      }
+    }
+  }
+}
+function computeIntlDaysInYear(e5) {
+  return diffEpochMilliByDay(computeIntlEpochMilli.call(this, e5), computeIntlEpochMilli.call(this, e5 + 1));
+}
+function computeIntlDaysInMonth(e5, n4) {
+  const { i: t5 } = this.l(e5);
+  let o5 = n4 + 1, r5 = t5;
+  return o5 > t5.length && (o5 = 1, r5 = this.l(e5 + 1).i), diffEpochMilliByDay(t5[n4 - 1], r5[o5 - 1]);
+}
+function computeIntlMonthsInYear(e5) {
+  return this.l(e5).i.length;
+}
+function computeIntlEraParts(e5) {
+  const n4 = this.h(e5);
+  return [n4.era, n4.eraYear];
+}
+function queryMonthStrings(e5, n4) {
+  return Object.keys(e5.l(n4).u);
+}
+function Mt(e5) {
+  return u(m(e5));
+}
+function u(e5) {
+  if ((e5 = e5.toLowerCase()) !== l && e5 !== or) {
+    const n4 = Ci(e5).resolvedOptions().calendar;
+    if (computeCalendarIdBase(e5) !== computeCalendarIdBase(n4)) {
+      throw new RangeError(c(e5));
+    }
+    return n4;
+  }
+  return e5;
+}
+function computeCalendarIdBase(e5) {
+  return "islamicc" === e5 && (e5 = "islamic"), e5.split("-")[0];
+}
+function createNativeOpsCreator(e5, n4) {
+  return (t5) => t5 === l ? e5 : t5 === or || t5 === rr ? Object.assign(Object.create(e5), {
+    id: t5
+  }) : Object.assign(Object.create(n4), ki(t5));
+}
+function $(e5, n4, t5, o5) {
+  const r5 = refineCalendarFields(t5, o5, Xo, [], xo);
+  if (void 0 !== r5.timeZone) {
+    const o6 = t5.F(r5), i5 = refineTimeBag(r5), a5 = e5(r5.timeZone);
+    return {
+      epochNanoseconds: getMatchingInstantFor(n4(a5), {
+        ...o6,
+        ...i5
+      }, void 0 !== r5.offset ? parseOffsetNano(r5.offset) : void 0),
+      timeZone: a5
+    };
+  }
+  return {
+    ...t5.F(r5),
+    ...Nt
+  };
+}
+function Ne(e5, n4, t5, o5, r5, i5) {
+  const a5 = refineCalendarFields(t5, r5, Xo, jo, xo), s5 = e5(a5.timeZone), [c5, u6, f6] = je(i5), l5 = t5.F(a5, fabricateOverflowOptions(c5)), d6 = refineTimeBag(a5, c5);
+  return _e(getMatchingInstantFor(n4(s5), {
+    ...l5,
+    ...d6
+  }, void 0 !== a5.offset ? parseOffsetNano(a5.offset) : void 0, u6, f6), s5, o5);
+}
+function At(e5, n4, t5) {
+  const o5 = refineCalendarFields(e5, n4, Xo, [], O), r5 = mt(t5);
+  return jt(checkIsoDateTimeInBounds({
+    ...e5.F(o5, fabricateOverflowOptions(r5)),
+    ...refineTimeBag(o5, r5)
+  }));
+}
+function me(e5, n4, t5, o5 = []) {
+  const r5 = refineCalendarFields(e5, n4, Xo, o5);
+  return e5.F(r5, t5);
+}
+function Xt(e5, n4, t5, o5) {
+  const r5 = refineCalendarFields(e5, n4, Ko, o5);
+  return e5.K(r5, t5);
+}
+function Rt(e5, n4, t5, o5) {
+  const r5 = refineCalendarFields(e5, t5, Xo, Jo);
+  return n4 && void 0 !== r5.month && void 0 === r5.monthCode && void 0 === r5.year && (r5.year = Br), e5._(r5, o5);
+}
+function Tt(e5, n4) {
+  return St(refineTimeBag(refineFields(e5, qo, [], 1), mt(n4)));
+}
+function q(e5) {
+  const n4 = refineFields(e5, ur);
+  return Oe(checkDurationUnits({
+    ...pr,
+    ...n4
+  }));
+}
+function refineCalendarFields(e5, n4, t5, o5 = [], r5 = []) {
+  return refineFields(n4, [...e5.fields(t5), ...r5].sort(), o5);
+}
+function refineFields(e5, n4, t5, o5 = !t5) {
+  const r5 = {};
+  let i5, a5 = 0;
+  for (const o6 of n4) {
+    if (o6 === i5) {
+      throw new RangeError(duplicateFields(o6));
+    }
+    if ("constructor" === o6 || "__proto__" === o6) {
+      throw new RangeError(forbiddenField(o6));
+    }
+    let n5 = e5[o6];
+    if (void 0 !== n5) {
+      a5 = 1, Li[o6] && (n5 = Li[o6](n5, o6)), r5[o6] = n5;
+    } else if (t5) {
+      if (t5.includes(o6)) {
+        throw new TypeError(missingField(o6));
+      }
+      r5[o6] = tr[o6];
+    }
+    i5 = o6;
+  }
+  if (o5 && !a5) {
+    throw new TypeError(noValidFields(n4));
+  }
+  return r5;
+}
+function refineTimeBag(e5, n4) {
+  return constrainIsoTimeFields(xi({
+    ...tr,
+    ...e5
+  }), n4);
+}
+function De(e5, n4, t5, o5, r5) {
+  const { calendar: i5, timeZone: a5 } = t5, s5 = e5(i5), c5 = n4(a5), u6 = [...s5.fields(Xo), ...Lo].sort(), f6 = ((e6) => {
+    const n5 = he(e6, L), t6 = Se(n5.offsetNanoseconds), o6 = ji(e6.calendar), [r6, i6, a6] = o6.v(n5), [s6, c6] = o6.q(r6, i6), u7 = formatMonthCode(s6, c6);
+    return {
+      ...$i(n5),
+      year: r6,
+      monthCode: u7,
+      day: a6,
+      offset: t6
+    };
+  })(t5), l5 = refineFields(o5, u6), d6 = s5.k(f6, l5), m5 = {
+    ...f6,
+    ...l5
+  }, [p6, h6, g7] = je(r5, 2);
+  return _e(getMatchingInstantFor(c5, {
+    ...s5.F(d6, fabricateOverflowOptions(p6)),
+    ...constrainIsoTimeFields(xi(m5), p6)
+  }, parseOffsetNano(m5.offset), h6, g7), a5, i5);
+}
+function gt(e5, n4, t5, o5) {
+  const r5 = e5(n4.calendar), i5 = [...r5.fields(Xo), ...O].sort(), a5 = {
+    ...computeDateEssentials(s5 = n4),
+    hour: s5.isoHour,
+    minute: s5.isoMinute,
+    second: s5.isoSecond,
+    millisecond: s5.isoMillisecond,
+    microsecond: s5.isoMicrosecond,
+    nanosecond: s5.isoNanosecond
+  };
+  var s5;
+  const c5 = refineFields(t5, i5), u6 = mt(o5), f6 = r5.k(a5, c5), l5 = {
+    ...a5,
+    ...c5
+  };
+  return jt(checkIsoDateTimeInBounds({
+    ...r5.F(f6, fabricateOverflowOptions(u6)),
+    ...constrainIsoTimeFields(xi(l5), u6)
+  }));
+}
+function ee(e5, n4, t5, o5) {
+  const r5 = e5(n4.calendar), i5 = r5.fields(Xo).sort(), a5 = computeDateEssentials(n4), s5 = refineFields(t5, i5), c5 = r5.k(a5, s5);
+  return r5.F(c5, o5);
+}
+function Wt(e5, n4, t5, o5) {
+  const r5 = e5(n4.calendar), i5 = r5.fields(Ko).sort(), a5 = ((e6) => {
+    const n5 = ji(e6.calendar), [t6, o6] = n5.v(e6), [r6, i6] = n5.q(t6, o6);
+    return {
+      year: t6,
+      monthCode: formatMonthCode(r6, i6)
+    };
+  })(n4), s5 = refineFields(t5, i5), c5 = r5.k(a5, s5);
+  return r5.K(c5, o5);
+}
+function Et(e5, n4, t5, o5) {
+  const r5 = e5(n4.calendar), i5 = r5.fields(Xo).sort(), a5 = ((e6) => {
+    const n5 = ji(e6.calendar), [t6, o6, r6] = n5.v(e6), [i6, a6] = n5.q(t6, o6);
+    return {
+      monthCode: formatMonthCode(i6, a6),
+      day: r6
+    };
+  })(n4), s5 = refineFields(t5, i5), c5 = r5.k(a5, s5);
+  return r5._(c5, o5);
+}
+function rt(e5, n4, t5) {
+  return St(((e6, n5, t6) => refineTimeBag({
+    ...nn(qo, e6),
+    ...refineFields(n5, qo)
+  }, mt(t6)))(e5, n4, t5));
+}
+function A(e5, n4) {
+  return Oe((t5 = e5, o5 = n4, checkDurationUnits({
+    ...t5,
+    ...refineFields(o5, ur)
+  })));
+  var t5, o5;
+}
+function convertToIso(e5, n4, t5, o5, r5) {
+  n4 = nn(t5 = e5.fields(t5), n4), o5 = refineFields(o5, r5 = e5.fields(r5), []);
+  let i5 = e5.k(n4, o5);
+  return i5 = refineFields(i5, [...t5, ...r5].sort(), []), e5.F(i5);
+}
+function refineYear(e5, n4) {
+  const t5 = getCalendarEraOrigins(e5), o5 = ar[e5.id || ""] || {};
+  let { era: r5, eraYear: i5, year: a5 } = n4;
+  if (void 0 !== r5 || void 0 !== i5) {
+    if (void 0 === r5 || void 0 === i5) {
+      throw new TypeError(io);
+    }
+    if (!t5) {
+      throw new RangeError(ro);
+    }
+    const e6 = t5[o5[r5] || r5];
+    if (void 0 === e6) {
+      throw new RangeError(invalidEra(r5));
+    }
+    const n5 = eraYearToYear(i5, e6);
+    if (void 0 !== a5 && a5 !== n5) {
+      throw new RangeError(ao);
+    }
+    a5 = n5;
+  } else if (void 0 === a5) {
+    throw new TypeError(missingYear(t5));
+  }
+  return a5;
+}
+function refineMonth(e5, n4, t5, o5) {
+  let { month: r5, monthCode: i5 } = n4;
+  if (void 0 !== i5) {
+    const n5 = ((e6, n6, t6, o6) => {
+      const r6 = e6.L(t6), [i6, a5] = parseMonthCode(n6);
+      let s5 = monthCodeNumberToMonth(i6, a5, r6);
+      if (a5) {
+        const n7 = getCalendarLeapMonthMeta(e6);
+        if (void 0 === n7) {
+          throw new RangeError(uo);
+        }
+        if (n7 > 0) {
+          if (s5 > n7) {
+            throw new RangeError(uo);
+          }
+          if (void 0 === r6) {
+            if (1 === o6) {
+              throw new RangeError(uo);
+            }
+            s5--;
+          }
+        } else {
+          if (s5 !== -n7) {
+            throw new RangeError(uo);
+          }
+          if (void 0 === r6 && 1 === o6) {
+            throw new RangeError(uo);
+          }
+        }
+      }
+      return s5;
+    })(e5, i5, t5, o5);
+    if (void 0 !== r5 && r5 !== n5) {
+      throw new RangeError(so);
+    }
+    r5 = n5, o5 = 1;
+  } else if (void 0 === r5) {
+    throw new TypeError(co);
+  }
+  return clampEntity("month", r5, 1, e5.B(t5), o5);
+}
+function refineDay(e5, n4, t5, o5, r5) {
+  return clampProp(n4, "day", 1, e5.U(o5, t5), r5);
+}
+function spliceFields(e5, n4, t5, o5) {
+  let r5 = 0;
+  const i5 = [];
+  for (const e6 of t5) {
+    void 0 !== n4[e6] ? r5 = 1 : i5.push(e6);
+  }
+  if (Object.assign(e5, n4), r5) {
+    for (const n5 of o5 || i5) {
+      delete e5[n5];
+    }
+  }
+}
+function computeDateEssentials(e5) {
+  const n4 = ji(e5.calendar), [t5, o5, r5] = n4.v(e5), [i5, a5] = n4.q(t5, o5);
+  return {
+    year: t5,
+    monthCode: formatMonthCode(i5, a5),
+    day: r5
+  };
+}
+function qe(e5) {
+  return xe(checkEpochNanoInBounds(bigIntToBigNano(toBigInt(e5))));
+}
+function ye(e5, n4, t5, o5, r5 = l) {
+  return _e(checkEpochNanoInBounds(bigIntToBigNano(toBigInt(t5))), n4(o5), e5(r5));
+}
+function Zt(n4, t5, o5, r5, i5 = 0, a5 = 0, s5 = 0, c5 = 0, u6 = 0, f6 = 0, d6 = l) {
+  return jt(checkIsoDateTimeInBounds(checkIsoDateTimeFields(e(toInteger, zipProps(Tr, [t5, o5, r5, i5, a5, s5, c5, u6, f6])))), n4(d6));
+}
+function ue(n4, t5, o5, r5, i5 = l) {
+  return W(checkIsoDateInBounds(checkIsoDateFields(e(toInteger, {
+    isoYear: t5,
+    isoMonth: o5,
+    isoDay: r5
+  }))), n4(i5));
+}
+function Qt(e5, n4, t5, o5 = l, r5 = 1) {
+  const i5 = toInteger(n4), a5 = toInteger(t5), s5 = e5(o5);
+  return createPlainYearMonthSlots(checkIsoYearMonthInBounds(checkIsoDateFields({
+    isoYear: i5,
+    isoMonth: a5,
+    isoDay: toInteger(r5)
+  })), s5);
+}
+function kt(e5, n4, t5, o5 = l, r5 = Br) {
+  const i5 = toInteger(n4), a5 = toInteger(t5), s5 = e5(o5);
+  return createPlainMonthDaySlots(checkIsoDateInBounds(checkIsoDateFields({
+    isoYear: toInteger(r5),
+    isoMonth: i5,
+    isoDay: a5
+  })), s5);
+}
+function ut(n4 = 0, t5 = 0, o5 = 0, r5 = 0, i5 = 0, a5 = 0) {
+  return St(constrainIsoTimeFields(e(toInteger, zipProps(w, [n4, t5, o5, r5, i5, a5])), 1));
+}
+function j(n4 = 0, t5 = 0, o5 = 0, r5 = 0, i5 = 0, a5 = 0, s5 = 0, c5 = 0, u6 = 0, f6 = 0) {
+  return Oe(checkDurationUnits(e(toStrictInteger, zipProps(p, [n4, t5, o5, r5, i5, a5, s5, c5, u6, f6]))));
+}
+function Je(e5, n4, t5 = l) {
+  return _e(e5.epochNanoseconds, n4, t5);
+}
+function be(e5) {
+  return xe(e5.epochNanoseconds);
+}
+function yt(e5, n4) {
+  return jt(he(n4, e5));
+}
+function fe(e5, n4) {
+  return W(he(n4, e5));
+}
+function dt(e5, n4) {
+  return St(he(n4, e5));
+}
+function bt(e5, n4, t5, o5) {
+  const r5 = ((e6, n5, t6, o6) => {
+    const r6 = ((e7) => ei(normalizeOptions(e7)))(o6);
+    return getSingleInstantFor(e6(n5), t6, r6);
+  })(e5, t5, n4, o5);
+  return _e(checkEpochNanoInBounds(r5), t5, n4.calendar);
+}
+function ae(e5, n4, t5, o5, r5) {
+  const i5 = e5(r5.timeZone), a5 = r5.plainTime, s5 = void 0 !== a5 ? n4(a5) : void 0, c5 = t5(i5);
+  let u6;
+  return u6 = s5 ? getSingleInstantFor(c5, {
+    ...o5,
+    ...s5
+  }) : getStartOfDayInstantFor(c5, {
+    ...o5,
+    ...Nt
+  }), _e(u6, i5, o5.calendar);
+}
+function ie(e5, n4 = Nt) {
+  return jt(checkIsoDateTimeInBounds({
+    ...e5,
+    ...n4
+  }));
+}
+function le(e5, n4, t5) {
+  return ((e6, n5) => {
+    const t6 = refineCalendarFields(e6, n5, Qo);
+    return e6.K(t6, void 0);
+  })(e5(n4.calendar), t5);
+}
+function se(e5, n4, t5) {
+  return ((e6, n5) => {
+    const t6 = refineCalendarFields(e6, n5, nr);
+    return e6._(t6);
+  })(e5(n4.calendar), t5);
+}
+function Ht(e5, n4, t5, o5) {
+  return ((e6, n5, t6) => convertToIso(e6, n5, Qo, requireObjectLike(t6), Jo))(e5(n4.calendar), t5, o5);
+}
+function Vt(e5, n4, t5, o5) {
+  return ((e6, n5, t6) => convertToIso(e6, n5, nr, requireObjectLike(t6), Go))(e5(n4.calendar), t5, o5);
+}
+function $e(e5) {
+  return xe(checkEpochNanoInBounds(Ge(toStrictInteger(e5), Qe)));
+}
+function He(e5) {
+  return xe(checkEpochNanoInBounds(bigIntToBigNano(toBigInt(e5))));
+}
+function createOptionsTransformer(e5, n4, t5) {
+  const o5 = new Set(t5);
+  return (r5, i5) => {
+    const a5 = t5 && hasAnyPropsByName(r5, t5);
+    if (!hasAnyPropsByName(r5 = ((e6, n5) => {
+      const t6 = {};
+      for (const o6 in n5) {
+        e6.has(o6) || (t6[o6] = n5[o6]);
+      }
+      return t6;
+    })(o5, r5), e5)) {
+      if (i5 && a5) {
+        throw new TypeError("Invalid formatting options");
+      }
+      r5 = {
+        ...n4,
+        ...r5
+      };
+    }
+    return t5 && (r5.timeZone = si, ["full", "long"].includes(r5.J) && (r5.J = "medium")), r5;
+  };
+}
+function Q(e5, n4 = an, t5 = 0) {
+  const [o5, , , r5] = e5;
+  return (i5, a5 = Na, ...s5) => {
+    const c5 = n4(r5 && r5(...s5), i5, a5, o5, t5), u6 = c5.resolvedOptions();
+    return [c5, ...toEpochMillis(e5, u6, s5)];
+  };
+}
+function an(e5, n4, t5, o5, r5) {
+  if (t5 = o5(t5, r5), e5) {
+    if (void 0 !== t5.timeZone) {
+      throw new TypeError(So);
+    }
+    t5.timeZone = e5;
+  }
+  return new en(n4, t5);
+}
+function toEpochMillis(e5, n4, t5) {
+  const [, o5, r5] = e5;
+  return t5.map(((e6) => (e6.calendar && ((e7, n5, t6) => {
+    if ((t6 || e7 !== l) && e7 !== n5) {
+      throw new RangeError(lo);
+    }
+  })(e6.calendar, n4.calendar, r5), o5(e6, n4))));
+}
+function ge(e5, n4, t5) {
+  const o5 = n4.timeZone, r5 = e5(o5), i5 = {
+    ...he(n4, r5),
+    ...t5 || Nt
+  };
+  let a5;
+  return a5 = t5 ? getMatchingInstantFor(r5, i5, i5.offsetNanoseconds, 2) : getStartOfDayInstantFor(r5, i5), _e(a5, o5, n4.calendar);
+}
+function Ot(e5, n4 = Nt) {
+  return jt(checkIsoDateTimeInBounds({
+    ...e5,
+    ...n4
+  }));
+}
+function pt(e5, n4) {
+  return {
+    ...e5,
+    calendar: n4
+  };
+}
+function Pe(e5, n4) {
+  return {
+    ...e5,
+    timeZone: n4
+  };
+}
+function tn(e5) {
+  const n4 = Xe();
+  return epochNanoToIso(n4, e5.R(n4));
+}
+function Xe() {
+  return Ge(Date.now(), Qe);
+}
+function Ue() {
+  return va || (va = new en().resolvedOptions().timeZone);
+}
+var expectedInteger = (e5, n4) => `Non-integer ${e5}: ${n4}`;
+var expectedPositive = (e5, n4) => `Non-positive ${e5}: ${n4}`;
+var expectedFinite = (e5, n4) => `Non-finite ${e5}: ${n4}`;
+var forbiddenBigIntToNumber = (e5) => `Cannot convert bigint to ${e5}`;
+var invalidBigInt = (e5) => `Invalid bigint: ${e5}`;
+var no = "Cannot convert Symbol to string";
+var oo = "Invalid object";
+var numberOutOfRange = (e5, n4, t5, o5, r5) => r5 ? numberOutOfRange(e5, r5[n4], r5[t5], r5[o5]) : invalidEntity(e5, n4) + `; must be between ${t5}-${o5}`;
+var invalidEntity = (e5, n4) => `Invalid ${e5}: ${n4}`;
+var missingField = (e5) => `Missing ${e5}`;
+var forbiddenField = (e5) => `Invalid field ${e5}`;
+var duplicateFields = (e5) => `Duplicate field ${e5}`;
+var noValidFields = (e5) => "No valid fields: " + e5.join();
+var i = "Invalid bag";
+var invalidChoice = (e5, n4, t5) => invalidEntity(e5, n4) + "; must be " + Object.keys(t5).join();
+var b = "Cannot use valueOf";
+var a = "Invalid calling context";
+var ro = "Forbidden era/eraYear";
+var io = "Mismatching era/eraYear";
+var ao = "Mismatching year/eraYear";
+var invalidEra = (e5) => `Invalid era: ${e5}`;
+var missingYear = (e5) => "Missing year" + (e5 ? "/era/eraYear" : "");
+var invalidMonthCode = (e5) => `Invalid monthCode: ${e5}`;
+var so = "Mismatching month/monthCode";
+var co = "Missing month/monthCode";
+var uo = "Invalid leap month";
+var fo = "Invalid protocol results";
+var c = (e5) => invalidEntity("Calendar", e5);
+var lo = "Mismatching Calendars";
+var F = (e5) => invalidEntity("TimeZone", e5);
+var mo = "Mismatching TimeZones";
+var po = "Forbidden ICU TimeZone";
+var ho = "Out-of-bounds offset";
+var go = "Out-of-bounds TimeZone gap";
+var Do = "Invalid TimeZone offset";
+var To = "Ambiguous offset";
+var Io = "Out-of-bounds date";
+var Mo = "Out-of-bounds duration";
+var No = "Cannot mix duration signs";
+var yo = "Missing relativeTo";
+var vo = "Cannot use large units";
+var Po = "Required smallestUnit or largestUnit";
+var Eo = "smallestUnit > largestUnit";
+var failedParse = (e5) => `Cannot parse: ${e5}`;
+var invalidSubstring = (e5) => `Invalid substring: ${e5}`;
+var rn = (e5) => `Cannot format ${e5}`;
+var ln = "Mismatching types for formatting";
+var So = "Cannot specify TimeZone";
+var Fo = /* @__PURE__ */ Pt(g, ((e5, n4) => n4));
+var wo = /* @__PURE__ */ Pt(g, ((e5, n4, t5) => t5));
+var bo = /* @__PURE__ */ Pt(padNumber, 2);
+var Oo = {
+  nanosecond: 0,
+  microsecond: 1,
+  millisecond: 2,
+  second: 3,
+  minute: 4,
+  hour: 5,
+  day: 6,
+  week: 7,
+  month: 8,
+  year: 9
+};
+var Bo = /* @__PURE__ */ Object.keys(Oo);
+var ko = 864e5;
+var Co = 1e3;
+var Yo = 1e3;
+var Qe = 1e6;
+var Ro = 1e9;
+var Zo = 6e10;
+var zo = 36e11;
+var Uo = 864e11;
+var Ao = [1, Yo, Qe, Ro, Zo, zo, Uo];
+var O = /* @__PURE__ */ Bo.slice(0, 6);
+var qo = /* @__PURE__ */ sortStrings(O);
+var Wo = ["offset"];
+var jo = ["timeZone"];
+var Lo = /* @__PURE__ */ O.concat(Wo);
+var xo = /* @__PURE__ */ Lo.concat(jo);
+var $o = ["era", "eraYear"];
+var Ho = /* @__PURE__ */ $o.concat(["year"]);
+var Go = ["year"];
+var Vo = ["monthCode"];
+var _o = /* @__PURE__ */ ["month"].concat(Vo);
+var Jo = ["day"];
+var Ko = /* @__PURE__ */ _o.concat(Go);
+var Qo = /* @__PURE__ */ Vo.concat(Go);
+var Xo = /* @__PURE__ */ Jo.concat(Ko);
+var er = /* @__PURE__ */ Jo.concat(_o);
+var nr = /* @__PURE__ */ Jo.concat(Vo);
+var tr = /* @__PURE__ */ wo(O, 0);
+var l = "iso8601";
+var or = "gregory";
+var rr = "japanese";
+var ir = {
+  [or]: {
+    "gregory-inverse": -1,
+    gregory: 0
+  },
+  [rr]: {
+    "japanese-inverse": -1,
+    japanese: 0,
+    meiji: 1867,
+    taisho: 1911,
+    showa: 1925,
+    heisei: 1988,
+    reiwa: 2018
+  },
+  ethiopic: {
+    ethioaa: 0,
+    ethiopic: 5500
+  },
+  coptic: {
+    "coptic-inverse": -1,
+    coptic: 0
+  },
+  roc: {
+    "roc-inverse": -1,
+    roc: 0
+  },
+  buddhist: {
+    be: 0
+  },
+  islamic: {
+    ah: 0
+  },
+  indian: {
+    saka: 0
+  },
+  persian: {
+    ap: 0
+  }
+};
+var ar = {
+  [or]: {
+    bce: "gregory-inverse",
+    ce: "gregory"
+  },
+  [rr]: {
+    bce: "japanese-inverse",
+    ce: "japanese"
+  },
+  ethiopic: {
+    era0: "ethioaa",
+    era1: "ethiopic"
+  },
+  coptic: {
+    era0: "coptic-inverse",
+    era1: "coptic"
+  },
+  roc: {
+    broc: "roc-inverse",
+    minguo: "roc"
+  }
+};
+var sr = {
+  chinese: 13,
+  dangi: 13,
+  hebrew: -6
+};
+var m = /* @__PURE__ */ Pt(requireType, "string");
+var D = /* @__PURE__ */ Pt(requireType, "boolean");
+var cr = /* @__PURE__ */ Pt(requireType, "number");
+var p = /* @__PURE__ */ Bo.map(((e5) => e5 + "s"));
+var ur = /* @__PURE__ */ sortStrings(p);
+var fr = /* @__PURE__ */ p.slice(0, 6);
+var lr = /* @__PURE__ */ p.slice(6);
+var dr = /* @__PURE__ */ lr.slice(1);
+var mr = /* @__PURE__ */ Fo(p);
+var pr = /* @__PURE__ */ wo(p, 0);
+var hr = /* @__PURE__ */ wo(fr, 0);
+var gr = /* @__PURE__ */ Pt(zeroOutProps, p);
+var w = ["isoNanosecond", "isoMicrosecond", "isoMillisecond", "isoSecond", "isoMinute", "isoHour"];
+var Dr = ["isoDay", "isoMonth", "isoYear"];
+var Tr = /* @__PURE__ */ w.concat(Dr);
+var Ir = /* @__PURE__ */ sortStrings(Dr);
+var Mr = /* @__PURE__ */ sortStrings(w);
+var Nr = /* @__PURE__ */ sortStrings(Tr);
+var Nt = /* @__PURE__ */ wo(Mr, 0);
+var yr = /* @__PURE__ */ Pt(zeroOutProps, Tr);
+var vr = 1e8;
+var Pr = vr * ko;
+var Er = [vr, 0];
+var Sr = [-vr, 0];
+var Fr = 275760;
+var wr = -271821;
+var en = Intl.DateTimeFormat;
+var br = "en-GB";
+var Or = 1970;
+var Br = 1972;
+var kr = 12;
+var Cr = /* @__PURE__ */ isoArgsToEpochMilli(1868, 9, 8);
+var Yr = /* @__PURE__ */ on(computeJapaneseEraParts, WeakMap);
+var Rr = "smallestUnit";
+var Zr = "unit";
+var zr = "roundingIncrement";
+var Ur = "fractionalSecondDigits";
+var Ar = "relativeTo";
+var qr = "direction";
+var Wr = {
+  constrain: 0,
+  reject: 1
+};
+var jr = /* @__PURE__ */ Object.keys(Wr);
+var Lr = {
+  compatible: 0,
+  reject: 1,
+  earlier: 2,
+  later: 3
+};
+var xr = {
+  reject: 0,
+  use: 1,
+  prefer: 2,
+  ignore: 3
+};
+var $r = {
+  auto: 0,
+  never: 1,
+  critical: 2,
+  always: 3
+};
+var Hr = {
+  auto: 0,
+  never: 1,
+  critical: 2
+};
+var Gr = {
+  auto: 0,
+  never: 1
+};
+var Vr = {
+  floor: 0,
+  halfFloor: 1,
+  ceil: 2,
+  halfCeil: 3,
+  trunc: 4,
+  halfTrunc: 5,
+  expand: 6,
+  halfExpand: 7,
+  halfEven: 8
+};
+var _r = {
+  previous: -1,
+  next: 1
+};
+var Jr = /* @__PURE__ */ Pt(refineUnitOption, Rr);
+var Kr = /* @__PURE__ */ Pt(refineUnitOption, "largestUnit");
+var Qr = /* @__PURE__ */ Pt(refineUnitOption, Zr);
+var Xr = /* @__PURE__ */ Pt(refineChoiceOption, "overflow", Wr);
+var ei = /* @__PURE__ */ Pt(refineChoiceOption, "disambiguation", Lr);
+var ni = /* @__PURE__ */ Pt(refineChoiceOption, "offset", xr);
+var ti = /* @__PURE__ */ Pt(refineChoiceOption, "calendarName", $r);
+var oi = /* @__PURE__ */ Pt(refineChoiceOption, "timeZoneName", Hr);
+var ri = /* @__PURE__ */ Pt(refineChoiceOption, "offset", Gr);
+var ii = /* @__PURE__ */ Pt(refineChoiceOption, "roundingMode", Vr);
+var Ut = "PlainYearMonth";
+var qt = "PlainMonthDay";
+var G = "PlainDate";
+var x = "PlainDateTime";
+var ft = "PlainTime";
+var z = "ZonedDateTime";
+var Re = "Instant";
+var N = "Duration";
+var ai = [Math.floor, (e5) => hasHalf(e5) ? Math.floor(e5) : Math.round(e5), Math.ceil, (e5) => hasHalf(e5) ? Math.ceil(e5) : Math.round(e5), Math.trunc, (e5) => hasHalf(e5) ? Math.trunc(e5) || 0 : Math.round(e5), (e5) => e5 < 0 ? Math.floor(e5) : Math.ceil(e5), (e5) => Math.sign(e5) * Math.round(Math.abs(e5)) || 0, (e5) => hasHalf(e5) ? (e5 = Math.trunc(e5) || 0) + e5 % 2 : Math.round(e5)];
+var si = "UTC";
+var ci = 5184e3;
+var ui = /* @__PURE__ */ isoArgsToEpochSec(1847);
+var fi = /* @__PURE__ */ isoArgsToEpochSec(/* @__PURE__ */ (/* @__PURE__ */ new Date()).getUTCFullYear() + 10);
+var li = /0+$/;
+var he = /* @__PURE__ */ on(_zonedEpochSlotsToIso, WeakMap);
+var di = 2 ** 32 - 1;
+var L = /* @__PURE__ */ on(((e5) => {
+  const n4 = getTimeZoneEssence(e5);
+  return "object" == typeof n4 ? new IntlTimeZone(n4) : new FixedTimeZone(n4 || 0);
+}));
+var FixedTimeZone = class {
+  constructor(e5) {
+    this.$ = e5;
+  }
+  R() {
+    return this.$;
+  }
+  I(e5) {
+    return ((e6) => {
+      const n4 = isoToEpochNano({
+        ...e6,
+        ...Nt
+      });
+      if (!n4 || Math.abs(n4[0]) > 1e8) {
+        throw new RangeError(Io);
+      }
+    })(e5), [isoToEpochNanoWithOffset(e5, this.$)];
+  }
+  O() {
+  }
+};
+var IntlTimeZone = class {
+  constructor(e5) {
+    this.nn = ((e6) => {
+      function getOffsetSec(e7) {
+        const i5 = clampNumber(e7, o5, r5), [a5, s5] = computePeriod(i5), c5 = n4(a5), u6 = n4(s5);
+        return c5 === u6 ? c5 : pinch(t5(a5, s5), c5, u6, e7);
+      }
+      function pinch(n5, t6, o6, r6) {
+        let i5, a5;
+        for (; (void 0 === r6 || void 0 === (i5 = r6 < n5[0] ? t6 : r6 >= n5[1] ? o6 : void 0)) && (a5 = n5[1] - n5[0]); ) {
+          const t7 = n5[0] + Math.floor(a5 / 2);
+          e6(t7) === o6 ? n5[1] = t7 : n5[0] = t7 + 1;
+        }
+        return i5;
+      }
+      const n4 = on(e6), t5 = on(createSplitTuple);
+      let o5 = ui, r5 = fi;
+      return {
+        tn(e7) {
+          const n5 = getOffsetSec(e7 - 86400), t6 = getOffsetSec(e7 + 86400), o6 = e7 - n5, r6 = e7 - t6;
+          if (n5 === t6) {
+            return [o6];
+          }
+          const i5 = getOffsetSec(o6);
+          return i5 === getOffsetSec(r6) ? [e7 - i5] : n5 > t6 ? [o6, r6] : [];
+        },
+        rn: getOffsetSec,
+        O(e7, i5) {
+          const a5 = clampNumber(e7, o5, r5);
+          let [s5, c5] = computePeriod(a5);
+          const u6 = ci * i5, f6 = i5 < 0 ? () => c5 > o5 || (o5 = a5, 0) : () => s5 < r5 || (r5 = a5, 0);
+          for (; f6(); ) {
+            const o6 = n4(s5), r6 = n4(c5);
+            if (o6 !== r6) {
+              const n5 = t5(s5, c5);
+              pinch(n5, o6, r6);
+              const a6 = n5[0];
+              if ((compareNumbers(a6, e7) || 1) === i5) {
+                return a6;
+              }
+            }
+            s5 += u6, c5 += u6;
+          }
+        }
+      };
+    })(/* @__PURE__ */ ((e6) => (n4) => {
+      const t5 = hashIntlFormatParts(e6, n4 * Co);
+      return isoArgsToEpochSec(parseIntlPartsYear(t5), parseInt(t5.month), parseInt(t5.day), parseInt(t5.hour), parseInt(t5.minute), parseInt(t5.second)) - n4;
+    })(e5));
+  }
+  R(e5) {
+    return this.nn.rn(((e6) => epochNanoToSecMod(e6)[0])(e5)) * Ro;
+  }
+  I(e5) {
+    const [n4, t5] = [isoArgsToEpochSec((o5 = e5).isoYear, o5.isoMonth, o5.isoDay, o5.isoHour, o5.isoMinute, o5.isoSecond), o5.isoMillisecond * Qe + o5.isoMicrosecond * Yo + o5.isoNanosecond];
+    var o5;
+    return this.nn.tn(n4).map(((e6) => checkEpochNanoInBounds(moveBigNano(Ge(e6, Ro), t5))));
+  }
+  O(e5, n4) {
+    const [t5, o5] = epochNanoToSecMod(e5), r5 = this.nn.O(t5 + (n4 > 0 || o5 ? 1 : 0), n4);
+    if (void 0 !== r5) {
+      return Ge(r5, Ro);
+    }
+  }
+};
+var mi = "([+-])";
+var pi = "(?:[.,](\\d{1,9}))?";
+var hi = `(?:(?:${mi}(\\d{6}))|(\\d{4}))-?(\\d{2})`;
+var gi = "(\\d{2})(?::?(\\d{2})(?::?(\\d{2})" + pi + ")?)?";
+var Di = mi + gi;
+var Ti = hi + "-?(\\d{2})(?:[T ]" + gi + "(Z|" + Di + ")?)?";
+var Ii = "\\[(!?)([^\\]]*)\\]";
+var Mi = `((?:${Ii}){0,9})`;
+var Ni = /* @__PURE__ */ createRegExp(hi + Mi);
+var yi = /* @__PURE__ */ createRegExp("(?:--)?(\\d{2})-?(\\d{2})" + Mi);
+var vi = /* @__PURE__ */ createRegExp(Ti + Mi);
+var Pi = /* @__PURE__ */ createRegExp("T?" + gi + "(?:" + Di + ")?" + Mi);
+var Ei = /* @__PURE__ */ createRegExp(Di);
+var Si = /* @__PURE__ */ new RegExp(Ii, "g");
+var Fi = /* @__PURE__ */ createRegExp(`${mi}?P(\\d+Y)?(\\d+M)?(\\d+W)?(\\d+D)?(?:T(?:(\\d+)${pi}H)?(?:(\\d+)${pi}M)?(?:(\\d+)${pi}S)?)?`);
+var wi = /* @__PURE__ */ on(((e5) => new en(br, {
+  timeZone: e5,
+  era: "short",
+  year: "numeric",
+  month: "numeric",
+  day: "numeric",
+  hour: "numeric",
+  minute: "numeric",
+  second: "numeric"
+})));
+var bi = /^(AC|AE|AG|AR|AS|BE|BS|CA|CN|CS|CT|EA|EC|IE|IS|JS|MI|NE|NS|PL|PN|PR|PS|SS|VS)T$/;
+var Oi = /[^\w\/:+-]+/;
+var Bi = /^M(\d{2})(L?)$/;
+var ki = /* @__PURE__ */ on(createIntlCalendar);
+var Ci = /* @__PURE__ */ on(((e5) => new en(br, {
+  calendar: e5,
+  timeZone: si,
+  era: "short",
+  year: "numeric",
+  month: "short",
+  day: "numeric"
+})));
+var Yi = {
+  P(e5, n4, t5) {
+    const o5 = mt(t5);
+    let r5, { years: i5, months: a5, weeks: s5, days: c5 } = n4;
+    if (c5 += durationFieldsToBigNano(n4, 5)[0], i5 || a5) {
+      r5 = ((e6, n5, t6, o6, r6) => {
+        let [i6, a6, s6] = e6.v(n5);
+        if (t6) {
+          const [n6, o7] = e6.q(i6, a6);
+          i6 += t6, a6 = monthCodeNumberToMonth(n6, o7, e6.L(i6)), a6 = clampEntity("month", a6, 1, e6.B(i6), r6);
+        }
+        return o6 && ([i6, a6] = e6.un(i6, a6, o6)), s6 = clampEntity("day", s6, 1, e6.U(i6, a6), r6), e6.p(i6, a6, s6);
+      })(this, e5, i5, a5, o5);
+    } else {
+      if (!s5 && !c5) {
+        return e5;
+      }
+      r5 = isoToEpochMilli(e5);
+    }
+    if (void 0 === r5) {
+      throw new RangeError(Io);
+    }
+    return r5 += (7 * s5 + c5) * ko, checkIsoDateInBounds(epochMilliToIso(r5));
+  },
+  N(e5, n4, t5) {
+    if (t5 <= 7) {
+      let o6 = 0, r6 = diffDays({
+        ...e5,
+        ...Nt
+      }, {
+        ...n4,
+        ...Nt
+      });
+      return 7 === t5 && ([o6, r6] = divModTrunc(r6, 7)), {
+        ...pr,
+        weeks: o6,
+        days: r6
+      };
+    }
+    const o5 = this.v(e5), r5 = this.v(n4);
+    let [i5, a5, s5] = ((e6, n5, t6, o6, r6, i6, a6) => {
+      let s6 = r6 - n5, c5 = i6 - t6, u6 = a6 - o6;
+      if (s6 || c5) {
+        const f6 = Math.sign(s6 || c5);
+        let l5 = e6.U(r6, i6), d6 = 0;
+        if (Math.sign(u6) === -f6) {
+          const o7 = l5;
+          [r6, i6] = e6.un(r6, i6, -f6), s6 = r6 - n5, c5 = i6 - t6, l5 = e6.U(r6, i6), d6 = f6 < 0 ? -o7 : l5;
+        }
+        if (u6 = a6 - Math.min(o6, l5) + d6, s6) {
+          const [o7, a7] = e6.q(n5, t6), [u7, l6] = e6.q(r6, i6);
+          if (c5 = u7 - o7 || Number(l6) - Number(a7), Math.sign(c5) === -f6) {
+            const t7 = f6 < 0 && -e6.B(r6);
+            s6 = (r6 -= f6) - n5, c5 = i6 - monthCodeNumberToMonth(o7, a7, e6.L(r6)) + (t7 || e6.B(r6));
+          }
+        }
+      }
+      return [s6, c5, u6];
+    })(this, ...o5, ...r5);
+    return 8 === t5 && (a5 += this.cn(i5, o5[0]), i5 = 0), {
+      ...pr,
+      years: i5,
+      months: a5,
+      days: s5
+    };
+  },
+  F(e5, n4) {
+    const t5 = mt(n4), o5 = refineYear(this, e5), r5 = refineMonth(this, e5, o5, t5), i5 = refineDay(this, e5, r5, o5, t5);
+    return W(checkIsoDateInBounds(this.V(o5, r5, i5)), this.id || l);
+  },
+  K(e5, n4) {
+    const t5 = mt(n4), o5 = refineYear(this, e5), r5 = refineMonth(this, e5, o5, t5);
+    return createPlainYearMonthSlots(checkIsoYearMonthInBounds(this.V(o5, r5, 1)), this.id || l);
+  },
+  _(e5, n4) {
+    const t5 = mt(n4);
+    let o5, r5, i5, a5 = void 0 !== e5.eraYear || void 0 !== e5.year ? refineYear(this, e5) : void 0;
+    const s5 = !this.id;
+    if (void 0 === a5 && s5 && (a5 = Br), void 0 !== a5) {
+      const n5 = refineMonth(this, e5, a5, t5);
+      o5 = refineDay(this, e5, n5, a5, t5);
+      const s6 = this.L(a5);
+      r5 = monthToMonthCodeNumber(n5, s6), i5 = n5 === s6;
+    } else {
+      if (void 0 === e5.monthCode) {
+        throw new TypeError(co);
+      }
+      if ([r5, i5] = parseMonthCode(e5.monthCode), this.id && this.id !== or && this.id !== rr) {
+        if (this.id && "coptic" === computeCalendarIdBase(this.id) && 0 === t5) {
+          const n5 = i5 || 13 !== r5 ? 30 : 6;
+          o5 = e5.day, o5 = clampNumber(o5, 1, n5);
+        } else if (this.id && "chinese" === computeCalendarIdBase(this.id) && 0 === t5) {
+          const n5 = !i5 || 1 !== r5 && 9 !== r5 && 10 !== r5 && 11 !== r5 && 12 !== r5 ? 30 : 29;
+          o5 = e5.day, o5 = clampNumber(o5, 1, n5);
+        } else {
+          o5 = e5.day;
+        }
+      } else {
+        o5 = refineDay(this, e5, refineMonth(this, e5, Br, t5), Br, t5);
+      }
+    }
+    const c5 = this.G(r5, i5, o5);
+    if (!c5) {
+      throw new RangeError("Cannot guess year");
+    }
+    const [u6, f6] = c5;
+    return createPlainMonthDaySlots(checkIsoDateInBounds(this.V(u6, f6, o5)), this.id || l);
+  },
+  fields(e5) {
+    return getCalendarEraOrigins(this) && e5.includes("year") ? [...e5, ...$o] : e5;
+  },
+  k(e5, n4) {
+    const t5 = Object.assign(/* @__PURE__ */ Object.create(null), e5);
+    return spliceFields(t5, n4, _o), getCalendarEraOrigins(this) && (spliceFields(t5, n4, Ho), this.id === rr && spliceFields(t5, n4, er, $o)), t5;
+  },
+  inLeapYear(e5) {
+    const [n4] = this.v(e5);
+    return this.sn(n4);
+  },
+  monthsInYear(e5) {
+    const [n4] = this.v(e5);
+    return this.B(n4);
+  },
+  daysInMonth(e5) {
+    const [n4, t5] = this.v(e5);
+    return this.U(n4, t5);
+  },
+  daysInYear(e5) {
+    const [n4] = this.v(e5);
+    return this.fn(n4);
+  },
+  dayOfYear: computeNativeDayOfYear,
+  era(e5) {
+    return this.hn(e5)[0];
+  },
+  eraYear(e5) {
+    return this.hn(e5)[1];
+  },
+  monthCode(e5) {
+    const [n4, t5] = this.v(e5), [o5, r5] = this.q(n4, t5);
+    return formatMonthCode(o5, r5);
+  },
+  dayOfWeek: computeIsoDayOfWeek,
+  daysInWeek() {
+    return 7;
+  }
+};
+var Ri = {
+  v: computeIsoDateParts,
+  hn: computeIsoEraParts,
+  q: computeIsoMonthCodeParts
+};
+var Zi = {
+  dayOfYear: computeNativeDayOfYear,
+  v: computeIsoDateParts,
+  p: isoArgsToEpochMilli
+};
+var zi = /* @__PURE__ */ Object.assign({}, Zi, {
+  weekOfYear: computeNativeWeekOfYear,
+  yearOfWeek: computeNativeYearOfWeek,
+  m(e5) {
+    function computeWeekShift(e6) {
+      return (7 - e6 < n4 ? 7 : 0) - e6;
+    }
+    function computeWeeksInYear(e6) {
+      const n5 = computeIsoDaysInYear(f6 + e6), t6 = e6 || 1, o6 = computeWeekShift(modFloor(a5 + n5 * t6, 7));
+      return c5 = (n5 + (o6 - s5) * t6) / 7;
+    }
+    const n4 = this.id ? 1 : 4, t5 = computeIsoDayOfWeek(e5), o5 = this.dayOfYear(e5), r5 = modFloor(t5 - 1, 7), i5 = o5 - 1, a5 = modFloor(r5 - i5, 7), s5 = computeWeekShift(a5);
+    let c5, u6 = Math.floor((i5 - s5) / 7) + 1, f6 = e5.isoYear;
+    return u6 ? u6 > computeWeeksInYear(0) && (u6 = 1, f6++) : (u6 = computeWeeksInYear(-1), f6--), [u6, f6, c5];
+  }
+});
+var Ui = /* @__PURE__ */ Object.assign({}, Yi, zi, {
+  v: computeIsoDateParts,
+  hn: computeIsoEraParts,
+  q: computeIsoMonthCodeParts,
+  G(e5, n4) {
+    if (!n4) {
+      return [Br, e5];
+    }
+  },
+  sn: computeIsoInLeapYear,
+  L() {
+  },
+  B: computeIsoMonthsInYear,
+  cn: (e5) => e5 * kr,
+  U: computeIsoDaysInMonth,
+  fn: computeIsoDaysInYear,
+  V: (e5, n4, t5) => ({
+    isoYear: e5,
+    isoMonth: n4,
+    isoDay: t5
+  }),
+  p: isoArgsToEpochMilli,
+  un: (e5, n4, t5) => (e5 += divTrunc(t5, kr), (n4 += modTrunc(t5, kr)) < 1 ? (e5--, n4 += kr) : n4 > kr && (e5++, n4 -= kr), [e5, n4]),
+  year(e5) {
+    return e5.isoYear;
+  },
+  month(e5) {
+    return e5.isoMonth;
+  },
+  day: (e5) => e5.isoDay
+});
+var Ai = {
+  v: computeIntlDateParts,
+  hn: computeIntlEraParts,
+  q: computeIntlMonthCodeParts
+};
+var qi = {
+  dayOfYear: computeNativeDayOfYear,
+  v: computeIntlDateParts,
+  p: computeIntlEpochMilli,
+  weekOfYear: computeNativeWeekOfYear,
+  yearOfWeek: computeNativeYearOfWeek,
+  m() {
+    return [];
+  }
+};
+var Wi = /* @__PURE__ */ Object.assign({}, Yi, qi, {
+  v: computeIntlDateParts,
+  hn: computeIntlEraParts,
+  q: computeIntlMonthCodeParts,
+  G(e5, n4, t5) {
+    const o5 = this.id && "chinese" === computeCalendarIdBase(this.id) ? ((e6, n5, t6) => {
+      if (n5) {
+        switch (e6) {
+          case 1:
+            return 1651;
+          case 2:
+            return t6 < 30 ? 1947 : 1765;
+          case 3:
+            return t6 < 30 ? 1966 : 1955;
+          case 4:
+            return t6 < 30 ? 1963 : 1944;
+          case 5:
+            return t6 < 30 ? 1971 : 1952;
+          case 6:
+            return t6 < 30 ? 1960 : 1941;
+          case 7:
+            return t6 < 30 ? 1968 : 1938;
+          case 8:
+            return t6 < 30 ? 1957 : 1718;
+          case 9:
+            return 1832;
+          case 10:
+            return 1870;
+          case 11:
+            return 1814;
+          case 12:
+            return 1890;
+        }
+      }
+      return 1972;
+    })(e5, n4, t5) : Br;
+    let [r5, i5, a5] = computeIntlDateParts.call(this, {
+      isoYear: o5,
+      isoMonth: kr,
+      isoDay: 31
+    });
+    const s5 = computeIntlLeapMonth.call(this, r5), c5 = i5 === s5;
+    1 === (compareNumbers(e5, monthToMonthCodeNumber(i5, s5)) || compareNumbers(Number(n4), Number(c5)) || compareNumbers(t5, a5)) && r5--;
+    for (let o6 = 0; o6 < 100; o6++) {
+      const i6 = r5 - o6, a6 = computeIntlLeapMonth.call(this, i6), s6 = monthCodeNumberToMonth(e5, n4, a6);
+      if (n4 === (s6 === a6) && t5 <= computeIntlDaysInMonth.call(this, i6, s6)) {
+        return [i6, s6];
+      }
+    }
+  },
+  sn(e5) {
+    const n4 = computeIntlDaysInYear.call(this, e5);
+    return n4 > computeIntlDaysInYear.call(this, e5 - 1) && n4 > computeIntlDaysInYear.call(this, e5 + 1);
+  },
+  L: computeIntlLeapMonth,
+  B: computeIntlMonthsInYear,
+  cn(e5, n4) {
+    const t5 = n4 + e5, o5 = Math.sign(e5), r5 = o5 < 0 ? -1 : 0;
+    let i5 = 0;
+    for (let e6 = n4; e6 !== t5; e6 += o5) {
+      i5 += computeIntlMonthsInYear.call(this, e6 + r5);
+    }
+    return i5;
+  },
+  U: computeIntlDaysInMonth,
+  fn: computeIntlDaysInYear,
+  V(e5, n4, t5) {
+    return epochMilliToIso(computeIntlEpochMilli.call(this, e5, n4, t5));
+  },
+  p: computeIntlEpochMilli,
+  un(e5, n4, t5) {
+    if (t5) {
+      if (n4 += t5, !Number.isSafeInteger(n4)) {
+        throw new RangeError(Io);
+      }
+      if (t5 < 0) {
+        for (; n4 < 1; ) {
+          n4 += computeIntlMonthsInYear.call(this, --e5);
+        }
+      } else {
+        let t6;
+        for (; n4 > (t6 = computeIntlMonthsInYear.call(this, e5)); ) {
+          n4 -= t6, e5++;
+        }
+      }
+    }
+    return [e5, n4];
+  },
+  year(e5) {
+    return this.h(e5).year;
+  },
+  month(e5) {
+    const { year: n4, o: t5 } = this.h(e5), { u: o5 } = this.l(n4);
+    return o5[t5] + 1;
+  },
+  day(e5) {
+    return this.h(e5).day;
+  }
+});
+var ji = /* @__PURE__ */ createNativeOpsCreator(Ri, Ai);
+var C = /* @__PURE__ */ createNativeOpsCreator(Ui, Wi);
+var Li = {
+  ...{
+    era: toStringViaPrimitive,
+    eraYear: toInteger,
+    year: toInteger,
+    month: toPositiveInteger,
+    monthCode(e5) {
+      const n4 = toStringViaPrimitive(e5);
+      return parseMonthCode(n4), n4;
+    },
+    day: toPositiveInteger
+  },
+  .../* @__PURE__ */ wo(O, toInteger),
+  .../* @__PURE__ */ wo(p, toStrictInteger),
+  offset(e5) {
+    const n4 = toStringViaPrimitive(e5);
+    return parseOffsetNano(n4), n4;
+  }
+};
+var xi = /* @__PURE__ */ Pt(remapProps, O, w);
+var $i = /* @__PURE__ */ Pt(remapProps, w, O);
+var Hi = "numeric";
+var Gi = ["timeZoneName"];
+var Vi = {
+  month: Hi,
+  day: Hi
+};
+var _i = {
+  year: Hi,
+  month: Hi
+};
+var Ji = /* @__PURE__ */ Object.assign({}, _i, {
+  day: Hi
+});
+var Ki = {
+  hour: Hi,
+  minute: Hi,
+  second: Hi
+};
+var Qi = /* @__PURE__ */ Object.assign({}, Ji, Ki);
+var Xi = /* @__PURE__ */ Object.assign({}, Qi, {
+  timeZoneName: "short"
+});
+var ea = /* @__PURE__ */ Object.keys(_i);
+var na = /* @__PURE__ */ Object.keys(Vi);
+var ta = /* @__PURE__ */ Object.keys(Ji);
+var oa = /* @__PURE__ */ Object.keys(Ki);
+var ra = ["dateStyle"];
+var ia = /* @__PURE__ */ ea.concat(ra);
+var aa = /* @__PURE__ */ na.concat(ra);
+var sa = /* @__PURE__ */ ta.concat(ra, ["weekday"]);
+var ca = /* @__PURE__ */ oa.concat(["dayPeriod", "timeStyle", "fractionalSecondDigits"]);
+var ua = /* @__PURE__ */ sa.concat(ca);
+var fa = /* @__PURE__ */ Gi.concat(ca);
+var la = /* @__PURE__ */ Gi.concat(sa);
+var da = /* @__PURE__ */ Gi.concat(["day", "weekday"], ca);
+var ma = /* @__PURE__ */ Gi.concat(["year", "weekday"], ca);
+var pa = /* @__PURE__ */ createOptionsTransformer(ua, Qi);
+var ha = /* @__PURE__ */ createOptionsTransformer(ua, Xi);
+var ga = /* @__PURE__ */ createOptionsTransformer(ua, Qi, Gi);
+var Da = /* @__PURE__ */ createOptionsTransformer(sa, Ji, fa);
+var Ta = /* @__PURE__ */ createOptionsTransformer(ca, Ki, la);
+var Ia = /* @__PURE__ */ createOptionsTransformer(ia, _i, da);
+var Ma = /* @__PURE__ */ createOptionsTransformer(aa, Vi, ma);
+var Na = {};
+var ya = new en(void 0, {
+  calendar: l
+}).resolvedOptions().calendar === l;
+var U = [pa, I];
+var ot = [ha, I, 0, (e5, n4) => {
+  const t5 = e5.timeZone;
+  if (n4 && n4.timeZone !== t5) {
+    throw new RangeError(mo);
+  }
+  return t5;
+}];
+var X = [ga, isoToEpochMilli];
+var _ = [Da, isoToEpochMilli];
+var tt = [Ta, (e5) => isoTimeFieldsToNano(e5) / Qe];
+var et = [Ia, isoToEpochMilli, ya];
+var nt = [Ma, isoToEpochMilli, ya];
+var va;
+
+// node_modules/temporal-polyfill/chunks/classApi.js
+function createSlotClass(i5, l5, s5, c5, u6) {
+  function Class(...t5) {
+    if (!(this instanceof Class)) {
+      throw new TypeError(a);
+    }
+    un(this, l5(...t5));
+  }
+  function bindMethod(t5, e5) {
+    return Object.defineProperties((function(...e6) {
+      return t5.call(this, getSpecificSlots(this), ...e6);
+    }), r(e5));
+  }
+  function getSpecificSlots(t5) {
+    const e5 = cn(t5);
+    if (!e5 || e5.branding !== i5) {
+      throw new TypeError(a);
+    }
+    return e5;
+  }
+  return Object.defineProperties(Class.prototype, {
+    ...t(e(bindMethod, s5)),
+    ...n(e(bindMethod, c5)),
+    ...o("Temporal." + i5)
+  }), Object.defineProperties(Class, {
+    ...n(u6),
+    ...r(i5)
+  }), [Class, (t5) => {
+    const e5 = Object.create(Class.prototype);
+    return un(e5, t5), e5;
+  }, getSpecificSlots];
+}
+function rejectInvalidBag(t5) {
+  if (cn(t5) || void 0 !== t5.calendar || void 0 !== t5.timeZone) {
+    throw new TypeError(i);
+  }
+  return t5;
+}
+function getCalendarIdFromBag(t5) {
+  return extractCalendarIdFromBag(t5) || l;
+}
+function extractCalendarIdFromBag(t5) {
+  const { calendar: e5 } = t5;
+  if (void 0 !== e5) {
+    return refineCalendarArg(e5);
+  }
+}
+function refineCalendarArg(t5) {
+  if (s(t5)) {
+    const { calendar: e5 } = cn(t5) || {};
+    if (!e5) {
+      throw new TypeError(c(t5));
+    }
+    return e5;
+  }
+  return ((t6) => u(f(m(t6))))(t5);
+}
+function createCalendarGetters(t5) {
+  const e5 = {};
+  for (const n4 in t5) {
+    e5[n4] = (t6) => {
+      const { calendar: e6 } = t6;
+      return C(e6)[n4](t6);
+    };
+  }
+  return e5;
+}
+function neverValueOf() {
+  throw new TypeError(b);
+}
+function refineTimeZoneArg(t5) {
+  if (s(t5)) {
+    const { timeZone: e5 } = cn(t5) || {};
+    if (!e5) {
+      throw new TypeError(F(t5));
+    }
+    return e5;
+  }
+  return ((t6) => M(Z(m(t6))))(t5);
+}
+function toDurationSlots(t5) {
+  if (s(t5)) {
+    const e5 = cn(t5);
+    return e5 && e5.branding === N ? e5 : q(t5);
+  }
+  return R(t5);
+}
+function refinePublicRelativeTo(t5) {
+  if (void 0 !== t5) {
+    if (s(t5)) {
+      const e5 = cn(t5) || {};
+      switch (e5.branding) {
+        case z:
+        case G:
+          return e5;
+        case x:
+          return W(e5);
+      }
+      const n4 = getCalendarIdFromBag(t5);
+      return {
+        ...$(refineTimeZoneArg, L, C(n4), t5),
+        calendar: n4
+      };
+    }
+    return H(t5);
+  }
+}
+function toPlainTimeSlots(t5, e5) {
+  if (s(t5)) {
+    const n5 = cn(t5) || {};
+    switch (n5.branding) {
+      case ft:
+        return mt(e5), n5;
+      case x:
+        return mt(e5), St(n5);
+      case z:
+        return mt(e5), dt(L, n5);
+    }
+    return Tt(t5, e5);
+  }
+  const n4 = ht(t5);
+  return mt(e5), n4;
+}
+function optionalToPlainTimeFields(t5) {
+  return void 0 === t5 ? void 0 : toPlainTimeSlots(t5);
+}
+function toPlainDateTimeSlots(t5, e5) {
+  if (s(t5)) {
+    const n5 = cn(t5) || {};
+    switch (n5.branding) {
+      case x:
+        return mt(e5), n5;
+      case G:
+        return mt(e5), jt({
+          ...n5,
+          ...Nt
+        });
+      case z:
+        return mt(e5), yt(L, n5);
+    }
+    return At(C(getCalendarIdFromBag(t5)), t5, e5);
+  }
+  const n4 = Bt(t5);
+  return mt(e5), n4;
+}
+function toPlainMonthDaySlots(t5, e5) {
+  if (s(t5)) {
+    const n5 = cn(t5);
+    if (n5 && n5.branding === qt) {
+      return mt(e5), n5;
+    }
+    const o5 = extractCalendarIdFromBag(t5);
+    return Rt(C(o5 || l), !o5, t5, e5);
+  }
+  const n4 = xt(C, t5);
+  return mt(e5), n4;
+}
+function toPlainYearMonthSlots(t5, e5) {
+  if (s(t5)) {
+    const n5 = cn(t5);
+    return n5 && n5.branding === Ut ? (mt(e5), n5) : Xt(C(getCalendarIdFromBag(t5)), t5, e5);
+  }
+  const n4 = _t(C, t5);
+  return mt(e5), n4;
+}
+function toPlainDateSlots(t5, e5) {
+  if (s(t5)) {
+    const n5 = cn(t5) || {};
+    switch (n5.branding) {
+      case G:
+        return mt(e5), n5;
+      case x:
+        return mt(e5), W(n5);
+      case z:
+        return mt(e5), fe(L, n5);
+    }
+    return me(C(getCalendarIdFromBag(t5)), t5, e5);
+  }
+  const n4 = de(t5);
+  return mt(e5), n4;
+}
+function toZonedDateTimeSlots(t5, e5) {
+  if (s(t5)) {
+    const n4 = cn(t5);
+    if (n4 && n4.branding === z) {
+      return je(e5), n4;
+    }
+    const o5 = getCalendarIdFromBag(t5);
+    return Ne(refineTimeZoneArg, L, C(o5), o5, t5, e5);
+  }
+  return Ae(t5, e5);
+}
+function adaptDateMethods(t5) {
+  return e(((t6) => (e5) => t6(slotsToIso(e5))), t5);
+}
+function slotsToIso(t5) {
+  return he(t5, L);
+}
+function toInstantSlots(t5) {
+  if (s(t5)) {
+    const e5 = cn(t5);
+    if (e5) {
+      switch (e5.branding) {
+        case Re:
+          return e5;
+        case z:
+          return xe(e5.epochNanoseconds);
+      }
+    }
+  }
+  return We(t5);
+}
+function toTemporalInstant() {
+  const t5 = Date.prototype.valueOf.call(this);
+  return Kn(xe(Ge(ze(t5), Qe)));
+}
+function createDateTimeFormatClass() {
+  function DateTimeFormatFunc(t6, e6) {
+    return new DateTimeFormatNew(t6, e6);
+  }
+  function DateTimeFormatNew(t6, e6 = /* @__PURE__ */ Object.create(null)) {
+    to.set(this, ((t7, e7) => {
+      const n5 = new en(t7, e7), o5 = n5.resolvedOptions(), r5 = o5.locale, a5 = nn(Object.keys(e7), o5), i5 = on(createFormatPrepperForBranding), prepFormat = (t8, ...e8) => {
+        if (t8) {
+          if (2 !== e8.length) {
+            throw new TypeError(ln);
+          }
+          for (const t9 of e8) {
+            if (void 0 === t9) {
+              throw new TypeError(ln);
+            }
+          }
+        }
+        t8 || void 0 !== e8[0] || (e8 = []);
+        const o6 = e8.map(((t9) => cn(t9) || Number(t9)));
+        let l5, s5 = 0;
+        for (const t9 of o6) {
+          const e9 = "object" == typeof t9 ? t9.branding : void 0;
+          if (s5++ && e9 !== l5) {
+            throw new TypeError(ln);
+          }
+          l5 = e9;
+        }
+        return l5 ? i5(l5)(r5, a5, ...o6) : [n5, ...o6];
+      };
+      return prepFormat.X = n5, prepFormat;
+    })(t6, e6));
+  }
+  const t5 = en.prototype, e5 = Object.getOwnPropertyDescriptors(t5), n4 = Object.getOwnPropertyDescriptors(en);
+  for (const t6 in e5) {
+    const n5 = e5[t6], o5 = t6.startsWith("format") && createFormatMethod(t6);
+    "function" == typeof n5.value ? n5.value = "constructor" === t6 ? DateTimeFormatFunc : o5 || createProxiedMethod(t6) : o5 && (n5.get = function() {
+      if (!to.has(this)) {
+        throw new TypeError(a);
+      }
+      return (...t7) => o5.apply(this, t7);
+    }, Object.defineProperties(n5.get, r(`get ${t6}`)));
+  }
+  return n4.prototype.value = DateTimeFormatNew.prototype = Object.create({}, e5), Object.defineProperties(DateTimeFormatFunc, n4), DateTimeFormatFunc;
+}
+function createFormatMethod(t5) {
+  return Object.defineProperties((function(...e5) {
+    const n4 = to.get(this), [o5, ...r5] = n4(t5.includes("Range"), ...e5);
+    return o5[t5](...r5);
+  }), r(t5));
+}
+function createProxiedMethod(t5) {
+  return Object.defineProperties((function(...e5) {
+    return to.get(this).X[t5](...e5);
+  }), r(t5));
+}
+function createFormatPrepperForBranding(t5) {
+  const e5 = Cn[t5];
+  if (!e5) {
+    throw new TypeError(rn(t5));
+  }
+  return Q(e5, on(an), 1);
+}
+var sn = /* @__PURE__ */ new WeakMap();
+var cn = /* @__PURE__ */ sn.get.bind(sn);
+var un = /* @__PURE__ */ sn.set.bind(sn);
+var fn = {
+  era: d,
+  eraYear: S,
+  year: T,
+  month: h,
+  daysInMonth: h,
+  daysInYear: h,
+  inLeapYear: D,
+  monthsInYear: h
+};
+var mn = {
+  monthCode: m
+};
+var dn = {
+  day: h
+};
+var Sn = {
+  dayOfWeek: h,
+  dayOfYear: h,
+  weekOfYear: P,
+  yearOfWeek: S,
+  daysInWeek: h
+};
+var Tn = /* @__PURE__ */ createCalendarGetters(/* @__PURE__ */ Object.assign({}, fn, mn, dn, Sn));
+var hn = /* @__PURE__ */ createCalendarGetters({
+  ...fn,
+  ...mn
+});
+var Dn = /* @__PURE__ */ createCalendarGetters({
+  ...mn,
+  ...dn
+});
+var Pn = {
+  calendarId: (t5) => t5.calendar
+};
+var gn = /* @__PURE__ */ g(((t5) => (e5) => e5[t5]), p.concat("sign"));
+var pn = /* @__PURE__ */ g(((t5, e5) => (t6) => t6[w[e5]]), O);
+var On = {
+  epochMilliseconds: I,
+  epochNanoseconds: v
+};
+var [wn, In, vn] = createSlotClass(N, j, {
+  ...gn,
+  blank: y
+}, {
+  with: (t5, e5) => In(A(t5, e5)),
+  negated: (t5) => In(B(t5)),
+  abs: (t5) => In(Y(t5)),
+  add: (t5, e5, n4) => In(E(refinePublicRelativeTo, C, L, 0, t5, toDurationSlots(e5), n4)),
+  subtract: (t5, e5, n4) => In(E(refinePublicRelativeTo, C, L, 1, t5, toDurationSlots(e5), n4)),
+  round: (t5, e5) => In(V(refinePublicRelativeTo, C, L, t5, e5)),
+  total: (t5, e5) => J(refinePublicRelativeTo, C, L, t5, e5),
+  toLocaleString(t5, e5, n4) {
+    return Intl.DurationFormat ? new Intl.DurationFormat(e5, n4).format(this) : k(t5);
+  },
+  toString: k,
+  toJSON: (t5) => k(t5),
+  valueOf: neverValueOf
+}, {
+  from: (t5) => In(toDurationSlots(t5)),
+  compare: (t5, e5, n4) => K(refinePublicRelativeTo, C, L, toDurationSlots(t5), toDurationSlots(e5), n4)
+});
+var Cn = {
+  Instant: U,
+  PlainDateTime: X,
+  PlainDate: _,
+  PlainTime: tt,
+  PlainYearMonth: et,
+  PlainMonthDay: nt
+};
+var bn = /* @__PURE__ */ Q(U);
+var Fn = /* @__PURE__ */ Q(ot);
+var Mn = /* @__PURE__ */ Q(X);
+var Zn = /* @__PURE__ */ Q(_);
+var yn = /* @__PURE__ */ Q(tt);
+var jn = /* @__PURE__ */ Q(et);
+var Nn = /* @__PURE__ */ Q(nt);
+var [An, Bn] = createSlotClass(ft, ut, pn, {
+  with(t5, e5, n4) {
+    return Bn(rt(this, rejectInvalidBag(e5), n4));
+  },
+  add: (t5, e5) => Bn(at(0, t5, toDurationSlots(e5))),
+  subtract: (t5, e5) => Bn(at(1, t5, toDurationSlots(e5))),
+  until: (t5, e5, n4) => In(it(0, t5, toPlainTimeSlots(e5), n4)),
+  since: (t5, e5, n4) => In(it(1, t5, toPlainTimeSlots(e5), n4)),
+  round: (t5, e5) => Bn(lt(t5, e5)),
+  equals: (t5, e5) => st(t5, toPlainTimeSlots(e5)),
+  toLocaleString(t5, e5, n4) {
+    const [o5, r5] = yn(e5, n4, t5);
+    return o5.format(r5);
+  },
+  toString: ct,
+  toJSON: (t5) => ct(t5),
+  valueOf: neverValueOf
+}, {
+  from: (t5, e5) => Bn(toPlainTimeSlots(t5, e5)),
+  compare: (t5, e5) => Dt(toPlainTimeSlots(t5), toPlainTimeSlots(e5))
+});
+var [Yn, En] = createSlotClass(x, Pt(Zt, Mt), {
+  ...Pn,
+  ...Tn,
+  ...pn
+}, {
+  with: (t5, e5, n4) => En(gt(C, t5, rejectInvalidBag(e5), n4)),
+  withCalendar: (t5, e5) => En(pt(t5, refineCalendarArg(e5))),
+  withPlainTime: (t5, e5) => En(Ot(t5, optionalToPlainTimeFields(e5))),
+  add: (t5, e5, n4) => En(wt(C, 0, t5, toDurationSlots(e5), n4)),
+  subtract: (t5, e5, n4) => En(wt(C, 1, t5, toDurationSlots(e5), n4)),
+  until: (t5, e5, n4) => In(It(C, 0, t5, toPlainDateTimeSlots(e5), n4)),
+  since: (t5, e5, n4) => In(It(C, 1, t5, toPlainDateTimeSlots(e5), n4)),
+  round: (t5, e5) => En(vt(t5, e5)),
+  equals: (t5, e5) => Ct(t5, toPlainDateTimeSlots(e5)),
+  toZonedDateTime: (t5, e5, n4) => $n(bt(L, t5, refineTimeZoneArg(e5), n4)),
+  toPlainDate: (t5) => Wn(W(t5)),
+  toPlainTime: (t5) => Bn(St(t5)),
+  toLocaleString(t5, e5, n4) {
+    const [o5, r5] = Mn(e5, n4, t5);
+    return o5.format(r5);
+  },
+  toString: Ft,
+  toJSON: (t5) => Ft(t5),
+  valueOf: neverValueOf
+}, {
+  from: (t5, e5) => En(toPlainDateTimeSlots(t5, e5)),
+  compare: (t5, e5) => Yt(toPlainDateTimeSlots(t5), toPlainDateTimeSlots(e5))
+});
+var [Ln, Vn, Jn] = createSlotClass(qt, Pt(kt, Mt), {
+  ...Pn,
+  ...Dn
+}, {
+  with: (t5, e5, n4) => Vn(Et(C, t5, rejectInvalidBag(e5), n4)),
+  equals: (t5, e5) => Lt(t5, toPlainMonthDaySlots(e5)),
+  toPlainDate(t5, e5) {
+    return Wn(Vt(C, t5, this, e5));
+  },
+  toLocaleString(t5, e5, n4) {
+    const [o5, r5] = Nn(e5, n4, t5);
+    return o5.format(r5);
+  },
+  toString: Jt,
+  toJSON: (t5) => Jt(t5),
+  valueOf: neverValueOf
+}, {
+  from: (t5, e5) => Vn(toPlainMonthDaySlots(t5, e5))
+});
+var [kn, qn, Rn] = createSlotClass(Ut, Pt(Qt, Mt), {
+  ...Pn,
+  ...hn
+}, {
+  with: (t5, e5, n4) => qn(Wt(C, t5, rejectInvalidBag(e5), n4)),
+  add: (t5, e5, n4) => qn(Gt(C, 0, t5, toDurationSlots(e5), n4)),
+  subtract: (t5, e5, n4) => qn(Gt(C, 1, t5, toDurationSlots(e5), n4)),
+  until: (t5, e5, n4) => In(zt(C, 0, t5, toPlainYearMonthSlots(e5), n4)),
+  since: (t5, e5, n4) => In(zt(C, 1, t5, toPlainYearMonthSlots(e5), n4)),
+  equals: (t5, e5) => $t(t5, toPlainYearMonthSlots(e5)),
+  toPlainDate(t5, e5) {
+    return Wn(Ht(C, t5, this, e5));
+  },
+  toLocaleString(t5, e5, n4) {
+    const [o5, r5] = jn(e5, n4, t5);
+    return o5.format(r5);
+  },
+  toString: Kt,
+  toJSON: (t5) => Kt(t5),
+  valueOf: neverValueOf
+}, {
+  from: (t5, e5) => qn(toPlainYearMonthSlots(t5, e5)),
+  compare: (t5, e5) => te(toPlainYearMonthSlots(t5), toPlainYearMonthSlots(e5))
+});
+var [xn, Wn, Gn] = createSlotClass(G, Pt(ue, Mt), {
+  ...Pn,
+  ...Tn
+}, {
+  with: (t5, e5, n4) => Wn(ee(C, t5, rejectInvalidBag(e5), n4)),
+  withCalendar: (t5, e5) => Wn(pt(t5, refineCalendarArg(e5))),
+  add: (t5, e5, n4) => Wn(ne(C, 0, t5, toDurationSlots(e5), n4)),
+  subtract: (t5, e5, n4) => Wn(ne(C, 1, t5, toDurationSlots(e5), n4)),
+  until: (t5, e5, n4) => In(oe(C, 0, t5, toPlainDateSlots(e5), n4)),
+  since: (t5, e5, n4) => In(oe(C, 1, t5, toPlainDateSlots(e5), n4)),
+  equals: (t5, e5) => re(t5, toPlainDateSlots(e5)),
+  toZonedDateTime(t5, e5) {
+    const n4 = s(e5) ? e5 : {
+      timeZone: e5
+    };
+    return $n(ae(refineTimeZoneArg, toPlainTimeSlots, L, t5, n4));
+  },
+  toPlainDateTime: (t5, e5) => En(ie(t5, optionalToPlainTimeFields(e5))),
+  toPlainYearMonth(t5) {
+    return qn(le(C, t5, this));
+  },
+  toPlainMonthDay(t5) {
+    return Vn(se(C, t5, this));
+  },
+  toLocaleString(t5, e5, n4) {
+    const [o5, r5] = Zn(e5, n4, t5);
+    return o5.format(r5);
+  },
+  toString: ce,
+  toJSON: (t5) => ce(t5),
+  valueOf: neverValueOf
+}, {
+  from: (t5, e5) => Wn(toPlainDateSlots(t5, e5)),
+  compare: (t5, e5) => te(toPlainDateSlots(t5), toPlainDateSlots(e5))
+});
+var [zn, $n] = createSlotClass(z, Pt(ye, Mt, Ze), {
+  ...On,
+  ...Pn,
+  ...adaptDateMethods(Tn),
+  ...adaptDateMethods(pn),
+  offset: (t5) => Se(slotsToIso(t5).offsetNanoseconds),
+  offsetNanoseconds: (t5) => slotsToIso(t5).offsetNanoseconds,
+  timeZoneId: (t5) => t5.timeZone,
+  hoursInDay: (t5) => Te(L, t5)
+}, {
+  with: (t5, e5, n4) => $n(De(C, L, t5, rejectInvalidBag(e5), n4)),
+  withCalendar: (t5, e5) => $n(pt(t5, refineCalendarArg(e5))),
+  withTimeZone: (t5, e5) => $n(Pe(t5, refineTimeZoneArg(e5))),
+  withPlainTime: (t5, e5) => $n(ge(L, t5, optionalToPlainTimeFields(e5))),
+  add: (t5, e5, n4) => $n(pe(C, L, 0, t5, toDurationSlots(e5), n4)),
+  subtract: (t5, e5, n4) => $n(pe(C, L, 1, t5, toDurationSlots(e5), n4)),
+  until: (t5, e5, n4) => In(Oe(we(C, L, 0, t5, toZonedDateTimeSlots(e5), n4))),
+  since: (t5, e5, n4) => In(Oe(we(C, L, 1, t5, toZonedDateTimeSlots(e5), n4))),
+  round: (t5, e5) => $n(Ie(L, t5, e5)),
+  startOfDay: (t5) => $n(ve(L, t5)),
+  equals: (t5, e5) => Ce(t5, toZonedDateTimeSlots(e5)),
+  toInstant: (t5) => Kn(be(t5)),
+  toPlainDateTime: (t5) => En(yt(L, t5)),
+  toPlainDate: (t5) => Wn(fe(L, t5)),
+  toPlainTime: (t5) => Bn(dt(L, t5)),
+  toLocaleString(t5, e5, n4 = {}) {
+    const [o5, r5] = Fn(e5, n4, t5);
+    return o5.format(r5);
+  },
+  toString: (t5, e5) => Fe(L, t5, e5),
+  toJSON: (t5) => Fe(L, t5),
+  valueOf: neverValueOf,
+  getTimeZoneTransition(t5, e5) {
+    const { timeZone: n4, epochNanoseconds: o5 } = t5, r5 = Me(e5), a5 = L(n4).O(o5, r5);
+    return a5 ? $n({
+      ...t5,
+      epochNanoseconds: a5
+    }) : null;
+  }
+}, {
+  from: (t5, e5) => $n(toZonedDateTimeSlots(t5, e5)),
+  compare: (t5, e5) => Be(toZonedDateTimeSlots(t5), toZonedDateTimeSlots(e5))
+});
+var [Hn, Kn, Qn] = createSlotClass(Re, qe, On, {
+  add: (t5, e5) => Kn(Ye(0, t5, toDurationSlots(e5))),
+  subtract: (t5, e5) => Kn(Ye(1, t5, toDurationSlots(e5))),
+  until: (t5, e5, n4) => In(Ee(0, t5, toInstantSlots(e5), n4)),
+  since: (t5, e5, n4) => In(Ee(1, t5, toInstantSlots(e5), n4)),
+  round: (t5, e5) => Kn(Le(t5, e5)),
+  equals: (t5, e5) => Ve(t5, toInstantSlots(e5)),
+  toZonedDateTimeISO: (t5, e5) => $n(Je(t5, refineTimeZoneArg(e5))),
+  toLocaleString(t5, e5, n4) {
+    const [o5, r5] = bn(e5, n4, t5);
+    return o5.format(r5);
+  },
+  toString: (t5, e5) => ke(refineTimeZoneArg, L, t5, e5),
+  toJSON: (t5) => ke(refineTimeZoneArg, L, t5),
+  valueOf: neverValueOf
+}, {
+  from: (t5) => Kn(toInstantSlots(t5)),
+  fromEpochMilliseconds: (t5) => Kn($e(t5)),
+  fromEpochNanoseconds: (t5) => Kn(He(t5)),
+  compare: (t5, e5) => Ke(toInstantSlots(t5), toInstantSlots(e5))
+});
+var Un = /* @__PURE__ */ Object.defineProperties({}, {
+  ...o("Temporal.Now"),
+  ...n({
+    timeZoneId: () => Ue(),
+    instant: () => Kn(xe(Xe())),
+    zonedDateTimeISO: (t5 = Ue()) => $n(_e(Xe(), refineTimeZoneArg(t5), l)),
+    plainDateTimeISO: (t5 = Ue()) => En(jt(tn(L(refineTimeZoneArg(t5))), l)),
+    plainDateISO: (t5 = Ue()) => Wn(W(tn(L(refineTimeZoneArg(t5))), l)),
+    plainTimeISO: (t5 = Ue()) => Bn(St(tn(L(refineTimeZoneArg(t5)))))
+  })
+});
+var Xn = /* @__PURE__ */ Object.defineProperties({}, {
+  ...o("Temporal"),
+  ...n({
+    PlainYearMonth: kn,
+    PlainMonthDay: Ln,
+    PlainDate: xn,
+    PlainTime: An,
+    PlainDateTime: Yn,
+    ZonedDateTime: zn,
+    Instant: Hn,
+    Duration: wn,
+    Now: Un
+  })
+});
+var _n = /* @__PURE__ */ createDateTimeFormatClass();
+var to = /* @__PURE__ */ new WeakMap();
+var eo = /* @__PURE__ */ Object.defineProperties(Object.create(Intl), n({
+  DateTimeFormat: _n
+}));
+
+// node_modules/temporal-polyfill/global.esm.js
+Object.defineProperties(globalThis, n({
+  Temporal: Xn
+})), Object.defineProperties(Intl, n({
+  DateTimeFormat: _n
+})), Object.defineProperties(Date.prototype, n({
+  toTemporalInstant
+}));
+
+// node_modules/preact/dist/preact.module.js
+var n2;
+var l2;
+var u2;
+var t2;
+var i2;
+var o2;
+var r2;
+var e2;
+var f2;
+var c2;
+var s2;
+var a2;
+var h2;
+var p2 = {};
+var v2 = [];
+var y2 = /acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|itera/i;
+var d2 = Array.isArray;
+function w2(n4, l5) {
+  for (var u6 in l5) n4[u6] = l5[u6];
+  return n4;
+}
+function g2(n4) {
+  n4 && n4.parentNode && n4.parentNode.removeChild(n4);
+}
+function _2(l5, u6, t5) {
+  var i5, o5, r5, e5 = {};
+  for (r5 in u6) "key" == r5 ? i5 = u6[r5] : "ref" == r5 ? o5 = u6[r5] : e5[r5] = u6[r5];
+  if (arguments.length > 2 && (e5.children = arguments.length > 3 ? n2.call(arguments, 2) : t5), "function" == typeof l5 && null != l5.defaultProps) for (r5 in l5.defaultProps) void 0 === e5[r5] && (e5[r5] = l5.defaultProps[r5]);
+  return m2(l5, e5, i5, o5, null);
+}
+function m2(n4, t5, i5, o5, r5) {
+  var e5 = { type: n4, props: t5, key: i5, ref: o5, __k: null, __: null, __b: 0, __e: null, __c: null, constructor: void 0, __v: null == r5 ? ++u2 : r5, __i: -1, __u: 0 };
+  return null == r5 && null != l2.vnode && l2.vnode(e5), e5;
+}
+function k2(n4) {
+  return n4.children;
+}
+function x2(n4, l5) {
+  this.props = n4, this.context = l5;
+}
+function S2(n4, l5) {
+  if (null == l5) return n4.__ ? S2(n4.__, n4.__i + 1) : null;
+  for (var u6; l5 < n4.__k.length; l5++) if (null != (u6 = n4.__k[l5]) && null != u6.__e) return u6.__e;
+  return "function" == typeof n4.type ? S2(n4) : null;
+}
+function C2(n4) {
+  var l5, u6;
+  if (null != (n4 = n4.__) && null != n4.__c) {
+    for (n4.__e = n4.__c.base = null, l5 = 0; l5 < n4.__k.length; l5++) if (null != (u6 = n4.__k[l5]) && null != u6.__e) {
+      n4.__e = n4.__c.base = u6.__e;
+      break;
+    }
+    return C2(n4);
+  }
+}
+function M2(n4) {
+  (!n4.__d && (n4.__d = true) && i2.push(n4) && !$2.__r++ || o2 != l2.debounceRendering) && ((o2 = l2.debounceRendering) || r2)($2);
+}
+function $2() {
+  for (var n4, u6, t5, o5, r5, f6, c5, s5 = 1; i2.length; ) i2.length > s5 && i2.sort(e2), n4 = i2.shift(), s5 = i2.length, n4.__d && (t5 = void 0, o5 = void 0, r5 = (o5 = (u6 = n4).__v).__e, f6 = [], c5 = [], u6.__P && ((t5 = w2({}, o5)).__v = o5.__v + 1, l2.vnode && l2.vnode(t5), O2(u6.__P, t5, o5, u6.__n, u6.__P.namespaceURI, 32 & o5.__u ? [r5] : null, f6, null == r5 ? S2(o5) : r5, !!(32 & o5.__u), c5), t5.__v = o5.__v, t5.__.__k[t5.__i] = t5, N2(f6, t5, c5), o5.__e = o5.__ = null, t5.__e != r5 && C2(t5)));
+  $2.__r = 0;
+}
+function I2(n4, l5, u6, t5, i5, o5, r5, e5, f6, c5, s5) {
+  var a5, h6, y6, d6, w6, g7, _6, m5 = t5 && t5.__k || v2, b5 = l5.length;
+  for (f6 = P2(u6, l5, m5, f6, b5), a5 = 0; a5 < b5; a5++) null != (y6 = u6.__k[a5]) && (h6 = -1 == y6.__i ? p2 : m5[y6.__i] || p2, y6.__i = a5, g7 = O2(n4, y6, h6, i5, o5, r5, e5, f6, c5, s5), d6 = y6.__e, y6.ref && h6.ref != y6.ref && (h6.ref && B2(h6.ref, null, y6), s5.push(y6.ref, y6.__c || d6, y6)), null == w6 && null != d6 && (w6 = d6), (_6 = !!(4 & y6.__u)) || h6.__k === y6.__k ? f6 = A2(y6, f6, n4, _6) : "function" == typeof y6.type && void 0 !== g7 ? f6 = g7 : d6 && (f6 = d6.nextSibling), y6.__u &= -7);
+  return u6.__e = w6, f6;
+}
+function P2(n4, l5, u6, t5, i5) {
+  var o5, r5, e5, f6, c5, s5 = u6.length, a5 = s5, h6 = 0;
+  for (n4.__k = new Array(i5), o5 = 0; o5 < i5; o5++) null != (r5 = l5[o5]) && "boolean" != typeof r5 && "function" != typeof r5 ? ("string" == typeof r5 || "number" == typeof r5 || "bigint" == typeof r5 || r5.constructor == String ? r5 = n4.__k[o5] = m2(null, r5, null, null, null) : d2(r5) ? r5 = n4.__k[o5] = m2(k2, { children: r5 }, null, null, null) : void 0 === r5.constructor && r5.__b > 0 ? r5 = n4.__k[o5] = m2(r5.type, r5.props, r5.key, r5.ref ? r5.ref : null, r5.__v) : n4.__k[o5] = r5, f6 = o5 + h6, r5.__ = n4, r5.__b = n4.__b + 1, e5 = null, -1 != (c5 = r5.__i = L2(r5, u6, f6, a5)) && (a5--, (e5 = u6[c5]) && (e5.__u |= 2)), null == e5 || null == e5.__v ? (-1 == c5 && (i5 > s5 ? h6-- : i5 < s5 && h6++), "function" != typeof r5.type && (r5.__u |= 4)) : c5 != f6 && (c5 == f6 - 1 ? h6-- : c5 == f6 + 1 ? h6++ : (c5 > f6 ? h6-- : h6++, r5.__u |= 4))) : n4.__k[o5] = null;
+  if (a5) for (o5 = 0; o5 < s5; o5++) null != (e5 = u6[o5]) && 0 == (2 & e5.__u) && (e5.__e == t5 && (t5 = S2(e5)), D2(e5, e5));
+  return t5;
+}
+function A2(n4, l5, u6, t5) {
+  var i5, o5;
+  if ("function" == typeof n4.type) {
+    for (i5 = n4.__k, o5 = 0; i5 && o5 < i5.length; o5++) i5[o5] && (i5[o5].__ = n4, l5 = A2(i5[o5], l5, u6, t5));
+    return l5;
+  }
+  n4.__e != l5 && (t5 && (l5 && n4.type && !l5.parentNode && (l5 = S2(n4)), u6.insertBefore(n4.__e, l5 || null)), l5 = n4.__e);
+  do {
+    l5 = l5 && l5.nextSibling;
+  } while (null != l5 && 8 == l5.nodeType);
+  return l5;
+}
+function H2(n4, l5) {
+  return l5 = l5 || [], null == n4 || "boolean" == typeof n4 || (d2(n4) ? n4.some(function(n5) {
+    H2(n5, l5);
+  }) : l5.push(n4)), l5;
+}
+function L2(n4, l5, u6, t5) {
+  var i5, o5, r5, e5 = n4.key, f6 = n4.type, c5 = l5[u6], s5 = null != c5 && 0 == (2 & c5.__u);
+  if (null === c5 && null == e5 || s5 && e5 == c5.key && f6 == c5.type) return u6;
+  if (t5 > (s5 ? 1 : 0)) {
+    for (i5 = u6 - 1, o5 = u6 + 1; i5 >= 0 || o5 < l5.length; ) if (null != (c5 = l5[r5 = i5 >= 0 ? i5-- : o5++]) && 0 == (2 & c5.__u) && e5 == c5.key && f6 == c5.type) return r5;
+  }
+  return -1;
+}
+function T2(n4, l5, u6) {
+  "-" == l5[0] ? n4.setProperty(l5, null == u6 ? "" : u6) : n4[l5] = null == u6 ? "" : "number" != typeof u6 || y2.test(l5) ? u6 : u6 + "px";
+}
+function j2(n4, l5, u6, t5, i5) {
+  var o5, r5;
+  n: if ("style" == l5) if ("string" == typeof u6) n4.style.cssText = u6;
+  else {
+    if ("string" == typeof t5 && (n4.style.cssText = t5 = ""), t5) for (l5 in t5) u6 && l5 in u6 || T2(n4.style, l5, "");
+    if (u6) for (l5 in u6) t5 && u6[l5] == t5[l5] || T2(n4.style, l5, u6[l5]);
+  }
+  else if ("o" == l5[0] && "n" == l5[1]) o5 = l5 != (l5 = l5.replace(f2, "$1")), r5 = l5.toLowerCase(), l5 = r5 in n4 || "onFocusOut" == l5 || "onFocusIn" == l5 ? r5.slice(2) : l5.slice(2), n4.l || (n4.l = {}), n4.l[l5 + o5] = u6, u6 ? t5 ? u6.u = t5.u : (u6.u = c2, n4.addEventListener(l5, o5 ? a2 : s2, o5)) : n4.removeEventListener(l5, o5 ? a2 : s2, o5);
+  else {
+    if ("http://www.w3.org/2000/svg" == i5) l5 = l5.replace(/xlink(H|:h)/, "h").replace(/sName$/, "s");
+    else if ("width" != l5 && "height" != l5 && "href" != l5 && "list" != l5 && "form" != l5 && "tabIndex" != l5 && "download" != l5 && "rowSpan" != l5 && "colSpan" != l5 && "role" != l5 && "popover" != l5 && l5 in n4) try {
+      n4[l5] = null == u6 ? "" : u6;
+      break n;
+    } catch (n5) {
+    }
+    "function" == typeof u6 || (null == u6 || false === u6 && "-" != l5[4] ? n4.removeAttribute(l5) : n4.setAttribute(l5, "popover" == l5 && 1 == u6 ? "" : u6));
+  }
+}
+function F2(n4) {
+  return function(u6) {
+    if (this.l) {
+      var t5 = this.l[u6.type + n4];
+      if (null == u6.t) u6.t = c2++;
+      else if (u6.t < t5.u) return;
+      return t5(l2.event ? l2.event(u6) : u6);
+    }
+  };
+}
+function O2(n4, u6, t5, i5, o5, r5, e5, f6, c5, s5) {
+  var a5, h6, p6, v5, y6, _6, m5, b5, S3, C4, M4, $4, P5, A6, H4, L3, T6, j5 = u6.type;
+  if (void 0 !== u6.constructor) return null;
+  128 & t5.__u && (c5 = !!(32 & t5.__u), r5 = [f6 = u6.__e = t5.__e]), (a5 = l2.__b) && a5(u6);
+  n: if ("function" == typeof j5) try {
+    if (b5 = u6.props, S3 = "prototype" in j5 && j5.prototype.render, C4 = (a5 = j5.contextType) && i5[a5.__c], M4 = a5 ? C4 ? C4.props.value : a5.__ : i5, t5.__c ? m5 = (h6 = u6.__c = t5.__c).__ = h6.__E : (S3 ? u6.__c = h6 = new j5(b5, M4) : (u6.__c = h6 = new x2(b5, M4), h6.constructor = j5, h6.render = E2), C4 && C4.sub(h6), h6.state || (h6.state = {}), h6.__n = i5, p6 = h6.__d = true, h6.__h = [], h6._sb = []), S3 && null == h6.__s && (h6.__s = h6.state), S3 && null != j5.getDerivedStateFromProps && (h6.__s == h6.state && (h6.__s = w2({}, h6.__s)), w2(h6.__s, j5.getDerivedStateFromProps(b5, h6.__s))), v5 = h6.props, y6 = h6.state, h6.__v = u6, p6) S3 && null == j5.getDerivedStateFromProps && null != h6.componentWillMount && h6.componentWillMount(), S3 && null != h6.componentDidMount && h6.__h.push(h6.componentDidMount);
+    else {
+      if (S3 && null == j5.getDerivedStateFromProps && b5 !== v5 && null != h6.componentWillReceiveProps && h6.componentWillReceiveProps(b5, M4), u6.__v == t5.__v || !h6.__e && null != h6.shouldComponentUpdate && false === h6.shouldComponentUpdate(b5, h6.__s, M4)) {
+        for (u6.__v != t5.__v && (h6.props = b5, h6.state = h6.__s, h6.__d = false), u6.__e = t5.__e, u6.__k = t5.__k, u6.__k.some(function(n5) {
+          n5 && (n5.__ = u6);
+        }), $4 = 0; $4 < h6._sb.length; $4++) h6.__h.push(h6._sb[$4]);
+        h6._sb = [], h6.__h.length && e5.push(h6);
+        break n;
+      }
+      null != h6.componentWillUpdate && h6.componentWillUpdate(b5, h6.__s, M4), S3 && null != h6.componentDidUpdate && h6.__h.push(function() {
+        h6.componentDidUpdate(v5, y6, _6);
+      });
+    }
+    if (h6.context = M4, h6.props = b5, h6.__P = n4, h6.__e = false, P5 = l2.__r, A6 = 0, S3) {
+      for (h6.state = h6.__s, h6.__d = false, P5 && P5(u6), a5 = h6.render(h6.props, h6.state, h6.context), H4 = 0; H4 < h6._sb.length; H4++) h6.__h.push(h6._sb[H4]);
+      h6._sb = [];
+    } else do {
+      h6.__d = false, P5 && P5(u6), a5 = h6.render(h6.props, h6.state, h6.context), h6.state = h6.__s;
+    } while (h6.__d && ++A6 < 25);
+    h6.state = h6.__s, null != h6.getChildContext && (i5 = w2(w2({}, i5), h6.getChildContext())), S3 && !p6 && null != h6.getSnapshotBeforeUpdate && (_6 = h6.getSnapshotBeforeUpdate(v5, y6)), L3 = a5, null != a5 && a5.type === k2 && null == a5.key && (L3 = V2(a5.props.children)), f6 = I2(n4, d2(L3) ? L3 : [L3], u6, t5, i5, o5, r5, e5, f6, c5, s5), h6.base = u6.__e, u6.__u &= -161, h6.__h.length && e5.push(h6), m5 && (h6.__E = h6.__ = null);
+  } catch (n5) {
+    if (u6.__v = null, c5 || null != r5) if (n5.then) {
+      for (u6.__u |= c5 ? 160 : 128; f6 && 8 == f6.nodeType && f6.nextSibling; ) f6 = f6.nextSibling;
+      r5[r5.indexOf(f6)] = null, u6.__e = f6;
+    } else {
+      for (T6 = r5.length; T6--; ) g2(r5[T6]);
+      z2(u6);
+    }
+    else u6.__e = t5.__e, u6.__k = t5.__k, n5.then || z2(u6);
+    l2.__e(n5, u6, t5);
+  }
+  else null == r5 && u6.__v == t5.__v ? (u6.__k = t5.__k, u6.__e = t5.__e) : f6 = u6.__e = q2(t5.__e, u6, t5, i5, o5, r5, e5, c5, s5);
+  return (a5 = l2.diffed) && a5(u6), 128 & u6.__u ? void 0 : f6;
+}
+function z2(n4) {
+  n4 && n4.__c && (n4.__c.__e = true), n4 && n4.__k && n4.__k.forEach(z2);
+}
+function N2(n4, u6, t5) {
+  for (var i5 = 0; i5 < t5.length; i5++) B2(t5[i5], t5[++i5], t5[++i5]);
+  l2.__c && l2.__c(u6, n4), n4.some(function(u7) {
+    try {
+      n4 = u7.__h, u7.__h = [], n4.some(function(n5) {
+        n5.call(u7);
+      });
+    } catch (n5) {
+      l2.__e(n5, u7.__v);
+    }
+  });
+}
+function V2(n4) {
+  return "object" != typeof n4 || null == n4 || n4.__b && n4.__b > 0 ? n4 : d2(n4) ? n4.map(V2) : w2({}, n4);
+}
+function q2(u6, t5, i5, o5, r5, e5, f6, c5, s5) {
+  var a5, h6, v5, y6, w6, _6, m5, b5 = i5.props || p2, k5 = t5.props, x5 = t5.type;
+  if ("svg" == x5 ? r5 = "http://www.w3.org/2000/svg" : "math" == x5 ? r5 = "http://www.w3.org/1998/Math/MathML" : r5 || (r5 = "http://www.w3.org/1999/xhtml"), null != e5) {
+    for (a5 = 0; a5 < e5.length; a5++) if ((w6 = e5[a5]) && "setAttribute" in w6 == !!x5 && (x5 ? w6.localName == x5 : 3 == w6.nodeType)) {
+      u6 = w6, e5[a5] = null;
+      break;
+    }
+  }
+  if (null == u6) {
+    if (null == x5) return document.createTextNode(k5);
+    u6 = document.createElementNS(r5, x5, k5.is && k5), c5 && (l2.__m && l2.__m(t5, e5), c5 = false), e5 = null;
+  }
+  if (null == x5) b5 === k5 || c5 && u6.data == k5 || (u6.data = k5);
+  else {
+    if (e5 = e5 && n2.call(u6.childNodes), !c5 && null != e5) for (b5 = {}, a5 = 0; a5 < u6.attributes.length; a5++) b5[(w6 = u6.attributes[a5]).name] = w6.value;
+    for (a5 in b5) if (w6 = b5[a5], "children" == a5) ;
+    else if ("dangerouslySetInnerHTML" == a5) v5 = w6;
+    else if (!(a5 in k5)) {
+      if ("value" == a5 && "defaultValue" in k5 || "checked" == a5 && "defaultChecked" in k5) continue;
+      j2(u6, a5, null, w6, r5);
+    }
+    for (a5 in k5) w6 = k5[a5], "children" == a5 ? y6 = w6 : "dangerouslySetInnerHTML" == a5 ? h6 = w6 : "value" == a5 ? _6 = w6 : "checked" == a5 ? m5 = w6 : c5 && "function" != typeof w6 || b5[a5] === w6 || j2(u6, a5, w6, b5[a5], r5);
+    if (h6) c5 || v5 && (h6.__html == v5.__html || h6.__html == u6.innerHTML) || (u6.innerHTML = h6.__html), t5.__k = [];
+    else if (v5 && (u6.innerHTML = ""), I2("template" == t5.type ? u6.content : u6, d2(y6) ? y6 : [y6], t5, i5, o5, "foreignObject" == x5 ? "http://www.w3.org/1999/xhtml" : r5, e5, f6, e5 ? e5[0] : i5.__k && S2(i5, 0), c5, s5), null != e5) for (a5 = e5.length; a5--; ) g2(e5[a5]);
+    c5 || (a5 = "value", "progress" == x5 && null == _6 ? u6.removeAttribute("value") : null != _6 && (_6 !== u6[a5] || "progress" == x5 && !_6 || "option" == x5 && _6 != b5[a5]) && j2(u6, a5, _6, b5[a5], r5), a5 = "checked", null != m5 && m5 != u6[a5] && j2(u6, a5, m5, b5[a5], r5));
+  }
+  return u6;
+}
+function B2(n4, u6, t5) {
+  try {
+    if ("function" == typeof n4) {
+      var i5 = "function" == typeof n4.__u;
+      i5 && n4.__u(), i5 && null == u6 || (n4.__u = n4(u6));
+    } else n4.current = u6;
+  } catch (n5) {
+    l2.__e(n5, t5);
+  }
+}
+function D2(n4, u6, t5) {
+  var i5, o5;
+  if (l2.unmount && l2.unmount(n4), (i5 = n4.ref) && (i5.current && i5.current != n4.__e || B2(i5, null, u6)), null != (i5 = n4.__c)) {
+    if (i5.componentWillUnmount) try {
+      i5.componentWillUnmount();
+    } catch (n5) {
+      l2.__e(n5, u6);
+    }
+    i5.base = i5.__P = null;
+  }
+  if (i5 = n4.__k) for (o5 = 0; o5 < i5.length; o5++) i5[o5] && D2(i5[o5], u6, t5 || "function" != typeof n4.type);
+  t5 || g2(n4.__e), n4.__c = n4.__ = n4.__e = void 0;
+}
+function E2(n4, l5, u6) {
+  return this.constructor(n4, u6);
+}
+function G2(u6, t5, i5) {
+  var o5, r5, e5, f6;
+  t5 == document && (t5 = document.documentElement), l2.__ && l2.__(u6, t5), r5 = (o5 = "function" == typeof i5) ? null : i5 && i5.__k || t5.__k, e5 = [], f6 = [], O2(t5, u6 = (!o5 && i5 || t5).__k = _2(k2, null, [u6]), r5 || p2, p2, t5.namespaceURI, !o5 && i5 ? [i5] : r5 ? null : t5.firstChild ? n2.call(t5.childNodes) : null, e5, !o5 && i5 ? i5 : r5 ? r5.__e : t5.firstChild, o5, f6), N2(e5, u6, f6);
+}
+function Q2(n4) {
+  function l5(n5) {
+    var u6, t5;
+    return this.getChildContext || (u6 = /* @__PURE__ */ new Set(), (t5 = {})[l5.__c] = this, this.getChildContext = function() {
+      return t5;
+    }, this.componentWillUnmount = function() {
+      u6 = null;
+    }, this.shouldComponentUpdate = function(n6) {
+      this.props.value != n6.value && u6.forEach(function(n7) {
+        n7.__e = true, M2(n7);
+      });
+    }, this.sub = function(n6) {
+      u6.add(n6);
+      var l6 = n6.componentWillUnmount;
+      n6.componentWillUnmount = function() {
+        u6 && u6.delete(n6), l6 && l6.call(n6);
+      };
+    }), n5.children;
+  }
+  return l5.__c = "__cC" + h2++, l5.__ = n4, l5.Provider = l5.__l = (l5.Consumer = function(n5, l6) {
+    return n5.children(l6);
+  }).contextType = l5, l5;
+}
+n2 = v2.slice, l2 = { __e: function(n4, l5, u6, t5) {
+  for (var i5, o5, r5; l5 = l5.__; ) if ((i5 = l5.__c) && !i5.__) try {
+    if ((o5 = i5.constructor) && null != o5.getDerivedStateFromError && (i5.setState(o5.getDerivedStateFromError(n4)), r5 = i5.__d), null != i5.componentDidCatch && (i5.componentDidCatch(n4, t5 || {}), r5 = i5.__d), r5) return i5.__E = i5;
+  } catch (l6) {
+    n4 = l6;
+  }
+  throw n4;
+} }, u2 = 0, t2 = function(n4) {
+  return null != n4 && void 0 === n4.constructor;
+}, x2.prototype.setState = function(n4, l5) {
+  var u6;
+  u6 = null != this.__s && this.__s != this.state ? this.__s : this.__s = w2({}, this.state), "function" == typeof n4 && (n4 = n4(w2({}, u6), this.props)), n4 && w2(u6, n4), null != n4 && this.__v && (l5 && this._sb.push(l5), M2(this));
+}, x2.prototype.forceUpdate = function(n4) {
+  this.__v && (this.__e = true, n4 && this.__h.push(n4), M2(this));
+}, x2.prototype.render = k2, i2 = [], r2 = "function" == typeof Promise ? Promise.prototype.then.bind(Promise.resolve()) : setTimeout, e2 = function(n4, l5) {
+  return n4.__v.__b - l5.__v.__b;
+}, $2.__r = 0, f2 = /(PointerCapture)$|Capture$/i, c2 = 0, s2 = F2(false), a2 = F2(true), h2 = 0;
+
+// node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
+var f3 = 0;
+function u3(e5, t5, n4, o5, i5, u6) {
+  t5 || (t5 = {});
+  var a5, c5, p6 = t5;
+  if ("ref" in p6) for (c5 in p6 = {}, t5) "ref" == c5 ? a5 = t5[c5] : p6[c5] = t5[c5];
+  var l5 = { type: e5, props: p6, key: n4, ref: a5, __k: null, __: null, __b: 0, __e: null, __c: null, constructor: void 0, __v: --f3, __i: -1, __u: 0, __source: i5, __self: u6 };
+  if ("function" == typeof e5 && (a5 = e5.defaultProps)) for (c5 in a5) void 0 === p6[c5] && (p6[c5] = a5[c5]);
+  return l2.vnode && l2.vnode(l5), l5;
+}
+
+// node_modules/preact/hooks/dist/hooks.module.js
+var t3;
+var r3;
+var u4;
+var i3;
+var o3 = 0;
+var f4 = [];
+var c3 = l2;
+var e3 = c3.__b;
+var a3 = c3.__r;
+var v3 = c3.diffed;
+var l3 = c3.__c;
+var m3 = c3.unmount;
+var s3 = c3.__;
+function p3(n4, t5) {
+  c3.__h && c3.__h(r3, n4, o3 || t5), o3 = 0;
+  var u6 = r3.__H || (r3.__H = { __: [], __h: [] });
+  return n4 >= u6.__.length && u6.__.push({}), u6.__[n4];
+}
+function d3(n4) {
+  return o3 = 1, h3(D3, n4);
+}
+function h3(n4, u6, i5) {
+  var o5 = p3(t3++, 2);
+  if (o5.t = n4, !o5.__c && (o5.__ = [i5 ? i5(u6) : D3(void 0, u6), function(n5) {
+    var t5 = o5.__N ? o5.__N[0] : o5.__[0], r5 = o5.t(t5, n5);
+    t5 !== r5 && (o5.__N = [r5, o5.__[1]], o5.__c.setState({}));
+  }], o5.__c = r3, !r3.__f)) {
+    var f6 = function(n5, t5, r5) {
+      if (!o5.__c.__H) return true;
+      var u7 = o5.__c.__H.__.filter(function(n6) {
+        return !!n6.__c;
+      });
+      if (u7.every(function(n6) {
+        return !n6.__N;
+      })) return !c5 || c5.call(this, n5, t5, r5);
+      var i6 = o5.__c.props !== n5;
+      return u7.forEach(function(n6) {
+        if (n6.__N) {
+          var t6 = n6.__[0];
+          n6.__ = n6.__N, n6.__N = void 0, t6 !== n6.__[0] && (i6 = true);
+        }
+      }), c5 && c5.call(this, n5, t5, r5) || i6;
+    };
+    r3.__f = true;
+    var c5 = r3.shouldComponentUpdate, e5 = r3.componentWillUpdate;
+    r3.componentWillUpdate = function(n5, t5, r5) {
+      if (this.__e) {
+        var u7 = c5;
+        c5 = void 0, f6(n5, t5, r5), c5 = u7;
+      }
+      e5 && e5.call(this, n5, t5, r5);
+    }, r3.shouldComponentUpdate = f6;
+  }
+  return o5.__N || o5.__;
+}
+function y3(n4, u6) {
+  var i5 = p3(t3++, 3);
+  !c3.__s && C3(i5.__H, u6) && (i5.__ = n4, i5.u = u6, r3.__H.__h.push(i5));
+}
+function A3(n4) {
+  return o3 = 5, T3(function() {
+    return { current: n4 };
+  }, []);
+}
+function T3(n4, r5) {
+  var u6 = p3(t3++, 7);
+  return C3(u6.__H, r5) && (u6.__ = n4(), u6.__H = r5, u6.__h = n4), u6.__;
+}
+function x3(n4) {
+  var u6 = r3.context[n4.__c], i5 = p3(t3++, 9);
+  return i5.c = n4, u6 ? (null == i5.__ && (i5.__ = true, u6.sub(r3)), u6.props.value) : n4.__;
+}
+function j3() {
+  for (var n4; n4 = f4.shift(); ) if (n4.__P && n4.__H) try {
+    n4.__H.__h.forEach(z3), n4.__H.__h.forEach(B3), n4.__H.__h = [];
+  } catch (t5) {
+    n4.__H.__h = [], c3.__e(t5, n4.__v);
+  }
+}
+c3.__b = function(n4) {
+  r3 = null, e3 && e3(n4);
+}, c3.__ = function(n4, t5) {
+  n4 && t5.__k && t5.__k.__m && (n4.__m = t5.__k.__m), s3 && s3(n4, t5);
+}, c3.__r = function(n4) {
+  a3 && a3(n4), t3 = 0;
+  var i5 = (r3 = n4.__c).__H;
+  i5 && (u4 === r3 ? (i5.__h = [], r3.__h = [], i5.__.forEach(function(n5) {
+    n5.__N && (n5.__ = n5.__N), n5.u = n5.__N = void 0;
+  })) : (i5.__h.forEach(z3), i5.__h.forEach(B3), i5.__h = [], t3 = 0)), u4 = r3;
+}, c3.diffed = function(n4) {
+  v3 && v3(n4);
+  var t5 = n4.__c;
+  t5 && t5.__H && (t5.__H.__h.length && (1 !== f4.push(t5) && i3 === c3.requestAnimationFrame || ((i3 = c3.requestAnimationFrame) || w3)(j3)), t5.__H.__.forEach(function(n5) {
+    n5.u && (n5.__H = n5.u), n5.u = void 0;
+  })), u4 = r3 = null;
+}, c3.__c = function(n4, t5) {
+  t5.some(function(n5) {
+    try {
+      n5.__h.forEach(z3), n5.__h = n5.__h.filter(function(n6) {
+        return !n6.__ || B3(n6);
+      });
+    } catch (r5) {
+      t5.some(function(n6) {
+        n6.__h && (n6.__h = []);
+      }), t5 = [], c3.__e(r5, n5.__v);
+    }
+  }), l3 && l3(n4, t5);
+}, c3.unmount = function(n4) {
+  m3 && m3(n4);
+  var t5, r5 = n4.__c;
+  r5 && r5.__H && (r5.__H.__.forEach(function(n5) {
+    try {
+      z3(n5);
+    } catch (n6) {
+      t5 = n6;
+    }
+  }), r5.__H = void 0, t5 && c3.__e(t5, r5.__v));
+};
+var k3 = "function" == typeof requestAnimationFrame;
+function w3(n4) {
+  var t5, r5 = function() {
+    clearTimeout(u6), k3 && cancelAnimationFrame(t5), setTimeout(n4);
+  }, u6 = setTimeout(r5, 35);
+  k3 && (t5 = requestAnimationFrame(r5));
+}
+function z3(n4) {
+  var t5 = r3, u6 = n4.__c;
+  "function" == typeof u6 && (n4.__c = void 0, u6()), r3 = t5;
+}
+function B3(n4) {
+  var t5 = r3;
+  n4.__c = n4.__(), r3 = t5;
+}
+function C3(n4, t5) {
+  return !n4 || n4.length !== t5.length || t5.some(function(t6, r5) {
+    return t6 !== n4[r5];
+  });
+}
+function D3(n4, t5) {
+  return "function" == typeof t5 ? t5(n4) : t5;
+}
+
+// node_modules/preact/compat/dist/compat.module.js
+function g4(n4, t5) {
+  for (var e5 in t5) n4[e5] = t5[e5];
+  return n4;
+}
+function E3(n4, t5) {
+  for (var e5 in n4) if ("__source" !== e5 && !(e5 in t5)) return true;
+  for (var r5 in t5) if ("__source" !== r5 && n4[r5] !== t5[r5]) return true;
+  return false;
+}
+function N3(n4, t5) {
+  this.props = n4, this.context = t5;
+}
+(N3.prototype = new x2()).isPureReactComponent = true, N3.prototype.shouldComponentUpdate = function(n4, t5) {
+  return E3(this.props, n4) || E3(this.state, t5);
+};
+var T4 = l2.__b;
+l2.__b = function(n4) {
+  n4.type && n4.type.__f && n4.ref && (n4.props.ref = n4.ref, n4.ref = null), T4 && T4(n4);
+};
+var A4 = "undefined" != typeof Symbol && Symbol.for && /* @__PURE__ */ Symbol.for("react.forward_ref") || 3911;
+var F4 = l2.__e;
+l2.__e = function(n4, t5, e5, r5) {
+  if (n4.then) {
+    for (var u6, o5 = t5; o5 = o5.__; ) if ((u6 = o5.__c) && u6.__c) return null == t5.__e && (t5.__e = e5.__e, t5.__k = e5.__k), u6.__c(n4, t5);
+  }
+  F4(n4, t5, e5, r5);
+};
+var U2 = l2.unmount;
+function V3(n4, t5, e5) {
+  return n4 && (n4.__c && n4.__c.__H && (n4.__c.__H.__.forEach(function(n5) {
+    "function" == typeof n5.__c && n5.__c();
+  }), n4.__c.__H = null), null != (n4 = g4({}, n4)).__c && (n4.__c.__P === e5 && (n4.__c.__P = t5), n4.__c.__e = true, n4.__c = null), n4.__k = n4.__k && n4.__k.map(function(n5) {
+    return V3(n5, t5, e5);
+  })), n4;
+}
+function W2(n4, t5, e5) {
+  return n4 && e5 && (n4.__v = null, n4.__k = n4.__k && n4.__k.map(function(n5) {
+    return W2(n5, t5, e5);
+  }), n4.__c && n4.__c.__P === t5 && (n4.__e && e5.appendChild(n4.__e), n4.__c.__e = true, n4.__c.__P = e5)), n4;
+}
+function P4() {
+  this.__u = 0, this.o = null, this.__b = null;
+}
+function j4(n4) {
+  var t5 = n4.__.__c;
+  return t5 && t5.__a && t5.__a(n4);
+}
+function B4() {
+  this.i = null, this.l = null;
+}
+l2.unmount = function(n4) {
+  var t5 = n4.__c;
+  t5 && t5.__R && t5.__R(), t5 && 32 & n4.__u && (n4.type = null), U2 && U2(n4);
+}, (P4.prototype = new x2()).__c = function(n4, t5) {
+  var e5 = t5.__c, r5 = this;
+  null == r5.o && (r5.o = []), r5.o.push(e5);
+  var u6 = j4(r5.__v), o5 = false, i5 = function() {
+    o5 || (o5 = true, e5.__R = null, u6 ? u6(l5) : l5());
+  };
+  e5.__R = i5;
+  var l5 = function() {
+    if (!--r5.__u) {
+      if (r5.state.__a) {
+        var n5 = r5.state.__a;
+        r5.__v.__k[0] = W2(n5, n5.__c.__P, n5.__c.__O);
+      }
+      var t6;
+      for (r5.setState({ __a: r5.__b = null }); t6 = r5.o.pop(); ) t6.forceUpdate();
+    }
+  };
+  r5.__u++ || 32 & t5.__u || r5.setState({ __a: r5.__b = r5.__v.__k[0] }), n4.then(i5, i5);
+}, P4.prototype.componentWillUnmount = function() {
+  this.o = [];
+}, P4.prototype.render = function(n4, e5) {
+  if (this.__b) {
+    if (this.__v.__k) {
+      var r5 = document.createElement("div"), o5 = this.__v.__k[0].__c;
+      this.__v.__k[0] = V3(this.__b, r5, o5.__O = o5.__P);
+    }
+    this.__b = null;
+  }
+  var i5 = e5.__a && _2(k2, null, n4.fallback);
+  return i5 && (i5.__u &= -33), [_2(k2, null, e5.__a ? null : n4.children), i5];
+};
+var H3 = function(n4, t5, e5) {
+  if (++e5[1] === e5[0] && n4.l.delete(t5), n4.props.revealOrder && ("t" !== n4.props.revealOrder[0] || !n4.l.size)) for (e5 = n4.i; e5; ) {
+    for (; e5.length > 3; ) e5.pop()();
+    if (e5[1] < e5[0]) break;
+    n4.i = e5 = e5[2];
+  }
+};
+function Z2(n4) {
+  return this.getChildContext = function() {
+    return n4.context;
+  }, n4.children;
+}
+function Y2(n4) {
+  var e5 = this, r5 = n4.h;
+  if (e5.componentWillUnmount = function() {
+    G2(null, e5.v), e5.v = null, e5.h = null;
+  }, e5.h && e5.h !== r5 && e5.componentWillUnmount(), !e5.v) {
+    for (var u6 = e5.__v; null !== u6 && !u6.__m && null !== u6.__; ) u6 = u6.__;
+    e5.h = r5, e5.v = { nodeType: 1, parentNode: r5, childNodes: [], __k: { __m: u6.__m }, contains: function() {
+      return true;
+    }, insertBefore: function(n5, t5) {
+      this.childNodes.push(n5), e5.h.insertBefore(n5, t5);
+    }, removeChild: function(n5) {
+      this.childNodes.splice(this.childNodes.indexOf(n5) >>> 1, 1), e5.h.removeChild(n5);
+    } };
+  }
+  G2(_2(Z2, { context: e5.context }, n4.__v), e5.v);
+}
+function $3(n4, e5) {
+  var r5 = _2(Y2, { __v: n4, h: e5 });
+  return r5.containerInfo = e5, r5;
+}
+(B4.prototype = new x2()).__a = function(n4) {
+  var t5 = this, e5 = j4(t5.__v), r5 = t5.l.get(n4);
+  return r5[0]++, function(u6) {
+    var o5 = function() {
+      t5.props.revealOrder ? (r5.push(u6), H3(t5, n4, r5)) : u6();
+    };
+    e5 ? e5(o5) : o5();
+  };
+}, B4.prototype.render = function(n4) {
+  this.i = null, this.l = /* @__PURE__ */ new Map();
+  var t5 = H2(n4.children);
+  n4.revealOrder && "b" === n4.revealOrder[0] && t5.reverse();
+  for (var e5 = t5.length; e5--; ) this.l.set(t5[e5], this.i = [1, 0, this.i]);
+  return n4.children;
+}, B4.prototype.componentDidUpdate = B4.prototype.componentDidMount = function() {
+  var n4 = this;
+  this.l.forEach(function(t5, e5) {
+    H3(n4, e5, t5);
+  });
+};
+var q4 = "undefined" != typeof Symbol && Symbol.for && /* @__PURE__ */ Symbol.for("react.element") || 60103;
+var G3 = /^(?:accent|alignment|arabic|baseline|cap|clip(?!PathU)|color|dominant|fill|flood|font|glyph(?!R)|horiz|image(!S)|letter|lighting|marker(?!H|W|U)|overline|paint|pointer|shape|stop|strikethrough|stroke|text(?!L)|transform|underline|unicode|units|v|vector|vert|word|writing|x(?!C))[A-Z]/;
+var J3 = /^on(Ani|Tra|Tou|BeforeInp|Compo)/;
+var K3 = /[A-Z0-9]/g;
+var Q3 = "undefined" != typeof document;
+var X2 = function(n4) {
+  return ("undefined" != typeof Symbol && "symbol" == typeof /* @__PURE__ */ Symbol() ? /fil|che|rad/ : /fil|che|ra/).test(n4);
+};
+x2.prototype.isReactComponent = {}, ["componentWillMount", "componentWillReceiveProps", "componentWillUpdate"].forEach(function(t5) {
+  Object.defineProperty(x2.prototype, t5, { configurable: true, get: function() {
+    return this["UNSAFE_" + t5];
+  }, set: function(n4) {
+    Object.defineProperty(this, t5, { configurable: true, writable: true, value: n4 });
+  } });
+});
+var en2 = l2.event;
+function rn2() {
+}
+function un2() {
+  return this.cancelBubble;
+}
+function on2() {
+  return this.defaultPrevented;
+}
+l2.event = function(n4) {
+  return en2 && (n4 = en2(n4)), n4.persist = rn2, n4.isPropagationStopped = un2, n4.isDefaultPrevented = on2, n4.nativeEvent = n4;
+};
+var ln2;
+var cn2 = { enumerable: false, configurable: true, get: function() {
+  return this.class;
+} };
+var fn2 = l2.vnode;
+l2.vnode = function(n4) {
+  "string" == typeof n4.type && (function(n5) {
+    var t5 = n5.props, e5 = n5.type, u6 = {}, o5 = -1 === e5.indexOf("-");
+    for (var i5 in t5) {
+      var l5 = t5[i5];
+      if (!("value" === i5 && "defaultValue" in t5 && null == l5 || Q3 && "children" === i5 && "noscript" === e5 || "class" === i5 || "className" === i5)) {
+        var c5 = i5.toLowerCase();
+        "defaultValue" === i5 && "value" in t5 && null == t5.value ? i5 = "value" : "download" === i5 && true === l5 ? l5 = "" : "translate" === c5 && "no" === l5 ? l5 = false : "o" === c5[0] && "n" === c5[1] ? "ondoubleclick" === c5 ? i5 = "ondblclick" : "onchange" !== c5 || "input" !== e5 && "textarea" !== e5 || X2(t5.type) ? "onfocus" === c5 ? i5 = "onfocusin" : "onblur" === c5 ? i5 = "onfocusout" : J3.test(i5) && (i5 = c5) : c5 = i5 = "oninput" : o5 && G3.test(i5) ? i5 = i5.replace(K3, "-$&").toLowerCase() : null === l5 && (l5 = void 0), "oninput" === c5 && u6[i5 = c5] && (i5 = "oninputCapture"), u6[i5] = l5;
+      }
+    }
+    "select" == e5 && u6.multiple && Array.isArray(u6.value) && (u6.value = H2(t5.children).forEach(function(n6) {
+      n6.props.selected = -1 != u6.value.indexOf(n6.props.value);
+    })), "select" == e5 && null != u6.defaultValue && (u6.value = H2(t5.children).forEach(function(n6) {
+      n6.props.selected = u6.multiple ? -1 != u6.defaultValue.indexOf(n6.props.value) : u6.defaultValue == n6.props.value;
+    })), t5.class && !t5.className ? (u6.class = t5.class, Object.defineProperty(u6, "className", cn2)) : (t5.className && !t5.class || t5.class && t5.className) && (u6.class = u6.className = t5.className), n5.props = u6;
+  })(n4), n4.$$typeof = q4, fn2 && fn2(n4);
+};
+var an2 = l2.__r;
+l2.__r = function(n4) {
+  an2 && an2(n4), ln2 = n4.__c;
+};
+var sn2 = l2.diffed;
+l2.diffed = function(n4) {
+  sn2 && sn2(n4);
+  var t5 = n4.props, e5 = n4.__e;
+  null != e5 && "textarea" === n4.type && "value" in t5 && t5.value !== e5.value && (e5.value = null == t5.value ? "" : t5.value), ln2 = null;
+};
+
+// node_modules/@preact/signals-core/dist/signals-core.module.js
+var i4 = /* @__PURE__ */ Symbol.for("preact-signals");
+function t4() {
+  if (!(s4 > 1)) {
+    var i5, t5 = false;
+    while (void 0 !== h4) {
+      var r5 = h4;
+      h4 = void 0;
+      f5++;
+      while (void 0 !== r5) {
+        var o5 = r5.o;
+        r5.o = void 0;
+        r5.f &= -3;
+        if (!(8 & r5.f) && c4(r5)) try {
+          r5.c();
+        } catch (r6) {
+          if (!t5) {
+            i5 = r6;
+            t5 = true;
+          }
+        }
+        r5 = o5;
+      }
+    }
+    f5 = 0;
+    s4--;
+    if (t5) throw i5;
+  } else s4--;
+}
+function r4(i5) {
+  if (s4 > 0) return i5();
+  s4++;
+  try {
+    return i5();
+  } finally {
+    t4();
+  }
+}
+var o4 = void 0;
+function n3(i5) {
+  var t5 = o4;
+  o4 = void 0;
+  try {
+    return i5();
+  } finally {
+    o4 = t5;
+  }
+}
+var h4 = void 0;
+var s4 = 0;
+var f5 = 0;
+var v4 = 0;
+function e4(i5) {
+  if (void 0 !== o4) {
+    var t5 = i5.n;
+    if (void 0 === t5 || t5.t !== o4) {
+      t5 = { i: 0, S: i5, p: o4.s, n: void 0, t: o4, e: void 0, x: void 0, r: t5 };
+      if (void 0 !== o4.s) o4.s.n = t5;
+      o4.s = t5;
+      i5.n = t5;
+      if (32 & o4.f) i5.S(t5);
+      return t5;
+    } else if (-1 === t5.i) {
+      t5.i = 0;
+      if (void 0 !== t5.n) {
+        t5.n.p = t5.p;
+        if (void 0 !== t5.p) t5.p.n = t5.n;
+        t5.p = o4.s;
+        t5.n = void 0;
+        o4.s.n = t5;
+        o4.s = t5;
+      }
+      return t5;
+    }
+  }
+}
+function u5(i5, t5) {
+  this.v = i5;
+  this.i = 0;
+  this.n = void 0;
+  this.t = void 0;
+  this.W = null == t5 ? void 0 : t5.watched;
+  this.Z = null == t5 ? void 0 : t5.unwatched;
+  this.name = null == t5 ? void 0 : t5.name;
+}
+u5.prototype.brand = i4;
+u5.prototype.h = function() {
+  return true;
+};
+u5.prototype.S = function(i5) {
+  var t5 = this, r5 = this.t;
+  if (r5 !== i5 && void 0 === i5.e) {
+    i5.x = r5;
+    this.t = i5;
+    if (void 0 !== r5) r5.e = i5;
+    else n3(function() {
+      var i6;
+      null == (i6 = t5.W) || i6.call(t5);
+    });
+  }
+};
+u5.prototype.U = function(i5) {
+  var t5 = this;
+  if (void 0 !== this.t) {
+    var r5 = i5.e, o5 = i5.x;
+    if (void 0 !== r5) {
+      r5.x = o5;
+      i5.e = void 0;
+    }
+    if (void 0 !== o5) {
+      o5.e = r5;
+      i5.x = void 0;
+    }
+    if (i5 === this.t) {
+      this.t = o5;
+      if (void 0 === o5) n3(function() {
+        var i6;
+        null == (i6 = t5.Z) || i6.call(t5);
+      });
+    }
+  }
+};
+u5.prototype.subscribe = function(i5) {
+  var t5 = this;
+  return E4(function() {
+    var r5 = t5.value, n4 = o4;
+    o4 = void 0;
+    try {
+      i5(r5);
+    } finally {
+      o4 = n4;
+    }
+  }, { name: "sub" });
+};
+u5.prototype.valueOf = function() {
+  return this.value;
+};
+u5.prototype.toString = function() {
+  return this.value + "";
+};
+u5.prototype.toJSON = function() {
+  return this.value;
+};
+u5.prototype.peek = function() {
+  var i5 = o4;
+  o4 = void 0;
+  try {
+    return this.value;
+  } finally {
+    o4 = i5;
+  }
+};
+Object.defineProperty(u5.prototype, "value", { get: function() {
+  var i5 = e4(this);
+  if (void 0 !== i5) i5.i = this.i;
+  return this.v;
+}, set: function(i5) {
+  if (i5 !== this.v) {
+    if (f5 > 100) throw new Error("Cycle detected");
+    this.v = i5;
+    this.i++;
+    v4++;
+    s4++;
+    try {
+      for (var r5 = this.t; void 0 !== r5; r5 = r5.x) r5.t.N();
+    } finally {
+      t4();
+    }
+  }
+} });
+function d4(i5, t5) {
+  return new u5(i5, t5);
+}
+function c4(i5) {
+  for (var t5 = i5.s; void 0 !== t5; t5 = t5.n) if (t5.S.i !== t5.i || !t5.S.h() || t5.S.i !== t5.i) return true;
+  return false;
+}
+function a4(i5) {
+  for (var t5 = i5.s; void 0 !== t5; t5 = t5.n) {
+    var r5 = t5.S.n;
+    if (void 0 !== r5) t5.r = r5;
+    t5.S.n = t5;
+    t5.i = -1;
+    if (void 0 === t5.n) {
+      i5.s = t5;
+      break;
+    }
+  }
+}
+function l4(i5) {
+  var t5 = i5.s, r5 = void 0;
+  while (void 0 !== t5) {
+    var o5 = t5.p;
+    if (-1 === t5.i) {
+      t5.S.U(t5);
+      if (void 0 !== o5) o5.n = t5.n;
+      if (void 0 !== t5.n) t5.n.p = o5;
+    } else r5 = t5;
+    t5.S.n = t5.r;
+    if (void 0 !== t5.r) t5.r = void 0;
+    t5 = o5;
+  }
+  i5.s = r5;
+}
+function y4(i5, t5) {
+  u5.call(this, void 0);
+  this.x = i5;
+  this.s = void 0;
+  this.g = v4 - 1;
+  this.f = 4;
+  this.W = null == t5 ? void 0 : t5.watched;
+  this.Z = null == t5 ? void 0 : t5.unwatched;
+  this.name = null == t5 ? void 0 : t5.name;
+}
+y4.prototype = new u5();
+y4.prototype.h = function() {
+  this.f &= -3;
+  if (1 & this.f) return false;
+  if (32 == (36 & this.f)) return true;
+  this.f &= -5;
+  if (this.g === v4) return true;
+  this.g = v4;
+  this.f |= 1;
+  if (this.i > 0 && !c4(this)) {
+    this.f &= -2;
+    return true;
+  }
+  var i5 = o4;
+  try {
+    a4(this);
+    o4 = this;
+    var t5 = this.x();
+    if (16 & this.f || this.v !== t5 || 0 === this.i) {
+      this.v = t5;
+      this.f &= -17;
+      this.i++;
+    }
+  } catch (i6) {
+    this.v = i6;
+    this.f |= 16;
+    this.i++;
+  }
+  o4 = i5;
+  l4(this);
+  this.f &= -2;
+  return true;
+};
+y4.prototype.S = function(i5) {
+  if (void 0 === this.t) {
+    this.f |= 36;
+    for (var t5 = this.s; void 0 !== t5; t5 = t5.n) t5.S.S(t5);
+  }
+  u5.prototype.S.call(this, i5);
+};
+y4.prototype.U = function(i5) {
+  if (void 0 !== this.t) {
+    u5.prototype.U.call(this, i5);
+    if (void 0 === this.t) {
+      this.f &= -33;
+      for (var t5 = this.s; void 0 !== t5; t5 = t5.n) t5.S.U(t5);
+    }
+  }
+};
+y4.prototype.N = function() {
+  if (!(2 & this.f)) {
+    this.f |= 6;
+    for (var i5 = this.t; void 0 !== i5; i5 = i5.x) i5.t.N();
+  }
+};
+Object.defineProperty(y4.prototype, "value", { get: function() {
+  if (1 & this.f) throw new Error("Cycle detected");
+  var i5 = e4(this);
+  this.h();
+  if (void 0 !== i5) i5.i = this.i;
+  if (16 & this.f) throw this.v;
+  return this.v;
+} });
+function w4(i5, t5) {
+  return new y4(i5, t5);
+}
+function _4(i5) {
+  var r5 = i5.u;
+  i5.u = void 0;
+  if ("function" == typeof r5) {
+    s4++;
+    var n4 = o4;
+    o4 = void 0;
+    try {
+      r5();
+    } catch (t5) {
+      i5.f &= -2;
+      i5.f |= 8;
+      b3(i5);
+      throw t5;
+    } finally {
+      o4 = n4;
+      t4();
+    }
+  }
+}
+function b3(i5) {
+  for (var t5 = i5.s; void 0 !== t5; t5 = t5.n) t5.S.U(t5);
+  i5.x = void 0;
+  i5.s = void 0;
+  _4(i5);
+}
+function g5(i5) {
+  if (o4 !== this) throw new Error("Out-of-order effect");
+  l4(this);
+  o4 = i5;
+  this.f &= -2;
+  if (8 & this.f) b3(this);
+  t4();
+}
+function p4(i5, t5) {
+  this.x = i5;
+  this.u = void 0;
+  this.s = void 0;
+  this.o = void 0;
+  this.f = 32;
+  this.name = null == t5 ? void 0 : t5.name;
+}
+p4.prototype.c = function() {
+  var i5 = this.S();
+  try {
+    if (8 & this.f) return;
+    if (void 0 === this.x) return;
+    var t5 = this.x();
+    if ("function" == typeof t5) this.u = t5;
+  } finally {
+    i5();
+  }
+};
+p4.prototype.S = function() {
+  if (1 & this.f) throw new Error("Cycle detected");
+  this.f |= 1;
+  this.f &= -9;
+  _4(this);
+  a4(this);
+  s4++;
+  var i5 = o4;
+  o4 = this;
+  return g5.bind(this, i5);
+};
+p4.prototype.N = function() {
+  if (!(2 & this.f)) {
+    this.f |= 2;
+    this.o = h4;
+    h4 = this;
+  }
+};
+p4.prototype.d = function() {
+  this.f |= 8;
+  if (!(1 & this.f)) b3(this);
+};
+p4.prototype.dispose = function() {
+  this.d();
+};
+function E4(i5, t5) {
+  var r5 = new p4(i5, t5);
+  try {
+    r5.c();
+  } catch (i6) {
+    r5.d();
+    throw i6;
+  }
+  var o5 = r5.d.bind(r5);
+  o5[Symbol.dispose] = o5;
+  return o5;
+}
+
+// node_modules/@preact/signals/dist/signals.module.js
+var h5;
+var d5;
+var p5;
+var m4 = "undefined" != typeof window && !!window.__PREACT_SIGNALS_DEVTOOLS__;
+var _5 = [];
+var g6 = [];
+E4(function() {
+  h5 = this.N;
+})();
+function b4(i5, t5) {
+  l2[i5] = t5.bind(null, l2[i5] || function() {
+  });
+}
+function y5(i5) {
+  if (p5) p5();
+  p5 = i5 && i5.S();
+}
+function w5(i5) {
+  var n4 = this, r5 = i5.data, o5 = useSignal(r5);
+  o5.value = r5;
+  var e5 = T3(function() {
+    var i6 = n4, r6 = n4.__v;
+    while (r6 = r6.__) if (r6.__c) {
+      r6.__c.__$f |= 4;
+      break;
+    }
+    var f6 = w4(function() {
+      var i7 = o5.value.value;
+      return 0 === i7 ? 0 : true === i7 ? "" : i7 || "";
+    }), e6 = w4(function() {
+      return !Array.isArray(f6.value) && !t2(f6.value);
+    }), u7 = E4(function() {
+      this.N = M3;
+      if (e6.value) {
+        var n5 = f6.value;
+        if (i6.__v && i6.__v.__e && 3 === i6.__v.__e.nodeType) i6.__v.__e.data = n5;
+      }
+    }), c6 = n4.__$u.d;
+    n4.__$u.d = function() {
+      u7();
+      c6.call(this);
+    };
+    return [e6, f6];
+  }, []), u6 = e5[0], c5 = e5[1];
+  return u6.value ? c5.peek() : c5.value;
+}
+w5.displayName = "ReactiveTextNode";
+Object.defineProperties(u5.prototype, { constructor: { configurable: true, value: void 0 }, type: { configurable: true, value: w5 }, props: { configurable: true, get: function() {
+  return { data: this };
+} }, __b: { configurable: true, value: 1 } });
+b4("__b", function(i5, n4) {
+  if ("string" == typeof n4.type) {
+    var t5, r5 = n4.props;
+    for (var f6 in r5) if ("children" !== f6) {
+      var o5 = r5[f6];
+      if (o5 instanceof u5) {
+        if (!t5) n4.__np = t5 = {};
+        t5[f6] = o5;
+        r5[f6] = o5.peek();
+      }
+    }
+  }
+  i5(n4);
+});
+b4("__r", function(i5, n4) {
+  if (n4.type !== k2) {
+    y5();
+    var t5, f6 = n4.__c;
+    if (f6) {
+      f6.__$f &= -2;
+      if (void 0 === (t5 = f6.__$u)) f6.__$u = t5 = (function(i6, n5) {
+        var t6;
+        E4(function() {
+          t6 = this;
+        }, { name: n5 });
+        t6.c = i6;
+        return t6;
+      })(function() {
+        var i6;
+        if (m4) null == (i6 = t5.y) || i6.call(t5);
+        f6.__$f |= 1;
+        f6.setState({});
+      }, "function" == typeof n4.type ? n4.type.displayName || n4.type.name : "");
+    }
+    d5 = f6;
+    y5(t5);
+  }
+  i5(n4);
+});
+b4("__e", function(i5, n4, t5, r5) {
+  y5();
+  d5 = void 0;
+  i5(n4, t5, r5);
+});
+b4("diffed", function(i5, n4) {
+  y5();
+  d5 = void 0;
+  var t5;
+  if ("string" == typeof n4.type && (t5 = n4.__e)) {
+    var r5 = n4.__np, f6 = n4.props;
+    if (r5) {
+      var o5 = t5.U;
+      if (o5) for (var e5 in o5) {
+        var u6 = o5[e5];
+        if (void 0 !== u6 && !(e5 in r5)) {
+          u6.d();
+          o5[e5] = void 0;
+        }
+      }
+      else {
+        o5 = {};
+        t5.U = o5;
+      }
+      for (var a5 in r5) {
+        var c5 = o5[a5], v5 = r5[a5];
+        if (void 0 === c5) {
+          c5 = k4(t5, a5, v5, f6);
+          o5[a5] = c5;
+        } else c5.o(v5, f6);
+      }
+    }
+  }
+  i5(n4);
+});
+function k4(i5, n4, t5, r5) {
+  var f6 = n4 in i5 && void 0 === i5.ownerSVGElement, o5 = d4(t5);
+  return { o: function(i6, n5) {
+    o5.value = i6;
+    r5 = n5;
+  }, d: E4(function() {
+    this.N = M3;
+    var t6 = o5.value.value;
+    if (r5[n4] !== t6) {
+      r5[n4] = t6;
+      if (f6) i5[n4] = t6;
+      else if (null != t6 && (false !== t6 || "-" === n4[4])) i5.setAttribute(n4, t6);
+      else i5.removeAttribute(n4);
+    }
+  }) };
+}
+b4("unmount", function(i5, n4) {
+  if ("string" == typeof n4.type) {
+    var t5 = n4.__e;
+    if (t5) {
+      var r5 = t5.U;
+      if (r5) {
+        t5.U = void 0;
+        for (var f6 in r5) {
+          var o5 = r5[f6];
+          if (o5) o5.d();
+        }
+      }
+    }
+  } else {
+    var e5 = n4.__c;
+    if (e5) {
+      var u6 = e5.__$u;
+      if (u6) {
+        e5.__$u = void 0;
+        u6.d();
+      }
+    }
+  }
+  i5(n4);
+});
+b4("__h", function(i5, n4, t5, r5) {
+  if (r5 < 3 || 9 === r5) n4.__$f |= 2;
+  i5(n4, t5, r5);
+});
+x2.prototype.shouldComponentUpdate = function(i5, n4) {
+  var t5 = this.__$u, r5 = t5 && void 0 !== t5.s;
+  for (var f6 in n4) return true;
+  if (this.__f || "boolean" == typeof this.u && true === this.u) {
+    var o5 = 2 & this.__$f;
+    if (!(r5 || o5 || 4 & this.__$f)) return true;
+    if (1 & this.__$f) return true;
+  } else {
+    if (!(r5 || 4 & this.__$f)) return true;
+    if (3 & this.__$f) return true;
+  }
+  for (var e5 in i5) if ("__source" !== e5 && i5[e5] !== this.props[e5]) return true;
+  for (var u6 in this.props) if (!(u6 in i5)) return true;
+  return false;
+};
+function useSignal(i5, n4) {
+  return d3(function() {
+    return d4(i5, n4);
+  })[0];
+}
+function useComputed(i5, n4) {
+  var t5 = A3(i5);
+  t5.current = i5;
+  d5.__$f |= 4;
+  return T3(function() {
+    return w4(function() {
+      return t5.current();
+    }, n4);
+  }, []);
+}
+var q5 = "undefined" == typeof requestAnimationFrame ? setTimeout : function(i5) {
+  var n4 = function() {
+    clearTimeout(t5);
+    cancelAnimationFrame(r5);
+    i5();
+  }, t5 = setTimeout(n4, 35), r5 = requestAnimationFrame(n4);
+};
+var A5 = function(i5) {
+  queueMicrotask(function() {
+    queueMicrotask(i5);
+  });
+};
+function T5() {
+  r4(function() {
+    var i5;
+    while (i5 = _5.shift()) h5.call(i5);
+  });
+}
+function x4() {
+  if (1 === _5.push(this)) (l2.requestAnimationFrame || q5)(T5);
+}
+function F5() {
+  r4(function() {
+    var i5;
+    while (i5 = g6.shift()) h5.call(i5);
+  });
+}
+function M3() {
+  if (1 === g6.push(this)) (l2.requestAnimationFrame || A5)(F5);
+}
+function useSignalEffect(i5, n4) {
+  var t5 = A3(i5);
+  t5.current = i5;
+  y3(function() {
+    return E4(function() {
+      this.N = x4;
+      return t5.current();
+    }, n4);
+  }, []);
+}
+
+// node_modules/@schedule-x/calendar/dist/core.js
+var AppContext$1 = Q2({});
+var img = "data:image/svg+xml,%3c%3fxml version='1.0' encoding='utf-8'%3f%3e%3c!-- Uploaded to: SVG Repo%2c www.svgrepo.com%2c Generator: SVG Repo Mixer Tools --%3e%3csvg width='800px' height='800px' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M6 9L12 15L18 9' stroke='%23B8B5B8' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e";
+var randomStringId = () => "s" + Math.random().toString(36).substring(2, 11);
+var isKeyEnterOrSpace = (keyboardEvent) => keyboardEvent.key === "Enter" || keyboardEvent.key === " ";
+function AppInput() {
+  const datePickerInputId = randomStringId();
+  const datePickerLabelId = randomStringId();
+  const inputWrapperId = randomStringId();
+  const $app = x3(AppContext$1);
+  const [wrapperClasses, setWrapperClasses] = d3([]);
+  const setInputElement = () => {
+    const inputWrapperEl = document.getElementById(inputWrapperId);
+    $app.datePickerState.inputWrapperElement.value = inputWrapperEl instanceof HTMLDivElement ? inputWrapperEl : void 0;
+  };
+  y3(() => {
+    if ($app.config.teleportTo)
+      setInputElement();
+    const newClasses = ["sx__date-input-wrapper"];
+    if ($app.datePickerState.isOpen.value)
+      newClasses.push("sx__date-input--active");
+    setWrapperClasses(newClasses);
+  }, [$app.datePickerState.isOpen.value]);
+  const handleKeyUp = (event) => {
+    if (event.key === "Enter")
+      handleInputValue(event);
+  };
+  const handleInputValue = (event) => {
+    event.stopPropagation();
+    try {
+      $app.datePickerState.handleInput(event.target.value);
+      $app.datePickerState.close();
+    } catch (e5) {
+      console.log("Error setting input value:" + e5);
+    }
+  };
+  y3(() => {
+    const inputElement = typeof document !== "undefined" && document.getElementById(datePickerInputId);
+    if (typeof HTMLElement === "undefined" || !(inputElement instanceof HTMLElement))
+      return;
+    inputElement.addEventListener("change", handleInputValue);
+    return () => inputElement.removeEventListener("change", handleInputValue);
+  });
+  y3(() => {
+    if ($app.config.hasPlaceholder) {
+      $app.datePickerState.inputDisplayedValue.value = $app.translate("MM/DD/YYYY");
+    }
+  }, []);
+  const handleClick = () => {
+    $app.datePickerState.open();
+  };
+  const handleButtonKeyDown = (keyboardEvent) => {
+    if (isKeyEnterOrSpace(keyboardEvent)) {
+      keyboardEvent.preventDefault();
+      $app.datePickerState.open();
+      setTimeout(() => {
+        const element = document.querySelector('[data-focus="true"]');
+        if (element instanceof HTMLElement)
+          element.focus();
+      }, 50);
+    }
+  };
+  return u3(k2, { children: u3("div", { className: wrapperClasses.join(" "), id: inputWrapperId, children: [u3("label", { for: datePickerInputId, id: datePickerLabelId, className: "sx__date-input-label", children: $app.config.label || $app.translate("Date") }), u3("input", { id: datePickerInputId, tabIndex: $app.datePickerState.isDisabled.value ? -1 : 0, name: $app.config.name || "date", "aria-describedby": datePickerLabelId, value: $app.datePickerState.inputDisplayedValue.value, "data-testid": "date-picker-input", className: "sx__date-input", onClick: handleClick, onKeyUp: handleKeyUp, type: "text" }), u3("button", { type: "button", tabIndex: $app.datePickerState.isDisabled.value ? -1 : 0, "aria-label": $app.translate("Choose Date"), onKeyDown: handleButtonKeyDown, onClick: () => $app.datePickerState.open(), className: "sx__button sx__date-input-chevron-wrapper", children: u3("img", { className: "sx__date-input-chevron", src: img, alt: "" }) })] }) });
+}
+var DatePickerView;
+(function(DatePickerView2) {
+  DatePickerView2["MONTH_DAYS"] = "month-days";
+  DatePickerView2["YEARS"] = "years";
+})(DatePickerView || (DatePickerView = {}));
+var YEARS_VIEW = "years-view";
+var MONTH_VIEW = "months-view";
+var DATE_PICKER_WEEK = "date-picker-week";
+var toLocalizedMonth = (date, locale) => {
+  return date.toLocaleString(locale, { month: "long" });
+};
+var toLocalizedDateString = (date, locale) => {
+  return date.toLocaleString(locale, {
+    month: "numeric",
+    day: "numeric",
+    year: "numeric"
+  });
+};
+var getOneLetterDayNames = (week, locale) => {
+  return week.map((date) => {
+    return date.toLocaleString(locale, { weekday: "short" }).charAt(0);
+  });
+};
+var getDayNameShort = (date, locale) => {
+  if (locale === "he-IL") {
+    return date.toLocaleString(locale, { weekday: "narrow" });
+  }
+  return date.toLocaleString(locale, { weekday: "short" });
+};
+var getDayNamesShort = (week, locale) => {
+  return week.map((date) => getDayNameShort(date, locale));
+};
+var getOneLetterOrShortDayNames = (week, locale) => {
+  if (["zh-cn", "zh-tw", "ca-es", "he-il"].includes(locale.toLowerCase())) {
+    return getDayNamesShort(week, locale);
+  }
+  return getOneLetterDayNames(week, locale);
+};
+var DateFormats = {
+  DATE_STRING: /^\d{4}-\d{2}-\d{2}$/,
+  DATE_TIME_STRING: /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/
+};
+var InvalidDateTimeError = class extends Error {
+  constructor(dateTimeSpecification) {
+    super(`Invalid date time specification: ${dateTimeSpecification}`);
+  }
+};
+var toJSDate = (dateTimeSpecification) => {
+  if (!DateFormats.DATE_TIME_STRING.test(dateTimeSpecification) && !DateFormats.DATE_STRING.test(dateTimeSpecification))
+    throw new InvalidDateTimeError(dateTimeSpecification);
+  return new Date(
+    Number(dateTimeSpecification.slice(0, 4)),
+    Number(dateTimeSpecification.slice(5, 7)) - 1,
+    Number(dateTimeSpecification.slice(8, 10)),
+    Number(dateTimeSpecification.slice(11, 13)),
+    // for date strings this will be 0
+    Number(dateTimeSpecification.slice(14, 16))
+    // for date strings this will be 0
+  );
+};
+var toIntegers = (dateTimeSpecification) => {
+  const hours = dateTimeSpecification.slice(11, 13), minutes = dateTimeSpecification.slice(14, 16);
+  return {
+    year: Number(dateTimeSpecification.slice(0, 4)),
+    month: Number(dateTimeSpecification.slice(5, 7)) - 1,
+    date: Number(dateTimeSpecification.slice(8, 10)),
+    hours: hours !== "" ? Number(hours) : void 0,
+    minutes: minutes !== "" ? Number(minutes) : void 0
+  };
+};
+var NumberRangeError = class extends Error {
+  constructor(min, max) {
+    super(`Number must be between ${min} and ${max}.`);
+    Object.defineProperty(this, "min", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: min
+    });
+    Object.defineProperty(this, "max", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: max
+    });
+  }
+};
+var doubleDigit = (number) => {
+  if (number < 0 || number > 99)
+    throw new NumberRangeError(0, 99);
+  return String(number).padStart(2, "0");
+};
+var toDateString$1 = (date) => {
+  return `${date.year}-${doubleDigit(date.month)}-${doubleDigit(date.day)}`;
+};
+var addMonths = (to2, nMonths) => {
+  if (nMonths < 0) {
+    return to2.subtract({ months: -nMonths });
+  }
+  return to2.add({ months: nMonths });
+};
+var addDays = (to2, nDays) => {
+  if (nDays < 0) {
+    return to2.subtract({ days: -nDays });
+  }
+  return to2.add({ days: nDays });
+};
+var getFirstDayOPreviousMonth = (date) => {
+  return addMonths(date, -1).with({ day: 1 });
+};
+var getFirstDayOfNextMonth = (date) => {
+  const nextMonth = addMonths(date, 1);
+  return nextMonth.with({ day: 1 });
+};
+function Chevron({ direction, onClick, buttonText, disabled = false }) {
+  const handleKeyDown = (keyboardEvent) => {
+    if (isKeyEnterOrSpace(keyboardEvent))
+      onClick();
+  };
+  return u3("button", { type: "button", disabled, className: "sx__button sx__chevron-wrapper sx__ripple", onMouseUp: onClick, onKeyDown: handleKeyDown, tabIndex: 0, children: u3("i", { className: `sx__chevron sx__chevron--${direction}`, children: buttonText }) });
+}
+function MonthViewHeader({ setYearsView }) {
+  const $app = x3(AppContext$1);
+  const dateStringToLocalizedMonthName = (selectedDate) => {
+    return toLocalizedMonth(selectedDate, $app.config.locale.value);
+  };
+  const getYearFrom = (datePickerDate) => {
+    return datePickerDate.year;
+  };
+  const [selectedDateMonthName, setSelectedDateMonthName] = d3(dateStringToLocalizedMonthName($app.datePickerState.datePickerDate.value));
+  const [datePickerYear, setDatePickerYear] = d3(getYearFrom($app.datePickerState.datePickerDate.value));
+  const setPreviousMonth = () => {
+    $app.datePickerState.datePickerDate.value = getFirstDayOPreviousMonth($app.datePickerState.datePickerDate.value);
+  };
+  const setNextMonth = () => {
+    $app.datePickerState.datePickerDate.value = getFirstDayOfNextMonth($app.datePickerState.datePickerDate.value);
+  };
+  y3(() => {
+    setSelectedDateMonthName(dateStringToLocalizedMonthName($app.datePickerState.datePickerDate.value));
+    setDatePickerYear(getYearFrom($app.datePickerState.datePickerDate.value));
+  }, [$app.datePickerState.datePickerDate.value]);
+  const handleOpenYearsView = (e5) => {
+    e5.stopPropagation();
+    setYearsView();
+  };
+  return u3(k2, { children: u3("header", { className: "sx__date-picker__month-view-header", children: [u3(Chevron, { direction: "previous", onClick: () => setPreviousMonth(), buttonText: $app.translate("Previous month") }), u3("button", { type: "button", className: "sx__button sx__date-picker__month-view-header__month-year", onClick: (event) => handleOpenYearsView(event), children: selectedDateMonthName + " " + datePickerYear }), u3(Chevron, { direction: "next", onClick: () => setNextMonth(), buttonText: $app.translate("Next month") })] }) });
+}
+function DayNames() {
+  const $app = x3(AppContext$1);
+  const aWeek = $app.timeUnitsImpl.getWeekFor($app.datePickerState.datePickerDate.value);
+  const dayNames = getOneLetterOrShortDayNames(aWeek, $app.config.locale.value);
+  return u3("div", { className: "sx__date-picker__day-names", children: dayNames.map((dayName) => u3("span", { "data-testid": "day-name", className: "sx__date-picker__day-name", children: dayName })) });
+}
+var isToday = (date, timezone) => {
+  const today = Temporal.Now.zonedDateTimeISO(timezone);
+  return date.day === today.day && date.month === today.month && date.year === today.year;
+};
+var isSameMonth = (date1, date2) => {
+  return date1.month === date2.month && date1.year === date2.year;
+};
+var isSameDay = (date1, date2) => {
+  return date1.day === date2.day && date1.month === date2.month && date1.year === date2.year;
+};
+function TimeIcon({ strokeColor }) {
+  return u3(k2, { children: u3("svg", { className: "sx__event-icon", viewBox: "0 0 24 24", fill: "none", xmlns: "http://www.w3.org/2000/svg", children: [u3("g", { id: "SVGRepo_bgCarrier", "stroke-width": "0" }), u3("g", { id: "SVGRepo_tracerCarrier", "stroke-linecap": "round", "stroke-linejoin": "round" }), u3("g", { id: "SVGRepo_iconCarrier", children: [u3("path", { d: "M12 8V12L15 15", stroke: strokeColor, "stroke-width": "2", "stroke-linecap": "round" }), u3("circle", { cx: "12", cy: "12", r: "9", stroke: strokeColor, "stroke-width": "2" })] })] }) });
+}
+function UserIcon({ strokeColor }) {
+  return u3(k2, { children: u3("svg", { className: "sx__event-icon", viewBox: "0 0 24 24", fill: "none", xmlns: "http://www.w3.org/2000/svg", children: [u3("g", { id: "SVGRepo_bgCarrier", "stroke-width": "0" }), u3("g", { id: "SVGRepo_tracerCarrier", "stroke-linecap": "round", "stroke-linejoin": "round" }), u3("g", { id: "SVGRepo_iconCarrier", children: [u3("path", { d: "M15 7C15 8.65685 13.6569 10 12 10C10.3431 10 9 8.65685 9 7C9 5.34315 10.3431 4 12 4C13.6569 4 15 5.34315 15 7Z", stroke: strokeColor, "stroke-width": "2" }), u3("path", { d: "M5 19.5C5 15.9101 7.91015 13 11.5 13H12.5C16.0899 13 19 15.9101 19 19.5V20C19 20.5523 18.5523 21 18 21H6C5.44772 21 5 20.5523 5 20V19.5Z", stroke: strokeColor, "stroke-width": "2" })] })] }) });
+}
+function LocationPinIcon({ strokeColor }) {
+  return u3(k2, { children: u3("svg", { className: "sx__event-icon", viewBox: "0 0 24 24", fill: "none", xmlns: "http://www.w3.org/2000/svg", children: [u3("g", { id: "SVGRepo_bgCarrier", "stroke-width": "0" }), u3("g", { id: "SVGRepo_tracerCarrier", "stroke-linecap": "round", "stroke-linejoin": "round" }), u3("g", { id: "SVGRepo_iconCarrier", children: [u3("g", { "clip-path": "url(#clip0_429_11046)", children: [u3("rect", { x: "12", y: "11", width: "0.01", height: "0.01", stroke: strokeColor, "stroke-width": "2", "stroke-linejoin": "round" }), u3("path", { d: "M12 22L17.5 16.5C20.5376 13.4624 20.5376 8.53757 17.5 5.5C14.4624 2.46244 9.53757 2.46244 6.5 5.5C3.46244 8.53757 3.46244 13.4624 6.5 16.5L12 22Z", stroke: strokeColor, "stroke-width": "2", "stroke-linejoin": "round" })] }), u3("defs", { children: u3("clipPath", { id: "clip0_429_11046", children: u3("rect", { width: "24", height: "24", fill: "white" }) }) })] })] }) });
+}
+var InvalidTimeStringError = class extends Error {
+  constructor(timeString) {
+    super(`Invalid time string: ${timeString}`);
+  }
+};
+var timeStringRegex = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]/;
+var minuteTimePointMultiplier = 1.6666666666666667;
+var timePointsFromString = (timeString) => {
+  if (!timeStringRegex.test(timeString) && timeString !== "24:00")
+    throw new InvalidTimeStringError(timeString);
+  const [hoursInt, minutesInt] = timeString.split(":").map((time) => parseInt(time, 10));
+  let minutePoints = (minutesInt * minuteTimePointMultiplier).toString();
+  if (minutePoints.split(".")[0].length < 2)
+    minutePoints = `0${minutePoints}`;
+  return Number(hoursInt + minutePoints);
+};
+var timeStringFromTimePoints = (timePoints) => {
+  const hours = Math.floor(timePoints / 100);
+  const minutes = Math.round(timePoints % 100 / minuteTimePointMultiplier);
+  return `${doubleDigit(hours)}:${doubleDigit(minutes)}`;
+};
+var addTimePointsToDateTime = (dateTime, pointsToAdd) => {
+  const minutesToAdd = Math.round(pointsToAdd / minuteTimePointMultiplier);
+  const newDateTime = dateTime.add({ minutes: minutesToAdd });
+  return newDateTime;
+};
+var dateFromDateTime = (dateTime) => {
+  return dateTime.slice(0, 10);
+};
+var timeFromDateTime = (dateTime) => {
+  return dateTime.slice(11);
+};
+var WeekDay;
+(function(WeekDay3) {
+  WeekDay3[WeekDay3["MONDAY"] = 1] = "MONDAY";
+  WeekDay3[WeekDay3["TUESDAY"] = 2] = "TUESDAY";
+  WeekDay3[WeekDay3["WEDNESDAY"] = 3] = "WEDNESDAY";
+  WeekDay3[WeekDay3["THURSDAY"] = 4] = "THURSDAY";
+  WeekDay3[WeekDay3["FRIDAY"] = 5] = "FRIDAY";
+  WeekDay3[WeekDay3["SATURDAY"] = 6] = "SATURDAY";
+  WeekDay3[WeekDay3["SUNDAY"] = 7] = "SUNDAY";
+})(WeekDay || (WeekDay = {}));
+var DEFAULT_LOCALE = "en-US";
+var DEFAULT_FIRST_DAY_OF_WEEK = WeekDay.MONDAY;
+var DEFAULT_EVENT_COLOR_NAME = "primary";
+var CalendarEventImpl = class {
+  constructor(_config, id, _start, _end, title, people, location, description, calendarId, _options = void 0, _customContent = {}, _foreignProperties = {}, resourceId) {
+    Object.defineProperty(this, "_config", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: _config
+    });
+    Object.defineProperty(this, "id", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: id
+    });
+    Object.defineProperty(this, "_start", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: _start
+    });
+    Object.defineProperty(this, "_end", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: _end
+    });
+    Object.defineProperty(this, "title", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: title
+    });
+    Object.defineProperty(this, "people", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: people
+    });
+    Object.defineProperty(this, "location", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: location
+    });
+    Object.defineProperty(this, "description", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: description
+    });
+    Object.defineProperty(this, "calendarId", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: calendarId
+    });
+    Object.defineProperty(this, "_options", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: _options
+    });
+    Object.defineProperty(this, "_customContent", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: _customContent
+    });
+    Object.defineProperty(this, "_foreignProperties", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: _foreignProperties
+    });
+    Object.defineProperty(this, "resourceId", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: resourceId
+    });
+    Object.defineProperty(this, "_previousConcurrentEvents", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "_totalConcurrentEvents", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "_maxConcurrentEvents", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "_nDaysInGrid", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "_createdAt", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "_originalTimezone", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "_eventFragments", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: {}
+    });
+    this._originalTimezone = this._start instanceof Temporal.ZonedDateTime ? this._start.timeZoneId : void 0;
+  }
+  get start() {
+    if (this._start instanceof Temporal.PlainDate) {
+      return this._start;
+    }
+    return this._start.withTimeZone(this._config.timezone.value);
+  }
+  set start(value) {
+    this._start = value instanceof Temporal.ZonedDateTime ? value.withTimeZone(this._originalTimezone) : value;
+  }
+  get end() {
+    if (this._end instanceof Temporal.PlainDate) {
+      return this._end;
+    }
+    return this._end.withTimeZone(this._config.timezone.value);
+  }
+  set end(value) {
+    this._end = value instanceof Temporal.ZonedDateTime ? value.withTimeZone(this._originalTimezone) : value;
+  }
+  get _isSingleDayTimed() {
+    if (this.start instanceof Temporal.PlainDate || this.end instanceof Temporal.PlainDate)
+      return false;
+    const localStartDate = dateFromDateTime(this.start.toString());
+    const localEndDate = dateFromDateTime(this.end.toString());
+    return localStartDate === localEndDate;
+  }
+  get _isSingleDayFullDay() {
+    const startDate = dateFromDateTime(this.start.toString());
+    const endDate = dateFromDateTime(this.end.toString());
+    return startDate === endDate && this.start instanceof Temporal.PlainDate && this.end instanceof Temporal.PlainDate;
+  }
+  get _isMultiDayTimed() {
+    if (this.start instanceof Temporal.PlainDate || this.end instanceof Temporal.PlainDate)
+      return false;
+    const startDate = dateFromDateTime(this.start.toString());
+    const endDate = dateFromDateTime(this.end.toString());
+    return startDate !== endDate;
+  }
+  get _isMultiDayFullDay() {
+    const startDate = dateFromDateTime(this.start.toString());
+    const endDate = dateFromDateTime(this.end.toString());
+    return this.start instanceof Temporal.PlainDate && this.end instanceof Temporal.PlainDate && startDate !== endDate;
+  }
+  get _isSingleHybridDayTimed() {
+    if (!this._config.isHybridDay)
+      return false;
+    if (this.start instanceof Temporal.PlainDate || this.end instanceof Temporal.PlainDate)
+      return false;
+    const startDate = dateFromDateTime(this.start.toString());
+    const endDate = dateFromDateTime(this.end.toString());
+    const endDateMinusOneDay = toDateString$1(Temporal.PlainDate.from(endDate).subtract({ days: 1 }));
+    if (startDate !== endDate && startDate !== endDateMinusOneDay)
+      return false;
+    const dayBoundaries = this._config.dayBoundaries.value;
+    const eventStartTimePoints = timePointsFromString(timeFromDateTime(this.start.toString()));
+    const eventEndTimePoints = timePointsFromString(timeFromDateTime(this.end.toString()));
+    const eventIsFullyInFirstDayOfBoundary = eventEndTimePoints > eventStartTimePoints && startDate === endDate;
+    return eventStartTimePoints >= dayBoundaries.start && (eventEndTimePoints <= dayBoundaries.end || eventIsFullyInFirstDayOfBoundary) || eventStartTimePoints < dayBoundaries.end && eventEndTimePoints <= dayBoundaries.end;
+  }
+  get _color() {
+    if (this.calendarId && this._config.calendars.value && this.calendarId in this._config.calendars.value) {
+      return this._config.calendars.value[this.calendarId].colorName;
+    }
+    return DEFAULT_EVENT_COLOR_NAME;
+  }
+  _getForeignProperties() {
+    return this._foreignProperties;
+  }
+  _getExternalEvent() {
+    return {
+      id: this.id,
+      start: this._start,
+      end: this._end,
+      title: this.title,
+      people: this.people,
+      location: this.location,
+      description: this.description,
+      calendarId: this.calendarId,
+      resourceId: this.resourceId,
+      _options: this._options,
+      ...this._getForeignProperties()
+    };
+  }
+};
+var CalendarEventBuilder = class {
+  constructor(_config, id, start, end) {
+    Object.defineProperty(this, "_config", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: _config
+    });
+    Object.defineProperty(this, "id", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: id
+    });
+    Object.defineProperty(this, "start", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: start
+    });
+    Object.defineProperty(this, "end", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: end
+    });
+    Object.defineProperty(this, "people", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "location", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "description", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "title", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "calendarId", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "resourceId", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "_foreignProperties", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: {}
+    });
+    Object.defineProperty(this, "_options", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "_customContent", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: {}
+    });
+  }
+  build() {
+    return new CalendarEventImpl(this._config, this.id, this.start, this.end, this.title, this.people, this.location, this.description, this.calendarId, this._options, this._customContent, this._foreignProperties, this.resourceId);
+  }
+  withTitle(title) {
+    this.title = title;
+    return this;
+  }
+  withPeople(people) {
+    this.people = people;
+    return this;
+  }
+  withLocation(location) {
+    this.location = location;
+    return this;
+  }
+  withDescription(description) {
+    this.description = description;
+    return this;
+  }
+  withForeignProperties(foreignProperties) {
+    this._foreignProperties = foreignProperties;
+    return this;
+  }
+  withCalendarId(calendarId) {
+    this.calendarId = calendarId;
+    return this;
+  }
+  withOptions(options) {
+    this._options = options;
+    return this;
+  }
+  withCustomContent(customContent) {
+    this._customContent = customContent;
+    return this;
+  }
+  withResourceId(resourceId) {
+    this.resourceId = resourceId;
+    return this;
+  }
+};
+var deepCloneEvent = (calendarEvent, $app) => {
+  const calendarEventInternal = new CalendarEventBuilder($app.config, calendarEvent.id, calendarEvent._start, calendarEvent._end).withTitle(calendarEvent.title).withPeople(calendarEvent.people).withCalendarId(calendarEvent.calendarId).withForeignProperties(JSON.parse(JSON.stringify(calendarEvent._getForeignProperties()))).withLocation(calendarEvent.location).withDescription(calendarEvent.description).withOptions(calendarEvent._options).withCustomContent(calendarEvent._customContent).build();
+  calendarEventInternal._nDaysInGrid = calendarEvent._nDaysInGrid;
+  return calendarEventInternal;
+};
+var getTimeGridEventCopyElementId = (id) => {
+  return "time-grid-event-copy-" + id;
+};
+var isUIEventTouchEvent = (event) => {
+  return "touches" in event && typeof event.touches === "object";
+};
+var getEventCoordinates = (uiEvent) => {
+  const actualEvent = isUIEventTouchEvent(uiEvent) ? uiEvent.touches[0] : uiEvent;
+  return {
+    clientX: actualEvent.clientX,
+    clientY: actualEvent.clientY
+  };
+};
+var concatenatePeople = (people) => {
+  return people.reduce((acc, person, index) => {
+    if (index === 0)
+      return person;
+    if (index === people.length - 1)
+      return `${acc} & ${person}`;
+    return `${acc}, ${person}`;
+  }, "");
+};
+var dateFn = (dateTime, locale) => {
+  return dateTime.toLocaleString(locale, {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+};
+var getLocalizedDate$1 = dateFn;
+var timeFn = (dateTime, locale) => {
+  const dateTimeString = dateTime.toString();
+  const { year, month, date, hours, minutes } = toIntegers(dateTimeString);
+  return new Date(year, month, date, hours, minutes).toLocaleTimeString(locale, {
+    hour: "numeric",
+    minute: "numeric"
+  });
+};
+var getTimeStamp = (calendarEvent, locale, delimiter = "\u2013") => {
+  var _a, _b, _c, _d;
+  const eventTime = { start: calendarEvent.start, end: calendarEvent.end };
+  if (calendarEvent._isSingleDayFullDay) {
+    return dateFn(eventTime.start, locale);
+  }
+  if (calendarEvent._isMultiDayFullDay) {
+    return `${dateFn(eventTime.start, locale)} ${delimiter} ${dateFn(eventTime.end, locale)}`;
+  }
+  if (calendarEvent._isSingleDayTimed && ((_a = eventTime.start) === null || _a === void 0 ? void 0 : _a.toString()) !== ((_b = eventTime.end) === null || _b === void 0 ? void 0 : _b.toString())) {
+    return `${dateFn(eventTime.start, locale)} <span aria-hidden="true">\u22C5</span> ${timeFn(eventTime.start, locale)} ${delimiter} ${timeFn(eventTime.end, locale)}`;
+  }
+  if (calendarEvent._isSingleDayTimed && ((_c = calendarEvent.start) === null || _c === void 0 ? void 0 : _c.toString()) === ((_d = calendarEvent.end) === null || _d === void 0 ? void 0 : _d.toString())) {
+    return `${dateFn(eventTime.start, locale)}, ${timeFn(eventTime.start, locale)}`;
+  }
+  return `${dateFn(eventTime.start, locale)}, ${timeFn(eventTime.start, locale)} ${delimiter} ${dateFn(eventTime.end, locale)}, ${timeFn(eventTime.end, locale)}`;
+};
+var nextTick = (cb) => {
+  setTimeout(() => {
+    cb();
+  });
+};
+var focusModal = ($app) => {
+  const calendarWrapper = $app.elements.calendarWrapper;
+  if (!(calendarWrapper instanceof HTMLElement))
+    return;
+  const eventModal = calendarWrapper.querySelector(".sx__event-modal");
+  if (!(eventModal instanceof HTMLElement))
+    return;
+  setTimeout(() => {
+    eventModal.focus();
+  }, 100);
+};
+var invokeOnEventClickCallback = ($app, calendarEvent, e5) => {
+  if ($app.config.callbacks.onEventClick) {
+    $app.config.callbacks.onEventClick(calendarEvent._getExternalEvent(), e5);
+  }
+};
+var invokeOnEventDoubleClickCallback = ($app, calendarEvent, e5) => {
+  if ($app.config.callbacks.onDoubleClickEvent) {
+    $app.config.callbacks.onDoubleClickEvent(calendarEvent._getExternalEvent(), e5);
+  }
+};
+var timePointToPercentage = (timePointsInDay, dayBoundaries, timePoint) => {
+  if (timePoint < dayBoundaries.start) {
+    const firstDayTimePoints = 2400 - dayBoundaries.start;
+    return (timePoint + firstDayTimePoints) / timePointsInDay * 100;
+  }
+  return (timePoint - dayBoundaries.start) / timePointsInDay * 100;
+};
+var getYCoordinateInTimeGrid = (dateTime, dayBoundaries, pointsPerDay) => {
+  return timePointToPercentage(pointsPerDay, dayBoundaries, timePointsFromString(timeFromDateTime(dateTime.toString())));
+};
+var PluginName;
+(function(PluginName4) {
+  PluginName4["DragAndDrop"] = "dragAndDrop";
+  PluginName4["EventModal"] = "eventModal";
+  PluginName4["ScrollController"] = "scrollController";
+  PluginName4["EventRecurrence"] = "eventRecurrence";
+  PluginName4["Resize"] = "resize";
+  PluginName4["CalendarControls"] = "calendarControls";
+  PluginName4["CurrentTime"] = "currentTime";
+})(PluginName || (PluginName = {}));
+var AppContext = Q2({});
+var PreactView = class {
+  constructor(config2) {
+    Object.defineProperty(this, "randomId", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: randomStringId()
+    });
+    Object.defineProperty(this, "name", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "label", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "Component", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "setDateRange", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "hasSmallScreenCompat", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "hasWideScreenCompat", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "backwardForwardFn", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "backwardForwardUnits", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    this.name = config2.name;
+    this.label = config2.label;
+    this.Component = config2.Component;
+    this.setDateRange = config2.setDateRange;
+    this.hasSmallScreenCompat = config2.hasSmallScreenCompat;
+    this.hasWideScreenCompat = config2.hasWideScreenCompat;
+    this.backwardForwardFn = config2.backwardForwardFn;
+    this.backwardForwardUnits = config2.backwardForwardUnits;
+  }
+  render(onElement, $app) {
+    G2(_2(this.Component, { $app, id: this.randomId }), onElement);
+  }
+  destroy() {
+    const el = document.getElementById(this.randomId);
+    if (el) {
+      el.remove();
+    }
+  }
+};
+var createPreactView = (config2) => {
+  return new PreactView(config2);
+};
+function MonthViewWeek({ week }) {
+  const $app = x3(AppContext$1);
+  const weekDays = week.map((day) => {
+    const classes = ["sx__date-picker__day"];
+    if (isToday(day, $app.config.timezone.value))
+      classes.push("sx__date-picker__day--today");
+    if (isSameDay(day, $app.datePickerState.selectedDate.value))
+      classes.push("sx__date-picker__day--selected");
+    if (!isSameMonth(day, $app.datePickerState.datePickerDate.value))
+      classes.push("is-leading-or-trailing");
+    return {
+      day: day.toPlainDate(),
+      classes
+    };
+  });
+  const isDateSelectable = (date) => {
+    return date.toString() >= $app.config.min.toString() && date.toString() <= $app.config.max.toString();
+  };
+  const selectDate = (date) => {
+    $app.datePickerState.selectedDate.value = date;
+    $app.datePickerState.close();
+  };
+  const hasFocus = (weekDay) => isSameDay(weekDay.day, $app.datePickerState.datePickerDate.value);
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      $app.datePickerState.selectedDate.value = $app.datePickerState.datePickerDate.value;
+      $app.datePickerState.close();
+      return;
+    }
+    const keyMapDaysToAdd = /* @__PURE__ */ new Map([
+      ["ArrowDown", 7],
+      ["ArrowUp", -7],
+      ["ArrowLeft", -1],
+      ["ArrowRight", 1]
+    ]);
+    $app.datePickerState.datePickerDate.value = addDays($app.datePickerState.datePickerDate.value, keyMapDaysToAdd.get(event.key) || 0);
+  };
+  return u3(k2, { children: u3("div", { "data-testid": DATE_PICKER_WEEK, className: "sx__date-picker__week", children: weekDays.map((weekDay) => u3("button", { type: "button", tabIndex: hasFocus(weekDay) ? 0 : -1, disabled: !isDateSelectable(weekDay.day), "aria-label": getLocalizedDate$1($app.datePickerState.datePickerDate.value, $app.config.locale.value), className: `sx__button ${weekDay.classes.join(" ")}`, "data-focus": hasFocus(weekDay) ? "true" : void 0, onClick: () => selectDate(weekDay.day), onKeyDown: handleKeyDown, children: weekDay.day.day })) }) });
+}
+function MonthView({ seatYearsView }) {
+  const elementId = randomStringId();
+  const $app = x3(AppContext$1);
+  const [month, setMonth] = d3([]);
+  const renderMonth = () => {
+    const newDatePickerDate = $app.datePickerState.datePickerDate.value;
+    setMonth($app.timeUnitsImpl.getMonthWithTrailingAndLeadingDays(newDatePickerDate.year, newDatePickerDate.month));
+  };
+  y3(() => {
+    renderMonth();
+  }, [$app.datePickerState.datePickerDate.value]);
+  y3(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        const mutatedElement = mutation.target;
+        if (mutatedElement.dataset.focus === "true")
+          mutatedElement.focus();
+      });
+    });
+    const monthViewElement = document.getElementById(elementId);
+    observer.observe(monthViewElement, {
+      childList: true,
+      subtree: true,
+      attributes: true
+    });
+    return () => observer.disconnect();
+  }, []);
+  return u3(k2, { children: u3("div", { id: elementId, "data-testid": MONTH_VIEW, className: "sx__date-picker__month-view", children: [u3(MonthViewHeader, { setYearsView: seatYearsView }), u3(DayNames, {}), month.map((week) => u3(MonthViewWeek, { week }))] }) });
+}
+function YearsViewAccordion({ year, setYearAndMonth, isExpanded, expand }) {
+  const $app = x3(AppContext$1);
+  const yearWithDates = $app.timeUnitsImpl.getMonthsFor(year);
+  const handleClickOnMonth = (event, month) => {
+    event.stopPropagation();
+    setYearAndMonth(year, month.month);
+  };
+  return u3(k2, { children: u3("li", { className: isExpanded ? "sx__is-expanded" : "", children: [u3("button", { type: "button", className: "sx__button sx__date-picker__years-accordion__expand-button sx__ripple--wide", onClick: () => expand(year), children: year }), isExpanded && u3("div", { className: "sx__date-picker__years-view-accordion__panel", children: yearWithDates.map((month) => u3("button", { type: "button", className: "sx__button sx__date-picker__years-view-accordion__month", onClick: (event) => handleClickOnMonth(event, month), children: toLocalizedMonth(month, $app.config.locale.value) })) })] }) });
+}
+function YearsView({ setMonthView }) {
+  const $app = x3(AppContext$1);
+  const minYear = $app.config.min.year;
+  const maxYear = $app.config.max.year;
+  const years = Array.from({ length: maxYear - minYear + 1 }, (_6, i5) => minYear + i5);
+  const selectedYear = $app.datePickerState.selectedDate.value.year;
+  const [expandedYear, setExpandedYear] = d3(selectedYear);
+  const setNewDatePickerDate = (year, month) => {
+    $app.datePickerState.datePickerDate.value = Temporal.PlainDate.from({
+      year,
+      month,
+      day: 1
+    });
+    setMonthView();
+  };
+  y3(() => {
+    var _a;
+    const initiallyExpandedYear = (_a = document.querySelector(".sx__date-picker__years-view")) === null || _a === void 0 ? void 0 : _a.querySelector(".sx__is-expanded");
+    if (!initiallyExpandedYear)
+      return;
+    initiallyExpandedYear.scrollIntoView({
+      block: "center"
+    });
+  }, []);
+  return u3(k2, { children: u3("ul", { className: "sx__date-picker__years-view", "data-testid": YEARS_VIEW, children: years.map((year) => u3(YearsViewAccordion, { year, setYearAndMonth: (year2, month) => setNewDatePickerDate(year2, month), isExpanded: expandedYear === year, expand: (year2) => setExpandedYear(year2) })) }) });
+}
+var isScrollable = (el) => {
+  if (el) {
+    const hasScrollableContent = el.scrollHeight > el.clientHeight;
+    const overflowYStyle = window.getComputedStyle(el).overflowY;
+    const isOverflowHidden = overflowYStyle.indexOf("hidden") !== -1;
+    return hasScrollableContent && !isOverflowHidden;
+  }
+  return true;
+};
+var getScrollableParents = (el, acc = []) => {
+  if (!el || el === document.body || el.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+    acc.push(window);
+    return acc;
+  }
+  if (isScrollable(el)) {
+    acc.push(el);
+  }
+  return getScrollableParents(el.assignedSlot ? el.assignedSlot.parentNode : el.parentNode, acc);
+};
+var POPUP_CLASS_NAME = "sx__date-picker-popup";
+function AppPopup({ wrapperEl }) {
+  const $app = x3(AppContext$1);
+  const [datePickerView, setDatePickerView] = d3(DatePickerView.MONTH_DAYS);
+  const classList = T3(() => {
+    const returnValue = [
+      POPUP_CLASS_NAME,
+      $app.datePickerState.isDark.value ? "is-dark" : "",
+      $app.config.teleportTo ? "is-teleported" : ""
+    ];
+    if ($app.config.placement && !$app.config.teleportTo && wrapperEl) {
+      const placement = $app.config.placement instanceof Function ? $app.config.placement(wrapperEl) : $app.config.placement;
+      returnValue.push(placement);
+    }
+    return returnValue;
+  }, [
+    $app.datePickerState.isDark.value,
+    $app.config.placement,
+    $app.config.teleportTo
+  ]);
+  const clickOutsideListener = (event) => {
+    const target = event.target;
+    if (!target.closest(`.${POPUP_CLASS_NAME}`))
+      $app.datePickerState.close();
+  };
+  const escapeKeyListener = (e5) => {
+    if (e5.key === "Escape") {
+      if ($app.config.listeners.onEscapeKeyDown)
+        $app.config.listeners.onEscapeKeyDown($app);
+      else
+        $app.datePickerState.close();
+    }
+  };
+  y3(() => {
+    document.addEventListener("click", clickOutsideListener);
+    document.addEventListener("keydown", escapeKeyListener);
+    return () => {
+      document.removeEventListener("click", clickOutsideListener);
+      document.removeEventListener("keydown", escapeKeyListener);
+    };
+  }, []);
+  const remSize = Number(getComputedStyle(document.documentElement).fontSize.split("px")[0]);
+  const popupHeight = 362;
+  const popupWidth = 332;
+  const getFixedPositionStyles = () => {
+    const inputWrapperEl = $app.datePickerState.inputWrapperElement.value;
+    const inputRect = inputWrapperEl === null || inputWrapperEl === void 0 ? void 0 : inputWrapperEl.getBoundingClientRect();
+    if (inputWrapperEl === void 0 || !(inputRect instanceof DOMRect))
+      return void 0;
+    const resolvedPlacement = typeof $app.config.placement === "function" ? wrapperEl ? $app.config.placement(wrapperEl) : "bottom-end" : $app.config.placement;
+    if (!resolvedPlacement)
+      return void 0;
+    return {
+      top: resolvedPlacement.includes("bottom") ? inputRect.height + inputRect.y + 1 : inputRect.y - remSize - popupHeight,
+      // subtract remsize to leave room for label text
+      left: resolvedPlacement.includes("start") ? inputRect.x : inputRect.x + inputRect.width - popupWidth,
+      width: popupWidth,
+      position: "fixed"
+    };
+  };
+  const [fixedPositionStyle, setFixedPositionStyle] = d3(getFixedPositionStyles());
+  y3(() => {
+    const inputWrapper = $app.datePickerState.inputWrapperElement.value;
+    if (inputWrapper === void 0)
+      return;
+    const scrollableParents = getScrollableParents(inputWrapper);
+    const scrollListener = () => setFixedPositionStyle(getFixedPositionStyles());
+    scrollableParents.forEach((parent) => parent.addEventListener("scroll", scrollListener));
+    return () => scrollableParents.forEach((parent) => parent.removeEventListener("scroll", scrollListener));
+  }, []);
+  return u3(k2, { children: u3("div", { style: $app.config.teleportTo ? fixedPositionStyle : void 0, "data-testid": "date-picker-popup", className: classList.join(" "), children: datePickerView === DatePickerView.MONTH_DAYS ? u3(MonthView, { seatYearsView: () => setDatePickerView(DatePickerView.YEARS) }) : u3(YearsView, { setMonthView: () => setDatePickerView(DatePickerView.MONTH_DAYS) }) }) });
+}
+function AppWrapper({ $app }) {
+  const initialClassList = ["sx__date-picker-wrapper"];
+  const [classList, setClassList] = d3(initialClassList);
+  const elementRef = A3(null);
+  y3(() => {
+    if (elementRef && elementRef.current instanceof HTMLDivElement)
+      $app.elements = { DatePickerWrapper: elementRef.current };
+  }, []);
+  y3(() => {
+    var _a;
+    const list = [...initialClassList];
+    if ($app.datePickerState.isDark.value)
+      list.push("is-dark");
+    if ((_a = $app.config.style) === null || _a === void 0 ? void 0 : _a.fullWidth)
+      list.push("has-full-width");
+    if ($app.datePickerState.isDisabled.value)
+      list.push("is-disabled");
+    setClassList(list);
+  }, [$app.datePickerState.isDark.value, $app.datePickerState.isDisabled.value]);
+  let appPopupJSX = u3(AppPopup, { wrapperEl: elementRef.current });
+  if ($app.config.teleportTo)
+    appPopupJSX = $3(appPopupJSX, $app.config.teleportTo);
+  return u3(k2, { children: u3("div", { ref: elementRef, className: classList.join(" "), children: u3(AppContext$1.Provider, { value: $app, children: [u3(AppInput, {}), $app.datePickerState.isOpen.value && appPopupJSX] }) }) });
+}
+var DatePickerAppSingletonImpl = class {
+  constructor(datePickerState, config2, timeUnitsImpl, translate2, elements = {}) {
+    Object.defineProperty(this, "datePickerState", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: datePickerState
+    });
+    Object.defineProperty(this, "config", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: config2
+    });
+    Object.defineProperty(this, "timeUnitsImpl", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: timeUnitsImpl
+    });
+    Object.defineProperty(this, "translate", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: translate2
+    });
+    Object.defineProperty(this, "elements", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: elements
+    });
+  }
+};
+var DatePickerAppSingletonBuilder = class {
+  constructor() {
+    Object.defineProperty(this, "datePickerState", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "config", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "timeUnitsImpl", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "translate", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+  }
+  build() {
+    return new DatePickerAppSingletonImpl(this.datePickerState, this.config, this.timeUnitsImpl, this.translate);
+  }
+  withDatePickerState(datePickerState) {
+    this.datePickerState = datePickerState;
+    return this;
+  }
+  withConfig(config2) {
+    this.config = config2;
+    return this;
+  }
+  withTimeUnitsImpl(timeUnitsImpl) {
+    this.timeUnitsImpl = timeUnitsImpl;
+    return this;
+  }
+  withTranslate(translate2) {
+    this.translate = translate2;
+    return this;
+  }
+};
+var InternalViewName;
+(function(InternalViewName3) {
+  InternalViewName3["Day"] = "day";
+  InternalViewName3["Week"] = "week";
+  InternalViewName3["MonthGrid"] = "month-grid";
+  InternalViewName3["MonthAgenda"] = "month-agenda";
+  InternalViewName3["List"] = "list";
+})(InternalViewName || (InternalViewName = {}));
+var getLocaleStringMonthArgs = ($app) => {
+  return [$app.config.locale.value, { month: "long" }];
+};
+var getLocaleStringYearArgs = ($app) => {
+  return [$app.config.locale.value, { year: "numeric" }];
+};
+var getMonthAndYearForDateRange = ($app, rangeStart, rangeEnd) => {
+  const startDateMonth = rangeStart.toLocaleString(...getLocaleStringMonthArgs($app));
+  const startDateYear = rangeStart.toLocaleString(...getLocaleStringYearArgs($app));
+  const endDateMonth = rangeEnd.toLocaleString(...getLocaleStringMonthArgs($app));
+  const endDateYear = rangeEnd.toLocaleString(...getLocaleStringYearArgs($app));
+  if (startDateMonth === endDateMonth && startDateYear === endDateYear) {
+    return `${startDateMonth} ${startDateYear}`;
+  } else if (startDateMonth !== endDateMonth && startDateYear === endDateYear) {
+    return `${startDateMonth} \u2013 ${endDateMonth} ${startDateYear}`;
+  }
+  return `${startDateMonth} ${startDateYear} \u2013 ${endDateMonth} ${endDateYear}`;
+};
+var getMonthAndYearForSelectedDate = ($app) => {
+  const dateMonth = $app.datePickerState.selectedDate.value.toLocaleString(...getLocaleStringMonthArgs($app));
+  const dateYear = $app.datePickerState.selectedDate.value.toLocaleString(...getLocaleStringYearArgs($app));
+  return `${dateMonth} ${dateYear}`;
+};
+function RangeHeading() {
+  const $app = x3(AppContext);
+  const [currentHeading, setCurrentHeading] = d3("");
+  useSignalEffect(() => {
+    if ($app.calendarState.view.value === InternalViewName.Week) {
+      setCurrentHeading(getMonthAndYearForDateRange($app, $app.calendarState.range.value.start, $app.calendarState.range.value.end));
+    }
+    if ($app.calendarState.view.value === InternalViewName.MonthGrid || $app.calendarState.view.value === InternalViewName.Day || $app.calendarState.view.value === InternalViewName.MonthAgenda) {
+      setCurrentHeading(getMonthAndYearForSelectedDate($app));
+    }
+  });
+  return u3("span", { className: "sx__range-heading", children: currentHeading });
+}
+function TodayButton() {
+  const $app = x3(AppContext);
+  const setToday = () => {
+    $app.datePickerState.selectedDate.value = Temporal.PlainDate.from(Temporal.Now.plainDateISO($app.config.timezone.value));
+  };
+  return u3("button", { type: "button", className: "sx__button sx__today-button sx__ripple", onClick: setToday, children: $app.translate("Today") });
+}
+function ViewSelection() {
+  const $app = x3(AppContext);
+  const viewSelectId = randomStringId();
+  const viewLabelId = randomStringId();
+  const [availableViews, setAvailableViews] = d3([]);
+  useSignalEffect(() => {
+    if ($app.calendarState.isCalendarSmall.value) {
+      setAvailableViews($app.config.views.value.filter((view) => view.hasSmallScreenCompat));
+    } else {
+      setAvailableViews($app.config.views.value.filter((view) => view.hasWideScreenCompat));
+    }
+  });
+  const getInitialSelectedViewLabel = () => {
+    const selectedView = $app.config.views.value.find((view) => view.name === $app.calendarState.view.value);
+    return selectedView ? $app.translate(selectedView.label) : "";
+  };
+  const [selectedViewLabel, setSelectedViewLabel] = d3(getInitialSelectedViewLabel());
+  useSignalEffect(() => {
+    const selectedView = $app.config.views.value.find((view) => view.name === $app.calendarState.view.value);
+    if (!selectedView)
+      return;
+    setSelectedViewLabel($app.translate(selectedView.label));
+  });
+  const [isOpen, setIsOpen] = d3(false);
+  const clickOutsideListener = (event) => {
+    const target = event.target;
+    if (target instanceof HTMLElement && !target.closest(".sx__view-selection")) {
+      setIsOpen(false);
+    }
+  };
+  y3(() => {
+    document.addEventListener("click", clickOutsideListener);
+    return () => document.removeEventListener("click", clickOutsideListener);
+  }, []);
+  const handleClickOnSelectionItem = (viewName) => {
+    setIsOpen(false);
+    $app.calendarState.setView(viewName, $app.datePickerState.selectedDate.value);
+  };
+  const [viewSelectionItems, setViewSelectionItems] = d3();
+  const [focusedViewIndex, setFocusedViewIndex] = d3(0);
+  const handleSelectedViewKeyDown = (keyboardEvent) => {
+    if (isKeyEnterOrSpace(keyboardEvent)) {
+      setIsOpen(!isOpen);
+    }
+    setTimeout(() => {
+      var _a;
+      const allOptions = (_a = $app.elements.calendarWrapper) === null || _a === void 0 ? void 0 : _a.querySelectorAll(".sx__view-selection-item");
+      if (!allOptions)
+        return;
+      setViewSelectionItems(allOptions);
+      const firstOption = allOptions[0];
+      if (firstOption instanceof HTMLElement) {
+        setFocusedViewIndex(0);
+        firstOption.focus();
+      }
+    }, 50);
+  };
+  const navigateUpOrDown = (keyboardEvent, viewName) => {
+    if (!viewSelectionItems)
+      return;
+    if (keyboardEvent.key === "ArrowDown") {
+      const nextOption = viewSelectionItems[focusedViewIndex + 1];
+      if (nextOption instanceof HTMLElement) {
+        setFocusedViewIndex(focusedViewIndex + 1);
+        nextOption.focus();
+      }
+    } else if (keyboardEvent.key === "ArrowUp") {
+      const prevOption = viewSelectionItems[focusedViewIndex - 1];
+      if (prevOption instanceof HTMLElement) {
+        setFocusedViewIndex(focusedViewIndex - 1);
+        prevOption.focus();
+      }
+    } else if (isKeyEnterOrSpace(keyboardEvent)) {
+      handleClickOnSelectionItem(viewName);
+    }
+  };
+  return u3("div", { className: `sx__view-selection ${isOpen ? "is-open" : ""}`, children: [u3("label", { for: viewSelectId, id: viewLabelId, className: "sx__view-selection-label", children: $app.translate("View") }), u3("div", { id: viewSelectId, tabIndex: 0, role: "button", "aria-describedby": viewLabelId, "aria-label": $app.translate("Select View"), className: "sx__view-selection-selected-item sx__ripple", onClick: () => setIsOpen(!isOpen), onKeyDown: handleSelectedViewKeyDown, children: [selectedViewLabel, u3("img", { className: "sx__view-selection-chevron", src: img, alt: "" })] }), isOpen && u3("ul", { "data-testid": "view-selection-items", className: "sx__view-selection-items", children: availableViews.map((view) => u3("li", { "aria-label": $app.translate("Select View") + " " + $app.translate(view.label), tabIndex: -1, role: "button", onKeyDown: (keyboardEvent) => navigateUpOrDown(keyboardEvent, view.name), onClick: () => handleClickOnSelectionItem(view.name), className: "sx__view-selection-item" + (view.name === $app.calendarState.view.value ? " is-selected" : ""), children: $app.translate(view.label) })) })] });
+}
+function ForwardBackwardNavigation() {
+  var _a;
+  const $app = x3(AppContext);
+  const navigate = (direction) => {
+    const currentView = $app.config.views.value.find((view) => view.name === $app.calendarState.view.value);
+    if (!currentView)
+      return;
+    $app.datePickerState.selectedDate.value = currentView.backwardForwardFn($app.datePickerState.selectedDate.value, direction === "forwards" ? currentView.backwardForwardUnits : -currentView.backwardForwardUnits);
+  };
+  const [localizedRange, setLocalizedRange] = d3("");
+  useSignalEffect(() => {
+    setLocalizedRange(`${getLocalizedDate$1($app.calendarState.range.value.start, $app.config.locale.value)} ${$app.translate("to")} ${getLocalizedDate$1($app.calendarState.range.value.end, $app.config.locale.value)}`);
+  });
+  const [rangeEndMinusOneRange, setRangeEndMinusOneRange] = d3(null);
+  const [rangeStartPlusOneRange, setRangeStartPlusOneRange] = d3(null);
+  useSignalEffect(() => {
+    const selectedView = $app.config.views.value.find((view) => view.name === $app.calendarState.view.value);
+    if (!selectedView)
+      return;
+    setRangeEndMinusOneRange(selectedView.setDateRange({
+      range: $app.calendarState.range,
+      calendarConfig: $app.config,
+      timeUnitsImpl: $app.timeUnitsImpl,
+      date: (() => {
+        const result = selectedView.backwardForwardFn($app.datePickerState.selectedDate.value, -selectedView.backwardForwardUnits);
+        return result instanceof Temporal.ZonedDateTime ? result.toPlainDate() : result;
+      })()
+    }).end);
+    setRangeStartPlusOneRange(selectedView.setDateRange({
+      range: $app.calendarState.range,
+      calendarConfig: $app.config,
+      timeUnitsImpl: $app.timeUnitsImpl,
+      date: (() => {
+        const result = selectedView.backwardForwardFn($app.datePickerState.selectedDate.value, selectedView.backwardForwardUnits);
+        return result instanceof Temporal.ZonedDateTime ? result.toPlainDate() : result;
+      })()
+    }).start);
+  });
+  return u3(k2, { children: u3("div", { className: "sx__forward-backward-navigation", "aria-label": localizedRange, "aria-live": "polite", children: [u3(Chevron, { disabled: !!($app.config.minDate.value && dateFromDateTime((_a = rangeEndMinusOneRange === null || rangeEndMinusOneRange === void 0 ? void 0 : rangeEndMinusOneRange.toString()) !== null && _a !== void 0 ? _a : "") < $app.config.minDate.value.toString()), onClick: () => navigate("backwards"), direction: "previous", buttonText: $app.translate("Previous period") }), u3(Chevron, { disabled: !!($app.config.maxDate.value && rangeStartPlusOneRange && dateFromDateTime(rangeStartPlusOneRange.toString()) > $app.config.maxDate.value.toString()), onClick: () => navigate("forwards"), direction: "next", buttonText: $app.translate("Next period") })] }) });
+}
+var getElementByCCID = (customComponentId) => document.querySelector(`[data-ccid="${customComponentId}"]`);
+var getEventHeight = (start, end, dayBoundaries, pointsPerDay) => {
+  if (start === end) {
+    return timePointToPercentage(pointsPerDay, dayBoundaries, timePointsFromString(timeFromDateTime(addTimePointsToDateTime(end, 50).toString()))) - timePointToPercentage(pointsPerDay, dayBoundaries, timePointsFromString(timeFromDateTime(start.toString())));
+  }
+  return timePointToPercentage(pointsPerDay, dayBoundaries, timePointsFromString(timeFromDateTime(end.toString()))) - timePointToPercentage(pointsPerDay, dayBoundaries, timePointsFromString(timeFromDateTime(start.toString())));
+};
+var getInlineStartRule = (calendarEvent, eventWidth) => {
+  if (!calendarEvent._totalConcurrentEvents || !calendarEvent._previousConcurrentEvents)
+    return 0;
+  return (calendarEvent._previousConcurrentEvents || 0) / (calendarEvent._totalConcurrentEvents || 0) * eventWidth;
+};
+var getWidthRule = (leftRule, eventWidth, maxConcurrentEvents, eventOverlap) => {
+  if (eventOverlap || !maxConcurrentEvents)
+    return eventWidth - leftRule;
+  return eventWidth / maxConcurrentEvents;
+};
+var getBorderRule = (calendarEvent) => {
+  if (!calendarEvent._previousConcurrentEvents)
+    return 0;
+  return "1px solid #fff";
+};
+function useEventInteractions($app) {
+  const [eventCopy, setEventCopy] = d3();
+  const updateCopy = (newCopy) => {
+    if (!newCopy)
+      return setEventCopy(void 0);
+    setEventCopy(deepCloneEvent(newCopy, $app));
+  };
+  const [dragStartTimeout, setDragStartTimeout] = d3();
+  const createDragStartTimeout = (callback, uiEvent) => {
+    setDragStartTimeout(setTimeout(() => callback(uiEvent), 150));
+  };
+  const setClickedEvent = (uiEvent, calendarEvent) => {
+    if (isUIEventTouchEvent(uiEvent) && uiEvent.touches.length === 0)
+      return;
+    if (!$app.config.plugins.eventModal)
+      return;
+    const eventTarget = uiEvent.target;
+    if (!(eventTarget instanceof HTMLElement))
+      return;
+    const calendarEventElement = eventTarget.classList.contains("sx__event") ? eventTarget : eventTarget.closest(".sx__event");
+    if (calendarEventElement instanceof HTMLElement) {
+      $app.config.plugins.eventModal.calendarEventElement.value = calendarEventElement;
+      $app.config.plugins.eventModal.setCalendarEvent(calendarEvent, calendarEventElement.getBoundingClientRect());
+    }
+  };
+  const setClickedEventIfNotDragging = (calendarEvent, uiEvent) => {
+    if (dragStartTimeout) {
+      clearTimeout(dragStartTimeout);
+      setClickedEvent(uiEvent, calendarEvent);
+    }
+    setDragStartTimeout(void 0);
+  };
+  return {
+    eventCopy,
+    updateCopy,
+    createDragStartTimeout,
+    setClickedEventIfNotDragging,
+    setClickedEvent
+  };
+}
+var getCCID = (customComponent, isCopy) => {
+  let customComponentId = customComponent ? "custom-time-grid-event-" + randomStringId() : void 0;
+  if (customComponentId && isCopy)
+    customComponentId += "-copy";
+  return customComponentId;
+};
+var wasEventAddedInLastSecond = (calendarEvent) => {
+  return calendarEvent._createdAt && Date.now() - calendarEvent._createdAt.getTime() < 1e3;
+};
+function TimeGridEvent({ calendarEvent, dayBoundariesDateTime, isCopy, setMouseDown }) {
+  var _a, _b, _c, _d;
+  const $app = x3(AppContext);
+  const eventRef = A3(null);
+  const [isCompact, setIsCompact] = d3(false);
+  const { eventCopy, updateCopy, createDragStartTimeout, setClickedEventIfNotDragging, setClickedEvent } = useEventInteractions($app);
+  const localizeArgs = [
+    $app.config.locale.value,
+    { hour: "numeric", minute: "numeric" }
+  ];
+  const getEventTime = (start, end) => {
+    const localizedStartTime = start.toLocaleString(...localizeArgs);
+    if (start === end) {
+      return localizedStartTime;
+    }
+    const localizedEndTime = end.toLocaleString(...localizeArgs);
+    return `${localizedStartTime} \u2013 ${localizedEndTime}`;
+  };
+  const eventCSSVariables = {
+    borderInlineStart: `4px solid var(--sx-color-${calendarEvent._color})`,
+    textColor: `var(--sx-color-on-${calendarEvent._color}-container)`,
+    backgroundColor: `var(--sx-color-${calendarEvent._color}-container)`,
+    iconStroke: `var(--sx-color-on-${calendarEvent._color}-container)`
+  };
+  const insetInlineStart = getInlineStartRule(calendarEvent, $app.config.weekOptions.value.eventWidth);
+  const handleStartDrag = (uiEvent) => {
+    var _a2;
+    if (isUIEventTouchEvent(uiEvent))
+      uiEvent.preventDefault();
+    if (isCopy)
+      return;
+    if (!uiEvent.target)
+      return;
+    if (!$app.config.plugins.dragAndDrop)
+      return;
+    if ((_a2 = calendarEvent._options) === null || _a2 === void 0 ? void 0 : _a2.disableDND)
+      return;
+    if (realStartIsBeforeDayBoundaryStart)
+      return;
+    const newEventCopy = deepCloneEvent(calendarEvent, $app);
+    updateCopy(newEventCopy);
+    $app.config.plugins.dragAndDrop.startTimeGridDrag({
+      $app,
+      eventCoordinates: getEventCoordinates(uiEvent),
+      updateCopy,
+      eventCopy: newEventCopy
+    }, dayBoundariesDateTime);
+  };
+  const customComponent = $app.config._customComponentFns.timeGridEvent;
+  const customComponentId = A3(getCCID(customComponent, isCopy));
+  y3(() => {
+    if (!customComponent)
+      return;
+    customComponent(getElementByCCID(customComponentId.current), {
+      calendarEvent: calendarEvent._getExternalEvent()
+    });
+    return () => {
+      var _a2, _b2;
+      (_b2 = (_a2 = $app.config)._destroyCustomComponentInstance) === null || _b2 === void 0 ? void 0 : _b2.call(_a2, customComponentId.current);
+    };
+  }, [calendarEvent, eventCopy]);
+  y3(() => {
+    if (!eventRef.current)
+      return;
+    const checkHeight = () => {
+      const element = eventRef.current;
+      if (!element)
+        return;
+      const height = element.offsetHeight;
+      const shouldBeCompact = height < 36;
+      setIsCompact(shouldBeCompact);
+    };
+    checkHeight();
+    const resizeObserver = new ResizeObserver(checkHeight);
+    resizeObserver.observe(eventRef.current);
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [calendarEvent, eventCopy]);
+  const handleOnClick = (e5) => {
+    e5.stopPropagation();
+    invokeOnEventClickCallback($app, calendarEvent, e5);
+  };
+  const handleOnDoubleClick = (e5) => {
+    e5.stopPropagation();
+    invokeOnEventDoubleClickCallback($app, calendarEvent, e5);
+  };
+  const handleKeyDown = (e5) => {
+    if (e5.key === "Enter" || e5.key === " ") {
+      e5.stopPropagation();
+      setClickedEvent(e5, calendarEvent);
+      invokeOnEventClickCallback($app, calendarEvent, e5);
+      nextTick(() => {
+        focusModal($app);
+      });
+    }
+  };
+  const startResize = (e5) => {
+    setMouseDown(true);
+    e5.stopPropagation();
+    if (isCopy)
+      return;
+    if ($app.config.plugins.resize) {
+      const eventCopy2 = deepCloneEvent(calendarEvent, $app);
+      updateCopy(eventCopy2);
+      $app.config.plugins.resize.createTimeGridEventResizer(eventCopy2, updateCopy, e5, dayBoundariesDateTime);
+    }
+  };
+  const borderRule = getBorderRule(calendarEvent);
+  const classNames = ["sx__time-grid-event", "sx__event"];
+  if (wasEventAddedInLastSecond(calendarEvent))
+    classNames.push("is-event-new");
+  if (isCopy)
+    classNames.push("is-event-copy");
+  if (!$app.config.weekOptions.value.eventOverlap && calendarEvent._maxConcurrentEvents && calendarEvent._maxConcurrentEvents > 1)
+    classNames.push("is-event-overlap");
+  if ((_a = calendarEvent._options) === null || _a === void 0 ? void 0 : _a.additionalClasses)
+    classNames.push(...calendarEvent._options.additionalClasses);
+  const handlePointerDown = (e5) => {
+    setMouseDown(true);
+    createDragStartTimeout(handleStartDrag, e5);
+  };
+  const handlePointerUp = (e5) => {
+    nextTick(() => setMouseDown(false));
+    setClickedEventIfNotDragging(calendarEvent, e5);
+  };
+  const hasCustomContent = (_b = calendarEvent._customContent) === null || _b === void 0 ? void 0 : _b.timeGrid;
+  const realStartIsBeforeDayBoundaryStart = dayBoundariesDateTime && calendarEvent.start.toString() < dayBoundariesDateTime.start.toString() && calendarEvent.end.toString() >= dayBoundariesDateTime.start.toString();
+  const relativeStartWithinDayBoundary = realStartIsBeforeDayBoundaryStart ? dayBoundariesDateTime === null || dayBoundariesDateTime === void 0 ? void 0 : dayBoundariesDateTime.start : calendarEvent.start;
+  return u3(k2, { children: [u3("div", { ref: eventRef, id: isCopy ? getTimeGridEventCopyElementId(calendarEvent.id) : void 0, "data-event-id": calendarEvent.id, onClick: handleOnClick, onDblClick: handleOnDoubleClick, onKeyDown: handleKeyDown, onMouseDown: handlePointerDown, onMouseUp: handlePointerUp, onTouchStart: handlePointerDown, onTouchEnd: handlePointerUp, className: classNames.join(" "), tabIndex: 0, role: "button", style: {
+    top: `${getYCoordinateInTimeGrid(relativeStartWithinDayBoundary, $app.config.dayBoundaries.value, $app.config.timePointsPerDay)}%`,
+    height: `${getEventHeight(relativeStartWithinDayBoundary, calendarEvent.end, $app.config.dayBoundaries.value, $app.config.timePointsPerDay)}%`,
+    insetInlineStart: `${insetInlineStart}%`,
+    width: `${getWidthRule(insetInlineStart, isCopy ? 100 : $app.config.weekOptions.value.eventWidth, calendarEvent._maxConcurrentEvents, $app.config.weekOptions.value.eventOverlap)}%`,
+    backgroundColor: customComponent ? void 0 : eventCSSVariables.backgroundColor,
+    color: customComponent ? void 0 : eventCSSVariables.textColor,
+    borderTop: borderRule,
+    borderInlineEnd: borderRule,
+    borderBottom: borderRule,
+    borderInlineStart: customComponent ? void 0 : eventCSSVariables.borderInlineStart,
+    padding: customComponent ? "0" : void 0
+  }, children: u3("div", { "data-ccid": customComponentId.current, className: "sx__time-grid-event-inner", children: [!customComponent && !hasCustomContent && u3(k2, { children: [isCompact && calendarEvent.title && u3("div", { className: "sx__title-and-time-compact", children: [u3("div", { className: "sx__time-grid-event-title", children: calendarEvent.title }), u3("div", { className: "sx__time-grid-event-time", children: timeFn(calendarEvent.start, $app.config.locale.value) })] }), !isCompact && calendarEvent.title && u3("div", { className: "sx__time-grid-event-title", children: calendarEvent.title }), (!isCompact || isCompact && !calendarEvent.title) && u3("div", { className: "sx__time-grid-event-time", children: [u3(TimeIcon, { strokeColor: eventCSSVariables.iconStroke }), getEventTime(calendarEvent.start, calendarEvent.end)] }), calendarEvent.people && calendarEvent.people.length > 0 && u3("div", { className: "sx__time-grid-event-people", children: [u3(UserIcon, { strokeColor: eventCSSVariables.iconStroke }), concatenatePeople(calendarEvent.people)] }), calendarEvent.location && u3("div", { className: "sx__time-grid-event-location", children: [u3(LocationPinIcon, { strokeColor: eventCSSVariables.iconStroke }), calendarEvent.location] })] }), hasCustomContent && u3("div", { dangerouslySetInnerHTML: {
+    __html: ((_c = calendarEvent._customContent) === null || _c === void 0 ? void 0 : _c.timeGrid) || ""
+  } }), $app.config.plugins.resize && !((_d = calendarEvent._options) === null || _d === void 0 ? void 0 : _d.disableResize) && u3("div", { className: "sx__time-grid-event-resize-handle", onMouseDown: startResize, onTouchStart: startResize })] }) }), eventCopy && u3(TimeGridEvent, { calendarEvent: eventCopy, isCopy: true, setMouseDown, dayBoundariesDateTime })] });
+}
+var sortEventsByStartAndEnd = (a5, b5) => {
+  if (a5.start.toString() === b5.start.toString()) {
+    if (a5.end.toString() < b5.end.toString())
+      return 1;
+    if (a5.end.toString() > b5.end.toString())
+      return -1;
+    return 0;
+  }
+  if (a5.start.toString() < b5.start.toString())
+    return -1;
+  if (a5.start.toString() > b5.start.toString())
+    return 1;
+  return 0;
+};
+var sortEventsForMonthGrid = (a5, b5) => {
+  const aStartDate = dateFromDateTime(a5.start.toString());
+  const bStartDate = dateFromDateTime(b5.start.toString());
+  const aEndDate = dateFromDateTime(a5.end.toString());
+  const bEndDate = dateFromDateTime(b5.end.toString());
+  if (aStartDate === bStartDate && aEndDate === bEndDate) {
+    if (a5.start.toString() < b5.start.toString())
+      return -1;
+  }
+  if (aStartDate === bStartDate) {
+    if (aEndDate < bEndDate)
+      return 1;
+    if (aEndDate > bEndDate)
+      return -1;
+    return 0;
+  }
+  if (aStartDate < bStartDate)
+    return -1;
+  if (aStartDate > bStartDate)
+    return 1;
+  return 0;
+};
+var areSameMinute = (start, end) => {
+  return start.year === end.year && start.month === end.month && start.day === end.day && start.hour === end.hour && start.minute === end.minute;
+};
+var isEvent0Minutes = (e5) => {
+  return (e5 === null || e5 === void 0 ? void 0 : e5.start) instanceof Temporal.ZonedDateTime && (e5 === null || e5 === void 0 ? void 0 : e5.end) instanceof Temporal.ZonedDateTime && areSameMinute(e5.start, e5.end);
+};
+var areEvents0MinutesAndConcurrent = (e1, e22) => {
+  return isEvent0Minutes(e1) && isEvent0Minutes(e22) && (e1 === null || e1 === void 0 ? void 0 : e1.start) instanceof Temporal.ZonedDateTime && (e22 === null || e22 === void 0 ? void 0 : e22.start) instanceof Temporal.ZonedDateTime && areSameMinute(e1.start, e22.start);
+};
+var handleEventConcurrency = (sortedEvents, concurrentEventsCache = [], currentIndex = 0) => {
+  for (let i5 = currentIndex; i5 < sortedEvents.length; i5++) {
+    const event = sortedEvents[i5];
+    const nextEvent = sortedEvents[i5 + 1];
+    const areBothEventsZeroMinutes = areEvents0MinutesAndConcurrent(event, nextEvent);
+    const everyConcurrentEventEndsBeforeNextEvent = nextEvent && concurrentEventsCache.every((e5) => e5.end.epochNanoseconds <= nextEvent.start.epochNanoseconds);
+    const currentEventOverlapsWithNextEvent = nextEvent && event.end.epochNanoseconds > nextEvent.start.epochNanoseconds;
+    if (concurrentEventsCache.length && (!nextEvent || everyConcurrentEventEndsBeforeNextEvent && !currentEventOverlapsWithNextEvent && !areBothEventsZeroMinutes)) {
+      concurrentEventsCache.push(event);
+      for (let ii2 = 0; ii2 < concurrentEventsCache.length; ii2++) {
+        const currentEvent = concurrentEventsCache[ii2];
+        const NpreviousConcurrentEvents = concurrentEventsCache.filter((cachedEvent, index) => {
+          if (cachedEvent === currentEvent || index > ii2)
+            return false;
+          if (areEvents0MinutesAndConcurrent(cachedEvent, currentEvent))
+            return true;
+          return cachedEvent.start.epochNanoseconds <= currentEvent.start.epochNanoseconds && cachedEvent.end.epochNanoseconds > currentEvent.start.epochNanoseconds;
+        }).length;
+        const NupcomingConcurrentEvents = concurrentEventsCache.filter((cachedEvent, index) => {
+          if (cachedEvent === currentEvent || index < ii2)
+            return false;
+          if (areEvents0MinutesAndConcurrent(cachedEvent, currentEvent))
+            return true;
+          return cachedEvent.start.epochNanoseconds < currentEvent.end.epochNanoseconds && cachedEvent.end.epochNanoseconds >= currentEvent.start.epochNanoseconds;
+        }).length;
+        currentEvent._totalConcurrentEvents = NpreviousConcurrentEvents + NupcomingConcurrentEvents + 1;
+        currentEvent._previousConcurrentEvents = NpreviousConcurrentEvents;
+        let maxOverlappingEvents = 0;
+        const timePoints = [];
+        concurrentEventsCache.forEach((cachedEvent) => {
+          if (cachedEvent.end.epochNanoseconds > currentEvent.start.epochNanoseconds && cachedEvent.start.epochNanoseconds < currentEvent.end.epochNanoseconds || areEvents0MinutesAndConcurrent(cachedEvent, currentEvent)) {
+            timePoints.push({
+              time: cachedEvent.start.toString(),
+              type: "start"
+            });
+            timePoints.push({ time: cachedEvent.end.toString(), type: "end" });
+          }
+        });
+        timePoints.sort((a5, b5) => a5.time.localeCompare(b5.time) || (a5.type === "end" ? -1 : 1));
+        let currentOverlap = 0;
+        timePoints.forEach((point) => {
+          if (point.type === "start") {
+            currentOverlap++;
+            maxOverlappingEvents = Math.max(maxOverlappingEvents, currentOverlap);
+          } else {
+            currentOverlap--;
+          }
+        });
+        currentEvent._maxConcurrentEvents = maxOverlappingEvents;
+      }
+      concurrentEventsCache = [];
+      return handleEventConcurrency(sortedEvents, concurrentEventsCache, i5 + 1);
+    }
+    if (nextEvent && event.end.epochNanoseconds > nextEvent.start.epochNanoseconds || concurrentEventsCache.some((e5) => e5.end.epochNanoseconds > event.start.epochNanoseconds) || areBothEventsZeroMinutes) {
+      concurrentEventsCache.push(event);
+      return handleEventConcurrency(sortedEvents, concurrentEventsCache, i5 + 1);
+    }
+    event._totalConcurrentEvents = 1;
+    event._previousConcurrentEvents = 0;
+    event._maxConcurrentEvents = 1;
+  }
+  return sortedEvents;
+};
+var getClickDateTime = (e5, $app, dayStartDateTime) => {
+  if (!(e5.target instanceof HTMLElement))
+    return;
+  const DAY_GRID_CLASS_NAME = "sx__time-grid-day";
+  const dayGridElement = e5.target.classList.contains(DAY_GRID_CLASS_NAME) ? e5.target : e5.target.closest("." + DAY_GRID_CLASS_NAME);
+  const clientY = e5.clientY - dayGridElement.getBoundingClientRect().top;
+  const clickPercentageOfDay = clientY / dayGridElement.getBoundingClientRect().height * 100;
+  const clickTimePointsIntoDay = Math.round($app.config.timePointsPerDay / 100 * clickPercentageOfDay);
+  return addTimePointsToDateTime(dayStartDateTime, clickTimePointsIntoDay);
+};
+var getClassNameForWeekday = (weekday) => {
+  switch (weekday) {
+    case 1:
+      return "sx__monday";
+    case 2:
+      return "sx__tuesday";
+    case 3:
+      return "sx__wednesday";
+    case 4:
+      return "sx__thursday";
+    case 5:
+      return "sx__friday";
+    case 6:
+      return "sx__saturday";
+    case 7:
+      return "sx__sunday";
+    default:
+      throw new Error(`Invalid weekday ${weekday}`);
+  }
+};
+function TimeGridBackgroundEvent({ backgroundEvent, date }) {
+  const $app = x3(AppContext);
+  let start = backgroundEvent.start;
+  let end = backgroundEvent.end;
+  const startIsAnotherDate = !isSameDay(start, Temporal.PlainDate.from(date));
+  const endIsAnotherDate = !isSameDay(end, Temporal.PlainDate.from(date));
+  if (startIsAnotherDate || start instanceof Temporal.PlainDate) {
+    start = Temporal.ZonedDateTime.from({
+      year: Temporal.PlainDate.from(date).year,
+      month: Temporal.PlainDate.from(date).month,
+      day: Temporal.PlainDate.from(date).day,
+      hour: 0,
+      minute: 0,
+      second: 0,
+      timeZone: $app.config.timezone.value
+    });
+  }
+  if (endIsAnotherDate || end instanceof Temporal.PlainDate) {
+    end = Temporal.ZonedDateTime.from({
+      year: Temporal.PlainDate.from(date).year,
+      month: Temporal.PlainDate.from(date).month,
+      day: Temporal.PlainDate.from(date).day,
+      hour: 23,
+      minute: 59,
+      second: 59,
+      timeZone: $app.config.timezone.value
+    });
+  }
+  const startHour = start.hour;
+  const startMinute = start.minute;
+  const formattedStart = `${startHour.toString().padStart(2, "0")}:${startMinute.toString().padStart(2, "0")}`;
+  const startTimePoints = timePointsFromString(formattedStart);
+  if (startTimePoints < $app.config.dayBoundaries.value.start) {
+    const updatedStart = timeStringFromTimePoints($app.config.dayBoundaries.value.start);
+    const updatedStartHour = updatedStart.split(":")[0];
+    const updatedStartMinute = updatedStart.split(":")[1];
+    start = Temporal.ZonedDateTime.from({
+      year: Temporal.PlainDate.from(date).year,
+      month: Temporal.PlainDate.from(date).month,
+      day: Temporal.PlainDate.from(date).day,
+      hour: +updatedStartHour,
+      minute: +updatedStartMinute,
+      second: 0,
+      timeZone: $app.config.timezone.value
+    });
+  }
+  if (start.toString() === end.toString()) {
+    return null;
+  }
+  return u3(k2, { children: u3("div", { class: "sx__time-grid-background-event", title: backgroundEvent.title, style: {
+    ...backgroundEvent.style,
+    position: "absolute",
+    zIndex: 0,
+    top: `${getYCoordinateInTimeGrid(start, $app.config.dayBoundaries.value, $app.config.timePointsPerDay)}%`,
+    height: `${getEventHeight(start, end, $app.config.dayBoundaries.value, $app.config.timePointsPerDay)}%`,
+    width: "100%"
+  } }) });
+}
+function TimeGridDay({ calendarEvents, date, backgroundEvents }) {
+  const [mouseDownOnChild, setMouseDownOnChild] = d3(false);
+  const $app = x3(AppContext);
+  const timeStringFromDayBoundary = timeStringFromTimePoints($app.config.dayBoundaries.value.start);
+  const timeStringFromDayBoundaryEnd = timeStringFromTimePoints($app.config.dayBoundaries.value.end);
+  const dayStartDateTime = date.with({
+    hour: +timeStringFromDayBoundary.split(":")[0],
+    minute: +timeStringFromDayBoundary.split(":")[1]
+  });
+  const endHour = +timeStringFromDayBoundaryEnd.split(":")[0];
+  const endWithAdjustedTime = date.with({
+    hour: endHour === 24 ? 23 : endHour,
+    minute: endHour === 24 ? 59 : +timeStringFromDayBoundaryEnd.split(":")[1],
+    second: endHour === 24 ? 59 : 0
+  });
+  const dayEndDateTime = $app.config.isHybridDay ? addDays(endWithAdjustedTime, 1) : endWithAdjustedTime;
+  const dayBoundariesDateTime = {
+    start: dayStartDateTime,
+    end: dayEndDateTime
+  };
+  const eventsWithConcurrency = T3(() => {
+    const sortedEvents = calendarEvents.sort(sortEventsByStartAndEnd);
+    return handleEventConcurrency(sortedEvents);
+  }, [calendarEvents]);
+  const handleOnClick = (e5, callback) => {
+    if (!callback || mouseDownOnChild)
+      return;
+    const clickDateTime = getClickDateTime(e5, $app, dayStartDateTime);
+    if (clickDateTime) {
+      callback(clickDateTime, e5);
+    }
+  };
+  const handleMouseDown = (e5) => {
+    const callback = $app.config.callbacks.onMouseDownDateTime;
+    if (!callback || mouseDownOnChild)
+      return;
+    const clickDateTime = getClickDateTime(e5, $app, dayStartDateTime);
+    if (clickDateTime) {
+      callback(clickDateTime, e5);
+    }
+  };
+  const handlePointerUp = () => {
+    const msWaitToEnsureThatClickEventWasDispatched = 10;
+    setTimeout(() => {
+      setMouseDownOnChild(false);
+    }, msWaitToEnsureThatClickEventWasDispatched);
+  };
+  const baseClasses = [
+    "sx__time-grid-day",
+    getClassNameForWeekday(date.dayOfWeek)
+  ];
+  const classNames = useComputed(() => {
+    const newClassNames = [...baseClasses];
+    if (isSameDay($app.datePickerState.selectedDate.value, date))
+      newClassNames.push("is-selected");
+    return newClassNames;
+  });
+  return u3("div", { className: classNames.value.join(" "), "data-time-grid-date": toDateString$1(date), onClick: (e5) => handleOnClick(e5, $app.config.callbacks.onClickDateTime), onDblClick: (e5) => handleOnClick(e5, $app.config.callbacks.onDoubleClickDateTime), "aria-label": getLocalizedDate$1(date, $app.config.locale.value), onMouseLeave: () => setMouseDownOnChild(false), onMouseUp: handlePointerUp, onTouchEnd: handlePointerUp, onMouseDown: handleMouseDown, children: [backgroundEvents.map((event) => u3(k2, { children: u3(TimeGridBackgroundEvent, { backgroundEvent: event, date: date.toString() }) })), eventsWithConcurrency.map((event) => u3(TimeGridEvent, { calendarEvent: event, dayBoundariesDateTime, setMouseDown: setMouseDownOnChild }, event.id))] });
+}
+var getTimeAxisHours = ({ start, end }, isHybridDay) => {
+  const hours = [];
+  let hour = Math.floor(start / 100);
+  if (isHybridDay) {
+    while (hour < 24) {
+      hours.push(hour);
+      hour += 1;
+    }
+    hour = 0;
+  }
+  const lastHour = end === 0 ? 24 : Math.ceil(end / 100);
+  while (hour < lastHour) {
+    hours.push(hour);
+    hour += 1;
+  }
+  return hours;
+};
+function TimeAxis() {
+  const $app = x3(AppContext);
+  const [gridSteps, setGridSteps] = d3([]);
+  useSignalEffect(() => {
+    const hourSteps = getTimeAxisHours($app.config.dayBoundaries.value, $app.config.isHybridDay);
+    const result = [];
+    hourSteps.forEach((hour) => {
+      if ($app.config.weekOptions.value.gridStep === 180) {
+        if (hour % 3 === 0) {
+          result.push({ hour, minute: 0 });
+        }
+      } else if ($app.config.weekOptions.value.gridStep === 120) {
+        if (hour % 2 === 0) {
+          result.push({ hour, minute: 0 });
+        }
+      } else if ($app.config.weekOptions.value.gridStep === 60) {
+        result.push({ hour, minute: 0 });
+      } else if ($app.config.weekOptions.value.gridStep === 30) {
+        result.push({ hour, minute: 0 }, { hour, minute: 30 });
+      } else if ($app.config.weekOptions.value.gridStep === 15) {
+        result.push({ hour, minute: 0 }, { hour, minute: 15 }, { hour, minute: 30 }, { hour, minute: 45 });
+      }
+    });
+    setGridSteps(result);
+    const pixelsPerGridStep = $app.config.weekOptions.value.gridHeight / result.length;
+    document.documentElement.style.setProperty("--sx-week-grid-hour-height", `${pixelsPerGridStep}px`);
+  });
+  const formatter = new Intl.DateTimeFormat($app.config.locale.value, $app.config.weekOptions.value.timeAxisFormatOptions);
+  const hourCustomComponentFn = $app.config._customComponentFns.weekGridHour;
+  const hourCCIDs = T3(() => {
+    if (!hourCustomComponentFn)
+      return [];
+    return gridSteps.map(() => `custom-week-grid-hour-${randomStringId()}`);
+  }, [gridSteps]);
+  y3(() => {
+    if (hourCustomComponentFn && hourCCIDs.length) {
+      gridSteps.forEach((gridStep, idx) => {
+        const el = document.querySelector(`[data-ccid="${hourCCIDs[idx]}"]`);
+        if (!(el instanceof HTMLElement)) {
+          return console.warn("Could not find element for custom component weekGridHour");
+        }
+        hourCustomComponentFn(el, { hour: gridStep.hour, gridStep });
+      });
+    }
+  }, [gridSteps, hourCCIDs]);
+  return u3(k2, { children: u3("div", { className: "sx__week-grid__time-axis", children: gridSteps.map((gridStep, index) => u3("div", { className: "sx__week-grid__hour", children: [hourCustomComponentFn && hourCCIDs.length && u3("div", { "data-ccid": hourCCIDs[index] }), !hourCustomComponentFn && u3("span", { className: "sx__week-grid__hour-text", children: formatter.format(new Date(0, 0, 0, gridStep.hour, gridStep.minute)) })] })) }) });
+}
+function DateAxis({ week }) {
+  const $app = x3(AppContext);
+  const getClassNames = (date) => {
+    const classNames = [
+      "sx__week-grid__date",
+      getClassNameForWeekday(date.dayOfWeek)
+    ];
+    if (isToday(date, $app.config.timezone.value)) {
+      classNames.push("sx__week-grid__date--is-today");
+    }
+    return classNames.join(" ");
+  };
+  const weekGridDateCustomComponentFn = $app.config._customComponentFns.weekGridDate;
+  const weekGridDateCCIDs = d3(() => Array.from({ length: 7 }, () => `custom-week-grid-date-${randomStringId()}`));
+  y3(() => {
+    if (weekGridDateCustomComponentFn) {
+      week.forEach((date, idx) => {
+        const el = document.querySelector(`[data-ccid="${weekGridDateCCIDs[0][idx]}"]`);
+        if (!(el instanceof HTMLElement)) {
+          return console.warn("Could not find element for custom component weekGridDate");
+        }
+        weekGridDateCustomComponentFn(el, {
+          date: toDateString$1(date)
+        });
+      });
+    }
+  }, [week]);
+  return u3(k2, { children: u3("div", { className: "sx__week-grid__date-axis", children: week.map((date, idx) => u3("div", { className: getClassNames(date), "data-date": toDateString$1(date), children: [weekGridDateCustomComponentFn && u3("div", { "data-ccid": weekGridDateCCIDs[0][idx] }), !weekGridDateCustomComponentFn && u3(k2, { children: [u3("div", { className: "sx__week-grid__day-name", children: getDayNameShort(date, $app.config.locale.value) }), u3("div", { className: "sx__week-grid__date-number", children: date.day })] })] })) }) });
+}
+var sortEventsForWeekView = (allCalendarEvents) => {
+  const dateGridEvents = [];
+  const timeGridEvents = [];
+  for (const event of allCalendarEvents) {
+    if (event._isSingleDayTimed || event._isSingleHybridDayTimed) {
+      timeGridEvents.push(event);
+      continue;
+    }
+    if (event._isSingleDayFullDay || event._isMultiDayFullDay || event._isMultiDayTimed) {
+      dateGridEvents.push(event);
+    }
+  }
+  return { timeGridEvents, dateGridEvents };
+};
+var createOneDay = (week, date) => {
+  const dateString = toDateString$1(date);
+  week[dateString] = {
+    date: dateString,
+    timeGridEvents: [],
+    dateGridEvents: {},
+    backgroundEvents: []
+  };
+  return week;
+};
+var createWeek = ($app) => {
+  if ($app.calendarState.view.value === InternalViewName.Day)
+    return createOneDay({}, $app.calendarState.range.value.start);
+  return $app.timeUnitsImpl.getWeekFor($app.datePickerState.selectedDate.value).slice(0, $app.config.weekOptions.value.nDays).reduce(createOneDay, {});
+};
+var positionInTimeGrid = (timeGridEvents, week, $app) => {
+  var _a;
+  for (const event of timeGridEvents) {
+    const range = $app.calendarState.range.value;
+    if (event.start.epochNanoseconds >= range.start.epochNanoseconds && event.end.epochNanoseconds <= range.end.epochNanoseconds) {
+      let date = dateFromDateTime(event.start.toString());
+      if ($app.config.isHybridDay) {
+        const { year, month, date: day } = toIntegers(date);
+        const previousDayStart = `${addDays(Temporal.PlainDate.from({ year, month: month + 1, day }), -1)} ${timeStringFromTimePoints($app.config.dayBoundaries.value.start)}`;
+        const previousDayEnd = `${date} ${timeStringFromTimePoints($app.config.dayBoundaries.value.end)}`;
+        const actualDayStart = `${date} ${timeStringFromTimePoints($app.config.dayBoundaries.value.start)}`;
+        const eventStartZDT = event.start;
+        const eventStartFloating = `${eventStartZDT.year}-${doubleDigit(eventStartZDT.month)}-${doubleDigit(eventStartZDT.day)} ${doubleDigit(eventStartZDT.hour)}:${doubleDigit(eventStartZDT.minute)}`;
+        if (eventStartFloating > previousDayStart && eventStartFloating < previousDayEnd && eventStartFloating < actualDayStart) {
+          const { year: year2, month: month2, date: day2 } = toIntegers(date);
+          date = dateFromDateTime(addDays(Temporal.PlainDate.from({ year: year2, month: month2 + 1, day: day2 }), -1).toString());
+        }
+      }
+      (_a = week[date]) === null || _a === void 0 ? void 0 : _a.timeGridEvents.push(event);
+    }
+  }
+  return week;
+};
+InternalViewName.Week;
+var DEFAULT_DAY_BOUNDARIES = {
+  start: 0,
+  end: 2400
+};
+var DEFAULT_WEEK_GRID_HEIGHT = 1600;
+var DATE_GRID_BLOCKER = "blocker";
+var positionInDateGrid = (sortedDateGridEvents, week) => {
+  const weekDates = Object.keys(week).sort();
+  const firstDateOfWeek = weekDates[0];
+  const lastDateOfWeek = weekDates[weekDates.length - 1];
+  const occupiedLevels = /* @__PURE__ */ new Set();
+  for (const event of sortedDateGridEvents) {
+    const eventOriginalStartDate = dateFromDateTime(event.start.toString());
+    const eventOriginalEndDate = dateFromDateTime(event.end.toString());
+    const isEventStartInWeek = !!week[eventOriginalStartDate];
+    let isEventInWeek = isEventStartInWeek;
+    if (!isEventStartInWeek && eventOriginalStartDate < firstDateOfWeek && eventOriginalEndDate >= firstDateOfWeek) {
+      isEventInWeek = true;
+    }
+    if (!isEventInWeek)
+      continue;
+    const firstDateOfEvent = isEventStartInWeek ? eventOriginalStartDate : firstDateOfWeek;
+    const lastDateOfEvent = eventOriginalEndDate <= lastDateOfWeek ? eventOriginalEndDate : lastDateOfWeek;
+    const eventDays = Object.values(week).filter((day) => {
+      return day.date >= firstDateOfEvent && day.date <= lastDateOfEvent;
+    });
+    let levelInWeekForEvent;
+    let testLevel = 0;
+    while (levelInWeekForEvent === void 0) {
+      const isLevelFree = eventDays.every((day) => {
+        return !day.dateGridEvents[testLevel];
+      });
+      if (isLevelFree) {
+        levelInWeekForEvent = testLevel;
+        occupiedLevels.add(testLevel);
+      } else
+        testLevel++;
+    }
+    for (const [eventDayIndex, eventDay] of eventDays.entries()) {
+      if (eventDayIndex === 0) {
+        event._nDaysInGrid = eventDays.length;
+        eventDay.dateGridEvents[levelInWeekForEvent] = event;
+      } else {
+        eventDay.dateGridEvents[levelInWeekForEvent] = DATE_GRID_BLOCKER;
+      }
+    }
+  }
+  for (const level of Array.from(occupiedLevels)) {
+    for (const [, day] of Object.entries(week)) {
+      if (!day.dateGridEvents[level]) {
+        day.dateGridEvents[level] = void 0;
+      }
+    }
+  }
+  return week;
+};
+var getWidthToSubtract = (hasOverflowLeft, hasOverflowRight, enableOverflowSubtraction) => {
+  let widthToSubtract = 2;
+  const eventOverflowMargin = 10;
+  if (hasOverflowLeft && enableOverflowSubtraction)
+    widthToSubtract += eventOverflowMargin;
+  if (hasOverflowRight && enableOverflowSubtraction)
+    widthToSubtract += eventOverflowMargin;
+  return widthToSubtract;
+};
+var getBorderRadius = (hasOverflowLeft, hasOverflowRight, forceZeroRule) => {
+  return {
+    borderBottomLeftRadius: hasOverflowLeft || forceZeroRule ? 0 : void 0,
+    borderTopLeftRadius: hasOverflowLeft || forceZeroRule ? 0 : void 0,
+    borderBottomRightRadius: hasOverflowRight || forceZeroRule ? 0 : void 0,
+    borderTopRightRadius: hasOverflowRight || forceZeroRule ? 0 : void 0
+  };
+};
+function DateGridEvent({ calendarEvent, gridRow, isCopy }) {
+  var _a, _b, _c, _d;
+  const $app = x3(AppContext);
+  const { eventCopy, updateCopy, createDragStartTimeout, setClickedEventIfNotDragging, setClickedEvent } = useEventInteractions($app);
+  const eventCSSVariables = {
+    borderInlineStart: `4px solid var(--sx-color-${calendarEvent._color})`,
+    color: `var(--sx-color-on-${calendarEvent._color}-container)`,
+    backgroundColor: `var(--sx-color-${calendarEvent._color}-container)`
+  };
+  const handleStartDrag = (uiEvent) => {
+    var _a2;
+    if (!$app.config.plugins.dragAndDrop)
+      return;
+    if ((_a2 = calendarEvent._options) === null || _a2 === void 0 ? void 0 : _a2.disableDND)
+      return;
+    if (isUIEventTouchEvent(uiEvent))
+      uiEvent.preventDefault();
+    const newEventCopy = deepCloneEvent(calendarEvent, $app);
+    updateCopy(newEventCopy);
+    $app.config.plugins.dragAndDrop.startDateGridDrag({
+      eventCoordinates: getEventCoordinates(uiEvent),
+      eventCopy: newEventCopy,
+      updateCopy,
+      $app
+    });
+  };
+  const rangeStartForComparison = calendarEvent.start instanceof Temporal.ZonedDateTime ? $app.calendarState.range.value.start.toString() : Temporal.PlainDate.from({
+    year: $app.calendarState.range.value.start.year,
+    month: $app.calendarState.range.value.start.month,
+    day: $app.calendarState.range.value.start.day
+  }).toString();
+  const rangeEndForComparison = calendarEvent.end instanceof Temporal.ZonedDateTime ? $app.calendarState.range.value.end.toString() : Temporal.PlainDate.from({
+    year: $app.calendarState.range.value.end.year,
+    month: $app.calendarState.range.value.end.month,
+    day: $app.calendarState.range.value.end.day
+  }).toString();
+  const startsBeforeWeek = calendarEvent.start.toString() < rangeStartForComparison;
+  const endsAfterWeek = calendarEvent.end.toString() > rangeEndForComparison;
+  const hasOverflowLeft = T3(() => {
+    if ($app.config.direction === "ltr") {
+      return startsBeforeWeek;
+    }
+    return endsAfterWeek;
+  }, [startsBeforeWeek, endsAfterWeek]);
+  const hasOverflowRight = T3(() => {
+    if ($app.config.direction === "ltr") {
+      return endsAfterWeek;
+    }
+    return startsBeforeWeek;
+  }, [startsBeforeWeek, endsAfterWeek]);
+  const overflowStyles = { backgroundColor: eventCSSVariables.backgroundColor };
+  const customComponent = $app.config._customComponentFns.dateGridEvent;
+  const customComponentId = A3(customComponent ? "custom-date-grid-event-" + randomStringId() : void 0);
+  if (isCopy && customComponentId.current)
+    customComponentId.current += "-copy";
+  y3(() => {
+    if (!customComponent)
+      return;
+    customComponent(getElementByCCID(customComponentId.current), {
+      calendarEvent: calendarEvent._getExternalEvent()
+    });
+    return () => {
+      var _a2, _b2;
+      (_b2 = (_a2 = $app.config)._destroyCustomComponentInstance) === null || _b2 === void 0 ? void 0 : _b2.call(_a2, customComponentId.current);
+    };
+  }, [calendarEvent, eventCopy]);
+  const startResize = (mouseEvent) => {
+    mouseEvent.stopPropagation();
+    const eventCopy2 = deepCloneEvent(calendarEvent, $app);
+    updateCopy(eventCopy2);
+    $app.config.plugins.resize.createDateGridEventResizer(eventCopy2, updateCopy, mouseEvent);
+  };
+  const handleKeyDown = (e5) => {
+    if (e5.key === "Enter" || e5.key === " ") {
+      e5.stopPropagation();
+      setClickedEvent(e5, calendarEvent);
+      invokeOnEventClickCallback($app, calendarEvent, e5);
+      nextTick(() => {
+        focusModal($app);
+      });
+    }
+  };
+  const eventClasses = [
+    "sx__event",
+    "sx__date-grid-event",
+    "sx__date-grid-cell"
+  ];
+  if (isCopy)
+    eventClasses.push("sx__date-grid-event--copy");
+  if (wasEventAddedInLastSecond(calendarEvent))
+    eventClasses.push("is-event-new");
+  if (hasOverflowLeft)
+    eventClasses.push("sx__date-grid-event--overflow-left");
+  if (hasOverflowRight)
+    eventClasses.push("sx__date-grid-event--overflow-right");
+  if ((_a = calendarEvent._options) === null || _a === void 0 ? void 0 : _a.additionalClasses)
+    eventClasses.push(...calendarEvent._options.additionalClasses);
+  const borderInlineStartNonCustom = startsBeforeWeek ? "none" : eventCSSVariables.borderInlineStart;
+  const hasCustomContent = (_b = calendarEvent._customContent) === null || _b === void 0 ? void 0 : _b.dateGrid;
+  return u3(k2, { children: [u3("div", { id: isCopy ? getTimeGridEventCopyElementId(calendarEvent.id) : void 0, tabIndex: 0, "aria-label": calendarEvent.title + " " + getTimeStamp(calendarEvent, $app.config.locale.value, $app.translate("to")), role: "button", "data-ccid": customComponentId.current, "data-event-id": calendarEvent.id, onMouseDown: (e5) => createDragStartTimeout(handleStartDrag, e5), onMouseUp: (e5) => setClickedEventIfNotDragging(calendarEvent, e5), onTouchStart: (e5) => createDragStartTimeout(handleStartDrag, e5), onTouchEnd: (e5) => setClickedEventIfNotDragging(calendarEvent, e5), onClick: (e5) => invokeOnEventClickCallback($app, calendarEvent, e5), onDblClick: (e5) => invokeOnEventDoubleClickCallback($app, calendarEvent, e5), onKeyDown: handleKeyDown, className: eventClasses.join(" "), style: {
+    width: `calc(${calendarEvent._nDaysInGrid * 100}% - ${getWidthToSubtract(hasOverflowLeft, hasOverflowRight, !customComponent)}px)`,
+    gridRow,
+    display: eventCopy ? "none" : "flex",
+    padding: customComponent ? "0px" : void 0,
+    borderInlineStart: customComponent ? void 0 : borderInlineStartNonCustom,
+    color: customComponent ? void 0 : eventCSSVariables.color,
+    backgroundColor: customComponent ? void 0 : eventCSSVariables.backgroundColor,
+    ...getBorderRadius(hasOverflowLeft, hasOverflowRight, !!customComponent)
+  }, children: [!customComponent && !hasCustomContent && u3(k2, { children: [hasOverflowLeft && u3("div", { className: "sx__date-grid-event--left-overflow", style: overflowStyles }), u3("span", { className: "sx__date-grid-event-text", children: [calendarEvent.title, " \xA0", calendarEvent.start instanceof Temporal.ZonedDateTime && u3("span", { className: "sx__date-grid-event-time", children: timeFn(calendarEvent.start, $app.config.locale.value) })] }), hasOverflowRight && u3("div", { className: "sx__date-grid-event--right-overflow", style: overflowStyles })] }), hasCustomContent && u3("div", { dangerouslySetInnerHTML: {
+    __html: ((_c = calendarEvent._customContent) === null || _c === void 0 ? void 0 : _c.dateGrid) || ""
+  } }), $app.config.plugins.resize && !((_d = calendarEvent._options) === null || _d === void 0 ? void 0 : _d.disableResize) && !endsAfterWeek && u3("div", { className: "sx__date-grid-event-resize-handle", onMouseDown: startResize, onTouchStart: startResize })] }), eventCopy && u3(DateGridEvent, { calendarEvent: eventCopy, gridRow, isCopy: true })] });
+}
+function DateGridDay({ calendarEvents, date, backgroundEvents }) {
+  const $app = x3(AppContext);
+  const dateStart = Temporal.ZonedDateTime.from({
+    year: Temporal.PlainDate.from(date).year,
+    month: Temporal.PlainDate.from(date).month,
+    day: Temporal.PlainDate.from(date).day,
+    hour: $app.config.dayBoundaries.value.start === 0 ? 0 : $app.config.dayBoundaries.value.start / 100,
+    minute: 0,
+    second: 0,
+    timeZone: $app.config.timezone.value
+  });
+  let dateEnd = Temporal.ZonedDateTime.from({
+    year: Temporal.PlainDate.from(date).year,
+    month: Temporal.PlainDate.from(date).month,
+    day: Temporal.PlainDate.from(date).day,
+    hour: $app.config.dayBoundaries.value.end === 2400 ? 23 : $app.config.dayBoundaries.value.end / 100,
+    minute: $app.config.dayBoundaries.value.end === 2400 ? 59 : 0,
+    second: $app.config.dayBoundaries.value.end === 2400 ? 59 : 0,
+    timeZone: $app.config.timezone.value
+  });
+  if ($app.config.isHybridDay) {
+    dateEnd = dateEnd.add({ days: 1 });
+  }
+  const fullDayBackgroundEvent = backgroundEvents.find((event) => {
+    const eventStartWithTime = event.start instanceof Temporal.PlainDate ? event.start.toZonedDateTime($app.config.timezone.value) : event.start;
+    const eventEndWithTime = event.end instanceof Temporal.PlainDate ? event.end.toZonedDateTime($app.config.timezone.value).with({
+      hour: 23,
+      minute: 59,
+      second: 59
+    }) : event.end;
+    return eventStartWithTime.toString() <= dateStart.toString() && eventEndWithTime.toString() >= dateEnd.toString();
+  });
+  const handleMouseDown = (e5) => {
+    const callback = $app.config.callbacks.onMouseDownDateGridDate;
+    if (!callback)
+      return;
+    callback(Temporal.PlainDate.from(date), e5);
+  };
+  return u3("div", { className: "sx__date-grid-day", "data-date-grid-date": date, children: [fullDayBackgroundEvent && u3("div", { className: "sx__date-grid-background-event", title: fullDayBackgroundEvent.title, style: {
+    ...fullDayBackgroundEvent.style
+  } }), Object.values(calendarEvents).map((event, index) => {
+    if (event === DATE_GRID_BLOCKER || !event)
+      return u3("div", { className: "sx__date-grid-cell", style: { gridRow: index + 1 }, onMouseDown: handleMouseDown });
+    return u3(DateGridEvent, { calendarEvent: event, gridRow: index + 1 }, event.start.toString() + event.end.toString() + index);
+  }), u3("div", { className: "sx__spacer", onMouseDown: handleMouseDown })] });
+}
+var filterByRange = (events, range, timezone) => {
+  return events.filter((event) => {
+    const rangeStart = range.start;
+    const rangeEnd = range.end;
+    let eventStart = event.start;
+    let eventEnd = event.end;
+    if (eventStart instanceof Temporal.PlainDate) {
+      eventStart = eventStart.toZonedDateTime(timezone);
+    }
+    if (eventEnd instanceof Temporal.PlainDate) {
+      eventEnd = eventEnd.toZonedDateTime(timezone).with({
+        hour: 23,
+        minute: 59,
+        second: 59,
+        millisecond: 999,
+        microsecond: 999,
+        nanosecond: 999
+      });
+    }
+    const eventStartsInRange = eventStart.epochNanoseconds >= rangeStart.epochNanoseconds && eventStart.epochNanoseconds <= rangeEnd.epochNanoseconds;
+    const eventEndInRange = eventEnd.epochNanoseconds >= rangeStart.epochNanoseconds && eventEnd.epochNanoseconds <= rangeEnd.epochNanoseconds;
+    const eventStartBeforeAndEventEndAfterRange = eventStart.epochNanoseconds < rangeStart.epochNanoseconds && eventEnd.epochNanoseconds > rangeEnd.epochNanoseconds;
+    return eventStartsInRange || eventEndInRange || eventStartBeforeAndEventEndAfterRange;
+  });
+};
+var WeekWrapper = ({ $app, id }) => {
+  document.documentElement.style.setProperty("--sx-week-grid-height", `${$app.config.weekOptions.value.gridHeight}px`);
+  const week = useComputed(() => {
+    var _a, _b;
+    const rangeStart = (_a = $app.calendarState.range.value) === null || _a === void 0 ? void 0 : _a.start;
+    const rangeEnd = (_b = $app.calendarState.range.value) === null || _b === void 0 ? void 0 : _b.end;
+    if (!rangeStart || !rangeEnd)
+      return {};
+    let newWeek = createWeek($app);
+    const filteredEvents = $app.calendarEvents.filterPredicate.value ? $app.calendarEvents.list.value.filter($app.calendarEvents.filterPredicate.value) : $app.calendarEvents.list.value;
+    const { dateGridEvents, timeGridEvents } = sortEventsForWeekView(filteredEvents);
+    newWeek = positionInDateGrid(dateGridEvents.sort(sortEventsByStartAndEnd), newWeek);
+    Object.entries(newWeek).forEach(([date, day]) => {
+      const plainDate = Temporal.PlainDate.from(date);
+      const rangeStartDateTime = Temporal.ZonedDateTime.from({
+        year: plainDate.year,
+        month: plainDate.month,
+        day: plainDate.day,
+        hour: $app.config.dayBoundaries.value.start === 0 ? 0 : $app.config.dayBoundaries.value.start / 100,
+        minute: 0,
+        second: 0,
+        timeZone: $app.config.timezone.value
+      });
+      let rangeEndDateTime = Temporal.ZonedDateTime.from({
+        year: plainDate.year,
+        month: plainDate.month,
+        day: plainDate.day,
+        hour: $app.config.dayBoundaries.value.end === 2400 ? 23 : $app.config.dayBoundaries.value.end / 100,
+        minute: $app.config.dayBoundaries.value.end === 2400 ? 59 : 0,
+        second: $app.config.dayBoundaries.value.end === 2400 ? 59 : 0,
+        timeZone: $app.config.timezone.value
+      });
+      if ($app.config.isHybridDay) {
+        rangeEndDateTime = rangeEndDateTime.add({ days: 1 });
+      }
+      day.backgroundEvents = filterByRange($app.calendarEvents.backgroundEvents.value, {
+        start: rangeStartDateTime,
+        end: rangeEndDateTime
+      }, $app.config.timezone.value);
+    });
+    newWeek = positionInTimeGrid(timeGridEvents, newWeek, $app);
+    return newWeek;
+  });
+  return u3(k2, { children: u3(AppContext.Provider, { value: $app, children: u3("div", { className: "sx__week-wrapper", id, children: [u3("div", { className: "sx__week-header", children: u3("div", { className: "sx__week-header-content", children: [u3(DateAxis, { week: Object.values(week.value).map((day) => {
+    const plainDate = Temporal.PlainDate.from(day.date);
+    return Temporal.ZonedDateTime.from({
+      year: plainDate.year,
+      month: plainDate.month,
+      day: plainDate.day,
+      timeZone: $app.config.timezone.value
+    });
+  }) }), u3("div", { className: "sx__date-grid", "aria-label": $app.translate("Full day- and multiple day events"), children: Object.values(week.value).map((day) => u3(DateGridDay, { date: day.date, calendarEvents: day.dateGridEvents, backgroundEvents: day.backgroundEvents }, day.date)) }), u3("div", { className: "sx__week-header-border" })] }) }), u3("div", { className: "sx__week-grid", children: [u3(TimeAxis, {}), Object.values(week.value).map((day) => {
+    const { year, month, date } = toIntegers(day.date);
+    const zonedDateTime = Temporal.ZonedDateTime.from({
+      year,
+      month: month + 1,
+      day: date,
+      timeZone: $app.config.timezone.value
+    });
+    return u3(TimeGridDay, { calendarEvents: day.timeGridEvents, backgroundEvents: day.backgroundEvents, date: zonedDateTime }, day.date);
+  })] })] }) }) });
+};
+var getRangeStartGivenDayBoundaries = (calendarConfig, date) => {
+  const timeString = timeStringFromTimePoints(calendarConfig.dayBoundaries.value.start);
+  return Temporal.ZonedDateTime.from({
+    year: date.year,
+    month: date.month,
+    day: date.day,
+    hour: +timeString.split(":")[0],
+    minute: +timeString.split(":")[1],
+    timeZone: calendarConfig.timezone.value
+  });
+};
+var getRangeEndGivenDayBoundaries = (calendarConfig, date) => {
+  let dayEndTimeString = timeStringFromTimePoints(calendarConfig.dayBoundaries.value.end);
+  let newRangeEndDate = date;
+  if (calendarConfig.isHybridDay) {
+    newRangeEndDate = addDays(newRangeEndDate, 1);
+  }
+  if (calendarConfig.dayBoundaries.value.end === 2400) {
+    dayEndTimeString = "23:59";
+  }
+  return Temporal.ZonedDateTime.from({
+    year: newRangeEndDate.year,
+    month: newRangeEndDate.month,
+    day: newRangeEndDate.day,
+    hour: +dayEndTimeString.split(":")[0],
+    minute: +dayEndTimeString.split(":")[1],
+    timeZone: calendarConfig.timezone.value
+  });
+};
+var setRangeForWeek = (config2) => {
+  const weekForDate = config2.timeUnitsImpl.getWeekFor(config2.date).slice(0, config2.calendarConfig.weekOptions.value.nDays);
+  return {
+    start: getRangeStartGivenDayBoundaries(config2.calendarConfig, weekForDate[0]),
+    end: getRangeEndGivenDayBoundaries(config2.calendarConfig, weekForDate[weekForDate.length - 1])
+  };
+};
+var setRangeForMonth = (config2) => {
+  const monthForDate = config2.timeUnitsImpl.getMonthWithTrailingAndLeadingDays(config2.date.year, config2.date.month);
+  return {
+    start: monthForDate[0][0],
+    end: monthForDate[monthForDate.length - 1][monthForDate[monthForDate.length - 1].length - 1].with({ hour: 23, minute: 59 })
+  };
+};
+var setRangeForDay = (config2) => {
+  let date = config2.date;
+  if (date instanceof Temporal.PlainDate) {
+    date = date.toZonedDateTime({
+      timeZone: config2.calendarConfig.timezone.value
+    });
+  }
+  return {
+    start: getRangeStartGivenDayBoundaries(config2.calendarConfig, date),
+    end: getRangeEndGivenDayBoundaries(config2.calendarConfig, date)
+  };
+};
+var config$4 = {
+  name: InternalViewName.Week,
+  label: "Week",
+  Component: WeekWrapper,
+  setDateRange: setRangeForWeek,
+  hasSmallScreenCompat: false,
+  hasWideScreenCompat: true,
+  backwardForwardFn: addDays,
+  backwardForwardUnits: 7
+};
+var viewWeek = createPreactView(config$4);
+var createViewWeek = () => createPreactView(config$4);
+var DayWrapper = ({ $app, id }) => {
+  return u3(WeekWrapper, { "$app": $app, id });
+};
+var config$3 = {
+  name: InternalViewName.Day,
+  label: "Day",
+  setDateRange: setRangeForDay,
+  hasWideScreenCompat: true,
+  hasSmallScreenCompat: true,
+  Component: DayWrapper,
+  backwardForwardFn: addDays,
+  backwardForwardUnits: 1
+};
+var viewDay = createPreactView(config$3);
+var createViewDay = () => createPreactView(config$3);
+var getWeekNumber = (d6, firstDayOfWeek) => {
+  const zonedDate = d6 instanceof Temporal.PlainDate ? d6.toZonedDateTime("UTC") : d6.toInstant().toZonedDateTimeISO("UTC");
+  const dayOffset = (zonedDate.dayOfWeek - firstDayOfWeek + 7) % 7;
+  const adjustedDate = zonedDate.subtract({ days: dayOffset - 3 });
+  const yearStart = Temporal.ZonedDateTime.from({
+    year: adjustedDate.year,
+    month: 1,
+    day: 1,
+    timeZone: "UTC"
+  });
+  const yearStartOffset = (yearStart.dayOfWeek - firstDayOfWeek + 7) % 7;
+  const adjustedYearStart = yearStart.subtract({ days: yearStartOffset });
+  const daysDiff = adjustedDate.until(adjustedYearStart, {
+    largestUnit: "days"
+  }).days;
+  const weekNo = Math.ceil((Math.abs(daysDiff) + 1) / 7);
+  const nextYearStart = Temporal.ZonedDateTime.from({
+    year: adjustedDate.year + 1,
+    month: 1,
+    day: 1,
+    timeZone: "UTC"
+  });
+  const nextYearStartOffset = (nextYearStart.dayOfWeek - firstDayOfWeek + 7) % 7;
+  const adjustedNextYearStart = nextYearStart.subtract({
+    days: nextYearStartOffset
+  });
+  if (Temporal.ZonedDateTime.compare(adjustedDate, adjustedNextYearStart) >= 0) {
+    return 1;
+  }
+  return weekNo;
+};
+function WeekNumber() {
+  const $app = x3(AppContext);
+  return u3("div", { className: "sx__calendar-header__week-number", children: $app.translate("CW", {
+    week: getWeekNumber($app.datePickerState.selectedDate.value, $app.config.firstDayOfWeek.value)
+  }) });
+}
+function CalendarHeader() {
+  const $app = x3(AppContext);
+  const datePickerAppSingleton = new DatePickerAppSingletonBuilder().withDatePickerState($app.datePickerState).withConfig($app.datePickerConfig).withTranslate($app.translate).withTimeUnitsImpl($app.timeUnitsImpl).build();
+  const headerContent = $app.config._customComponentFns.headerContent;
+  const headerContentId = d3(headerContent ? randomStringId() : void 0)[0];
+  const headerContentLeftPrepend = $app.config._customComponentFns.headerContentLeftPrepend;
+  const headerContentLeftPrependId = d3(headerContentLeftPrepend ? randomStringId() : void 0)[0];
+  const headerContentLeftAppend = $app.config._customComponentFns.headerContentLeftAppend;
+  const headerContentLeftAppendId = d3(headerContentLeftAppend ? randomStringId() : void 0)[0];
+  const headerContentRightPrepend = $app.config._customComponentFns.headerContentRightPrepend;
+  const headerContentRightPrependId = d3(headerContentRightPrepend ? randomStringId() : void 0)[0];
+  const headerContentRightAppend = $app.config._customComponentFns.headerContentRightAppend;
+  const headerContentRightAppendId = d3(headerContentRightAppend ? randomStringId() : void 0)[0];
+  y3(() => {
+    if (headerContent) {
+      headerContent(getElementByCCID(headerContentId), { $app });
+    }
+    if (headerContentLeftPrepend && headerContentLeftPrependId) {
+      headerContentLeftPrepend(getElementByCCID(headerContentLeftPrependId), {
+        $app
+      });
+    }
+    if (headerContentLeftAppend) {
+      headerContentLeftAppend(getElementByCCID(headerContentLeftAppendId), {
+        $app
+      });
+    }
+    if (headerContentRightPrepend) {
+      headerContentRightPrepend(getElementByCCID(headerContentRightPrependId), {
+        $app
+      });
+    }
+    if (headerContentRightAppend) {
+      headerContentRightAppend(getElementByCCID(headerContentRightAppendId), {
+        $app
+      });
+    }
+  }, [
+    $app.datePickerState.selectedDate.value,
+    $app.calendarState.range.value,
+    $app.calendarState.isDark.value,
+    $app.calendarState.isCalendarSmall.value
+  ]);
+  const keyForRerenderingOnLocaleChange = $app.config.locale.value;
+  const isDayOrWeekView = T3(() => {
+    return [viewWeek.name, viewDay.name].includes($app.calendarState.view.value);
+  }, [$app.calendarState.view.value]);
+  return u3("header", { className: "sx__calendar-header", "data-ccid": headerContentId, children: !headerContent && u3(k2, { children: [u3("div", { className: "sx__calendar-header-content", children: [headerContentLeftPrependId && u3("div", { "data-ccid": headerContentLeftPrependId }), u3(TodayButton, {}), u3(ForwardBackwardNavigation, {}), u3(RangeHeading, {}, $app.config.locale.value), $app.config.showWeekNumbers.value && isDayOrWeekView && u3(WeekNumber, {}), headerContentLeftAppendId && u3("div", { "data-ccid": headerContentLeftAppendId })] }), u3("div", { className: "sx__calendar-header-content", children: [headerContentRightPrependId && u3("div", { "data-ccid": headerContentRightPrependId }), $app.config.plugins.timezoneSelect && $app.config.plugins.timezoneSelect.isEnabled.value && u3($app.config.plugins.timezoneSelect.ComponentFn, { "$app": $app }), $app.config.views.value.length > 1 && u3(ViewSelection, {}, keyForRerenderingOnLocaleChange + "-view-selection"), u3(AppWrapper, { "$app": datePickerAppSingleton }), headerContentRightAppendId && u3("div", { "data-ccid": headerContentRightAppendId })] })] }) });
+}
+var setWrapperElement = ($app, calendarId) => {
+  $app.elements.calendarWrapper = document.getElementById(calendarId);
+};
+var setScreenSizeCompatibleView = ($app, isSmall) => {
+  const currentView = $app.config.views.value.find((view) => view.name === $app.calendarState.view.value);
+  if (isSmall) {
+    if (currentView.hasSmallScreenCompat)
+      return;
+    const smallScreenCompatibleView = $app.config.views.value.find((view) => view.hasSmallScreenCompat);
+    if (smallScreenCompatibleView) {
+      $app.calendarState.setView(smallScreenCompatibleView.name, $app.datePickerState.selectedDate.value);
+    }
+  } else {
+    if (currentView.hasWideScreenCompat)
+      return;
+    const wideScreenCompatibleView = $app.config.views.value.find((view) => view.hasWideScreenCompat);
+    if (wideScreenCompatibleView) {
+      $app.calendarState.setView(wideScreenCompatibleView.name, $app.datePickerState.selectedDate.value);
+    }
+  }
+};
+var handleWindowResize = ($app) => {
+  const documentRoot = document.documentElement;
+  const calendarRoot = $app.elements.calendarWrapper;
+  const documentFontSize = +window.getComputedStyle(documentRoot).fontSize.split("p")[0];
+  const breakPointFor1RemEquals16px = 700;
+  const multiplier = 16 / documentFontSize;
+  const smallCalendarBreakpoint = breakPointFor1RemEquals16px / multiplier;
+  if (!calendarRoot)
+    return;
+  const isSmall = $app.config.callbacks.isCalendarSmall ? $app.config.callbacks.isCalendarSmall($app) : calendarRoot.clientWidth < smallCalendarBreakpoint;
+  const didIsSmallScreenChange = isSmall !== $app.calendarState.isCalendarSmall.value;
+  if (!didIsSmallScreenChange)
+    return;
+  $app.calendarState.isCalendarSmall.value = isSmall;
+  setScreenSizeCompatibleView($app, isSmall);
+};
+var getClassForView = ($app) => {
+  return `is-${$app.calendarState.view.value}-view`;
+};
+function useWrapperClasses($app) {
+  const calendarWrapperClass = "sx__calendar-wrapper";
+  const [wrapperClasses, setWrapperClasses] = d3([
+    calendarWrapperClass,
+    getClassForView($app)
+  ]);
+  useSignalEffect(() => {
+    const classes = [calendarWrapperClass];
+    if ($app.calendarState.isCalendarSmall.value)
+      classes.push("sx__is-calendar-small");
+    if ($app.calendarState.isDark.value)
+      classes.push("is-dark");
+    if ($app.config.theme === "shadcn")
+      classes.push("is-shadcn");
+    classes.push(getClassForView($app));
+    setWrapperClasses(classes);
+  });
+  return wrapperClasses;
+}
+var externalEventToInternal = (event, config2) => {
+  const { id, start, end, title, description, location, people, _options, ...foreignProperties } = event;
+  return new CalendarEventBuilder(config2, id, start, end).withTitle(title).withDescription(description).withLocation(location).withPeople(people).withCalendarId(event.calendarId).withOptions(_options).withForeignProperties(foreignProperties).withCustomContent(event._customContent).withResourceId(event.resourceId).build();
+};
+var rangeToString = (range) => {
+  if (!range) {
+    return null;
+  }
+  return `${range.start.toString()}-${range.end.toString()}`;
+};
+function useFetchEvents($app) {
+  const hasCalledFetchEventsOnRenderRef = A3(false);
+  const lastFetchedRangeRef = A3(null);
+  const fetchAndSetEvents = async () => {
+    var _a;
+    if (!((_a = $app.config.callbacks) === null || _a === void 0 ? void 0 : _a.fetchEvents) || !$app.calendarState.range.value) {
+      return;
+    }
+    const currentRangeString = rangeToString($app.calendarState.range.value);
+    if (currentRangeString === lastFetchedRangeRef.current) {
+      return;
+    }
+    lastFetchedRangeRef.current = currentRangeString;
+    const events = await $app.config.callbacks.fetchEvents($app.calendarState.range.value);
+    $app.calendarEvents.list.value = events.map((event) => externalEventToInternal(event, $app.config));
+  };
+  y3(() => {
+    var _a;
+    if (((_a = $app.config.callbacks) === null || _a === void 0 ? void 0 : _a.fetchEvents) && $app.calendarState.range.value && !hasCalledFetchEventsOnRenderRef.current) {
+      hasCalledFetchEventsOnRenderRef.current = true;
+      void fetchAndSetEvents();
+    }
+  }, []);
+  useSignalEffect(() => {
+    var _a;
+    if (!((_a = $app.config.callbacks) === null || _a === void 0 ? void 0 : _a.fetchEvents) || !$app.calendarState.range.value || !hasCalledFetchEventsOnRenderRef.current) {
+      return;
+    }
+    void fetchAndSetEvents();
+  });
+}
+var initPlugins = ($app) => {
+  Object.values($app.config.plugins).forEach((plugin) => {
+    if (plugin === null || plugin === void 0 ? void 0 : plugin.onRender) {
+      plugin.onRender($app);
+    }
+  });
+};
+var destroyPlugins = ($app) => {
+  Object.values($app.config.plugins).forEach((plugin) => {
+    if (plugin === null || plugin === void 0 ? void 0 : plugin.destroy)
+      plugin.destroy();
+  });
+};
+var invokePluginsBeforeRender = ($app) => {
+  Object.values($app.config.plugins).forEach((plugin) => {
+    if (plugin === null || plugin === void 0 ? void 0 : plugin.beforeRender)
+      plugin.beforeRender($app);
+  });
+};
+function CalendarWrapper({ $app }) {
+  var _a;
+  const calendarId = randomStringId();
+  const viewContainerId = randomStringId();
+  useFetchEvents($app);
+  y3(() => {
+    var _a2;
+    setWrapperElement($app, calendarId);
+    initPlugins($app);
+    if ((_a2 = $app.config.callbacks) === null || _a2 === void 0 ? void 0 : _a2.onRender) {
+      $app.config.callbacks.onRender($app);
+    }
+    return () => destroyPlugins($app);
+  }, []);
+  const onResize = () => {
+    handleWindowResize($app);
+  };
+  y3(() => {
+    if ($app.config.isResponsive) {
+      onResize();
+      window.addEventListener("resize", onResize);
+      return () => window.removeEventListener("resize", onResize);
+    }
+  }, []);
+  const wrapperClasses = useWrapperClasses($app);
+  const [currentView, setCurrentView] = d3();
+  useSignalEffect(() => {
+    const newView = $app.config.views.value.find((view) => view.name === $app.calendarState.view.value);
+    const viewElement = document.getElementById(viewContainerId);
+    if (!newView || !viewElement || newView.name === (currentView === null || currentView === void 0 ? void 0 : currentView.name))
+      return;
+    if (currentView)
+      currentView.destroy();
+    setCurrentView(newView);
+    newView.render(viewElement, $app);
+  });
+  const [previousRangeStart, setPreviousRangeStart] = d3("");
+  const [transitionClass, setTransitionClass] = d3("");
+  useSignalEffect(() => {
+    var _a2, _b;
+    if ($app.calendarState.view.value === InternalViewName.List)
+      return;
+    const newRangeStartIsLaterThanPrevious = (((_a2 = $app.calendarState.range.value) === null || _a2 === void 0 ? void 0 : _a2.start.toString()) || "") > previousRangeStart;
+    requestAnimationFrame(() => {
+      setTransitionClass(newRangeStartIsLaterThanPrevious ? "sx__slide-left" : "sx__slide-right");
+      setTimeout(() => {
+        setTransitionClass("");
+      }, 300);
+    });
+    setPreviousRangeStart(((_b = $app.calendarState.range.value) === null || _b === void 0 ? void 0 : _b.start.toString()) || "");
+  });
+  useSignalEffect(() => {
+    $app.datePickerConfig.locale.value = $app.config.locale.value;
+  });
+  return u3(k2, { children: u3("div", { className: wrapperClasses.join(" "), id: calendarId, children: u3("div", { className: "sx__calendar", children: u3(AppContext.Provider, { value: $app, children: [u3(CalendarHeader, {}), u3("div", { className: ["sx__view-container", transitionClass].join(" "), id: viewContainerId }), $app.config.plugins.eventModal && $app.config.plugins.eventModal.calendarEvent.value && u3($app.config.plugins.eventModal.ComponentFn, { "$app": $app }, (_a = $app.config.plugins.eventModal.calendarEvent.value) === null || _a === void 0 ? void 0 : _a.id)] }) }) }) });
+}
+var EventsFacadeImpl = class {
+  constructor($app) {
+    Object.defineProperty(this, "$app", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: $app
+    });
+  }
+  set(events) {
+    this.$app.calendarEvents.list.value = events.map((event) => externalEventToInternal(event, this.$app.config));
+  }
+  add(event) {
+    const newEvent = externalEventToInternal(event, this.$app.config);
+    newEvent._createdAt = /* @__PURE__ */ new Date();
+    const copiedEvents = [...this.$app.calendarEvents.list.value];
+    copiedEvents.push(newEvent);
+    this.$app.calendarEvents.list.value = copiedEvents;
+  }
+  get(id) {
+    var _a;
+    return (_a = this.$app.calendarEvents.list.value.find((event) => event.id === id)) === null || _a === void 0 ? void 0 : _a._getExternalEvent();
+  }
+  getAll() {
+    return this.$app.calendarEvents.list.value.map((event) => event._getExternalEvent());
+  }
+  remove(id) {
+    const index = this.$app.calendarEvents.list.value.findIndex((event) => event.id === id);
+    const copiedEvents = [...this.$app.calendarEvents.list.value];
+    copiedEvents.splice(index, 1);
+    this.$app.calendarEvents.list.value = copiedEvents;
+  }
+  update(event) {
+    const index = this.$app.calendarEvents.list.value.findIndex((e5) => e5.id === event.id);
+    const copiedEvents = [...this.$app.calendarEvents.list.value];
+    copiedEvents.splice(index, 1, externalEventToInternal(event, this.$app.config));
+    this.$app.calendarEvents.list.value = copiedEvents;
+  }
+};
+var CalendarApp = class {
+  constructor($app) {
+    var _a;
+    Object.defineProperty(this, "$app", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: $app
+    });
+    Object.defineProperty(this, "events", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "calendarContainerEl", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    this.events = new EventsFacadeImpl(this.$app);
+    invokePluginsBeforeRender(this.$app);
+    Object.values(this.$app.config.plugins).forEach((plugin) => {
+      if (!(plugin === null || plugin === void 0 ? void 0 : plugin.name))
+        return;
+      this[plugin.name] = plugin;
+    });
+    if ((_a = $app.config.callbacks) === null || _a === void 0 ? void 0 : _a.beforeRender) {
+      $app.config.callbacks.beforeRender($app);
+    }
+  }
+  render(el) {
+    this.calendarContainerEl = el;
+    G2(_2(CalendarWrapper, { $app: this.$app }), el);
+  }
+  destroy() {
+    Object.values(this.$app.config.plugins || {}).forEach((plugin) => {
+      if (!plugin || !plugin.destroy)
+        return;
+      plugin.destroy();
+    });
+    if (this.calendarContainerEl) {
+      G2(null, this.calendarContainerEl);
+    }
+  }
+  setTheme(theme) {
+    this.$app.calendarState.isDark.value = theme === "dark";
+  }
+  getTheme() {
+    return this.$app.calendarState.isDark.value ? "dark" : "light";
+  }
+  /**
+   * @internal
+   * Purpose: To be consumed by framework adapters for custom component rendering.
+   * */
+  _setCustomComponentFn(fnId, fn3) {
+    this.$app.config._customComponentFns[fnId] = fn3;
+  }
+  _setDestroyCustomComponentInstance(cb) {
+    this.$app.config._destroyCustomComponentInstance = cb;
+  }
+};
+var CalendarAppSingletonImpl = class {
+  constructor(config2, timeUnitsImpl, calendarState, datePickerState, translate2, datePickerConfig, calendarEvents, elements = { calendarWrapper: void 0 }) {
+    Object.defineProperty(this, "config", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: config2
+    });
+    Object.defineProperty(this, "timeUnitsImpl", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: timeUnitsImpl
+    });
+    Object.defineProperty(this, "calendarState", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: calendarState
+    });
+    Object.defineProperty(this, "datePickerState", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: datePickerState
+    });
+    Object.defineProperty(this, "translate", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: translate2
+    });
+    Object.defineProperty(this, "datePickerConfig", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: datePickerConfig
+    });
+    Object.defineProperty(this, "calendarEvents", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: calendarEvents
+    });
+    Object.defineProperty(this, "elements", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: elements
+    });
+  }
+};
+var CalendarAppSingletonBuilder = class {
+  constructor() {
+    Object.defineProperty(this, "config", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "timeUnitsImpl", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "datePickerState", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "calendarState", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "translate", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "datePickerConfig", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "calendarEvents", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+  }
+  build() {
+    return new CalendarAppSingletonImpl(this.config, this.timeUnitsImpl, this.calendarState, this.datePickerState, this.translate, this.datePickerConfig, this.calendarEvents);
+  }
+  withConfig(config2) {
+    this.config = config2;
+    return this;
+  }
+  withTimeUnitsImpl(timeUnitsImpl) {
+    this.timeUnitsImpl = timeUnitsImpl;
+    return this;
+  }
+  withDatePickerState(datePickerState) {
+    this.datePickerState = datePickerState;
+    return this;
+  }
+  withCalendarState(calendarState) {
+    this.calendarState = calendarState;
+    return this;
+  }
+  withTranslate(translate2) {
+    this.translate = translate2;
+    return this;
+  }
+  withDatePickerConfig(datePickerConfig) {
+    this.datePickerConfig = datePickerConfig;
+    return this;
+  }
+  withCalendarEvents(calendarEvents) {
+    this.calendarEvents = calendarEvents;
+    return this;
+  }
+};
+var DateFormatDelimiter;
+(function(DateFormatDelimiter2) {
+  DateFormatDelimiter2["SLASH"] = "/";
+  DateFormatDelimiter2["DASH"] = "-";
+  DateFormatDelimiter2["PERIOD"] = ".";
+})(DateFormatDelimiter || (DateFormatDelimiter = {}));
+var DateFormatOrder;
+(function(DateFormatOrder2) {
+  DateFormatOrder2["DMY"] = "DMY";
+  DateFormatOrder2["MDY"] = "MDY";
+  DateFormatOrder2["YMD"] = "YMD";
+})(DateFormatOrder || (DateFormatOrder = {}));
+var formatRules = {
+  slashMDY: {
+    delimiter: DateFormatDelimiter.SLASH,
+    order: DateFormatOrder.MDY
+  },
+  slashDMY: {
+    delimiter: DateFormatDelimiter.SLASH,
+    order: DateFormatOrder.DMY
+  },
+  slashYMD: {
+    delimiter: DateFormatDelimiter.SLASH,
+    order: DateFormatOrder.YMD
+  },
+  periodDMY: {
+    delimiter: DateFormatDelimiter.PERIOD,
+    order: DateFormatOrder.DMY
+  },
+  dashYMD: {
+    delimiter: DateFormatDelimiter.DASH,
+    order: DateFormatOrder.YMD
+  },
+  dashDMY: {
+    delimiter: DateFormatDelimiter.DASH,
+    order: DateFormatOrder.DMY
+  }
+};
+var dateFormatLocalizedRules = /* @__PURE__ */ new Map([
+  ["ca-ES", formatRules.slashDMY],
+  ["cs-CZ", formatRules.periodDMY],
+  ["da-DK", formatRules.periodDMY],
+  ["de-DE", formatRules.periodDMY],
+  ["en-GB", formatRules.slashDMY],
+  ["en-US", formatRules.slashMDY],
+  ["es-ES", formatRules.slashDMY],
+  ["et-EE", formatRules.periodDMY],
+  ["fi-FI", formatRules.periodDMY],
+  ["fr-FR", formatRules.slashDMY],
+  ["fr-CH", formatRules.periodDMY],
+  ["hr-HR", formatRules.periodDMY],
+  ["id-ID", formatRules.slashDMY],
+  ["it-IT", formatRules.slashDMY],
+  ["ja-JP", formatRules.slashYMD],
+  ["ko-KR", formatRules.slashYMD],
+  ["ky-KG", formatRules.slashDMY],
+  ["lt-LT", formatRules.dashYMD],
+  ["mk-MK", formatRules.periodDMY],
+  ["nl-NL", formatRules.dashDMY],
+  ["pl-PL", formatRules.periodDMY],
+  ["pt-BR", formatRules.slashDMY],
+  ["ro-RO", formatRules.periodDMY],
+  ["ru-RU", formatRules.periodDMY],
+  ["sk-SK", formatRules.periodDMY],
+  ["sl-SI", formatRules.periodDMY],
+  ["sr-Latn-RS", formatRules.periodDMY],
+  ["sr-RS", formatRules.periodDMY],
+  ["sv-SE", formatRules.dashYMD],
+  ["tr-TR", formatRules.periodDMY],
+  ["uk-UA", formatRules.periodDMY],
+  ["zh-CN", formatRules.slashYMD],
+  ["zh-TW", formatRules.slashYMD]
+]);
+var LocaleNotSupportedError = class extends Error {
+  constructor(locale) {
+    super(`Locale not supported: ${locale}`);
+  }
+};
+var InvalidDateFormatError = class extends Error {
+  constructor(dateFormat, locale) {
+    super(`Invalid date format: ${dateFormat} for locale: ${locale}`);
+  }
+};
+var _getMatchesOrThrow = (format, matcher, locale) => {
+  const matches = format.match(matcher);
+  if (!matches)
+    throw new InvalidDateFormatError(format, locale);
+  return matches;
+};
+var toDateString = (format, locale) => {
+  const internationalFormat = /^\d{4}-\d{2}-\d{2}$/;
+  if (internationalFormat.test(format))
+    return format;
+  const localeDateFormatRule = dateFormatLocalizedRules.get(locale);
+  if (!localeDateFormatRule)
+    throw new LocaleNotSupportedError(locale);
+  const { order, delimiter } = localeDateFormatRule;
+  const pattern224Slashed = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+  const pattern224Dotted = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/;
+  const pattern442Slashed = /^(\d{4})\/(\d{1,2})\/(\d{1,2})$/;
+  if (order === DateFormatOrder.DMY && delimiter === DateFormatDelimiter.SLASH) {
+    const matches = _getMatchesOrThrow(format, pattern224Slashed, locale);
+    const [, day, month, year] = matches;
+    return `${year}-${doubleDigit(+month)}-${doubleDigit(+day)}`;
+  }
+  if (order === DateFormatOrder.MDY && delimiter === DateFormatDelimiter.SLASH) {
+    const matches = _getMatchesOrThrow(format, pattern224Slashed, locale);
+    const [, month, day, year] = matches;
+    return `${year}-${doubleDigit(+month)}-${doubleDigit(+day)}`;
+  }
+  if (order === DateFormatOrder.YMD && delimiter === DateFormatDelimiter.SLASH) {
+    const matches = _getMatchesOrThrow(format, pattern442Slashed, locale);
+    const [, year, month, day] = matches;
+    return `${year}-${doubleDigit(+month)}-${doubleDigit(+day)}`;
+  }
+  if (order === DateFormatOrder.DMY && delimiter === DateFormatDelimiter.PERIOD) {
+    const matches = _getMatchesOrThrow(format, pattern224Dotted, locale);
+    const [, day, month, year] = matches;
+    return `${year}-${doubleDigit(+month)}-${doubleDigit(+day)}`;
+  }
+  throw new InvalidDateFormatError(format, locale);
+};
+var getLocalizedDate = (date, locale) => {
+  return toLocalizedDateString(date, locale);
+};
+var createDatePickerState = (config2, selectedDateParam) => {
+  var _a;
+  const initialSelectedDate = selectedDateParam instanceof Temporal.PlainDate ? selectedDateParam : Temporal.Now.plainDateISO();
+  const isOpen = d4(false);
+  const isDisabled = d4(config2.disabled || false);
+  const datePickerView = d4(DatePickerView.MONTH_DAYS);
+  const selectedDate = d4(initialSelectedDate);
+  const datePickerDate = d4(initialSelectedDate);
+  const isDark = d4(((_a = config2.style) === null || _a === void 0 ? void 0 : _a.dark) || false);
+  const inputDisplayedValue = d4(toLocalizedDateString(initialSelectedDate, config2.locale.value));
+  const lastValidDisplayedValue = d4(inputDisplayedValue.value);
+  const handleInput = (newInputValue) => {
+    try {
+      const newValue = toDateString(newInputValue, config2.locale.value);
+      if (newValue < config2.min.toString() || newValue > config2.max.toString()) {
+        inputDisplayedValue.value = lastValidDisplayedValue.value;
+        return;
+      }
+      const { year, month, date: day } = toIntegers(newValue);
+      const newPlainDate = Temporal.PlainDate.from({
+        year,
+        month: month + 1,
+        day
+      });
+      selectedDate.value = newPlainDate;
+      datePickerDate.value = newPlainDate;
+      lastValidDisplayedValue.value = inputDisplayedValue.value;
+    } catch (_e2) {
+    }
+  };
+  E4(() => {
+    inputDisplayedValue.value = getLocalizedDate(selectedDate.value, config2.locale.value);
+  });
+  let wasInitialized = false;
+  const handleOnChange = (selectedDate2) => {
+    if (!wasInitialized)
+      return wasInitialized = true;
+    config2.listeners.onChange(selectedDate2);
+  };
+  E4(() => {
+    var _a2;
+    if ((_a2 = config2.listeners) === null || _a2 === void 0 ? void 0 : _a2.onChange)
+      handleOnChange(selectedDate.value);
+  });
+  return {
+    inputWrapperElement: d4(void 0),
+    isOpen,
+    isDisabled,
+    datePickerView,
+    selectedDate,
+    datePickerDate,
+    inputDisplayedValue,
+    handleInput,
+    isDark,
+    open: () => isOpen.value = true,
+    close: () => isOpen.value = false,
+    toggle: () => isOpen.value = !isOpen.value,
+    setView: (view) => datePickerView.value = view
+  };
+};
+var datePickerArEG = {
+  Date: "\u0627\u0644\u062A\u0627\u0631\u064A\u062E",
+  "MM/DD/YYYY": "DD/MM/YYYY",
+  // Keep format unchanged unless you want to localize it
+  "Next month": "\u0627\u0644\u0634\u0647\u0631 \u0627\u0644\u0642\u0627\u062F\u0645",
+  "Previous month": "\u0627\u0644\u0634\u0647\u0631 \u0627\u0644\u0633\u0627\u0628\u0642",
+  "Choose Date": "\u0627\u062E\u062A\u0631 \u0627\u0644\u062A\u0627\u0631\u064A\u062E"
+};
+var timePickerArEG = {
+  Time: "\u0627\u0644\u0648\u0642\u062A",
+  AM: "\u0635",
+  PM: "\u0645",
+  Cancel: "\u0625\u0644\u063A\u0627\u0621",
+  OK: "\u0645\u0648\u0627\u0641\u0642",
+  "Select time": "\u0627\u062E\u062A\u0631 \u0627\u0644\u0648\u0642\u062A"
+};
+var calendarArEG = {
+  Today: "\u0627\u0644\u064A\u0648\u0645",
+  Month: "\u0627\u0644\u0634\u0647\u0631",
+  Week: "\u0627\u0644\u0623\u0633\u0628\u0648\u0639",
+  Day: "\u0627\u0644\u064A\u0648\u0645",
+  List: "\u0627\u0644\u0642\u0627\u0626\u0645\u0629",
+  "Select View": "\u0627\u062E\u062A\u0631 \u0627\u0644\u0639\u0631\u0636",
+  "+ {{n}} events": "+ {{n}} \u0627\u0644\u0623\u062D\u062F\u0627\u062B",
+  "+ 1 event": "+ 1 \u062D\u062F\u062B",
+  "No events": "\u0644\u0627 \u062A\u0648\u062C\u062F \u0623\u062D\u062F\u0627\u062B",
+  "Next period": "\u0627\u0644\u0641\u062A\u0631\u0629 \u0627\u0644\u062A\u0627\u0644\u064A\u0629",
+  "Previous period": "\u0627\u0644\u0641\u062A\u0631\u0629 \u0627\u0644\u0633\u0627\u0628\u0642\u0629",
+  to: "\u0625\u0644\u0649",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "\u0623\u062D\u062F\u0627\u062B \u0644\u064A\u0648\u0645 \u0643\u0627\u0645\u0644 \u0623\u0648 \u0644\u0639\u062F\u0629 \u0623\u064A\u0627\u0645",
+  "Link to {{n}} more events on {{date}}": "\u0631\u0627\u0628\u0637 \u0625\u0644\u0649 {{n}} \u0623\u062D\u062F\u0627\u062B \u0623\u062E\u0631\u0649 \u0641\u064A {{date}}",
+  "Link to 1 more event on {{date}}": "\u0631\u0627\u0628\u0637 \u0625\u0644\u0649 \u062D\u062F\u062B \u0622\u062E\u0631 \u0641\u064A {{date}}",
+  CW: "\u0627\u0644\u0623\u0633\u0628\u0648\u0639 {{week}}",
+  View: "\u0639\u0631\u0636"
+};
+var arEG = {
+  ...calendarArEG,
+  ...datePickerArEG,
+  ...timePickerArEG
+};
+var datePickerDeDE = {
+  Date: "Datum",
+  "MM/DD/YYYY": "TT.MM.JJJJ",
+  "Next month": "N\xE4chster Monat",
+  "Previous month": "Vorheriger Monat",
+  "Choose Date": "Datum ausw\xE4hlen"
+};
+var calendarDeDE = {
+  Today: "Heute",
+  Month: "Monat",
+  Week: "Woche",
+  Day: "Tag",
+  List: "Liste",
+  "Select View": "Ansicht ausw\xE4hlen",
+  View: "Ansicht",
+  "+ {{n}} events": "+ {{n}} Ereignisse",
+  "+ 1 event": "+ 1 Ereignis",
+  "No events": "Keine Ereignisse",
+  "Next period": "N\xE4chster Zeitraum",
+  "Previous period": "Vorheriger Zeitraum",
+  to: "bis",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "Ganzt\xE4gige und mehrt\xE4gige Termine",
+  "Link to {{n}} more events on {{date}}": "Link zu {{n}} weiteren Terminen am {{date}}",
+  "Link to 1 more event on {{date}}": "Link zu 1 weiterem Termin am {{date}}",
+  CW: "KW {{week}}"
+};
+var timePickerDeDE = {
+  Time: "Uhrzeit",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "Abbrechen",
+  OK: "OK",
+  "Select time": "Uhrzeit ausw\xE4hlen"
+};
+var deDE = {
+  ...datePickerDeDE,
+  ...calendarDeDE,
+  ...timePickerDeDE
+};
+var datePickerEnUS = {
+  Date: "Date",
+  "MM/DD/YYYY": "MM/DD/YYYY",
+  "Next month": "Next month",
+  "Previous month": "Previous month",
+  "Choose Date": "Choose Date"
+};
+var calendarEnUS = {
+  Today: "Today",
+  Month: "Month",
+  Week: "Week",
+  Day: "Day",
+  List: "List",
+  "Select View": "Select View",
+  View: "View",
+  "+ {{n}} events": "+ {{n}} events",
+  "+ 1 event": "+ 1 event",
+  "No events": "No events",
+  "Next period": "Next period",
+  "Previous period": "Previous period",
+  to: "to",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "Full day- and multiple day events",
+  "Link to {{n}} more events on {{date}}": "Link to {{n}} more events on {{date}}",
+  "Link to 1 more event on {{date}}": "Link to 1 more event on {{date}}",
+  CW: "Week {{week}}"
+};
+var timePickerEnUS = {
+  Time: "Time",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "Cancel",
+  OK: "OK",
+  "Select time": "Select time"
+};
+var enUS = {
+  ...datePickerEnUS,
+  ...calendarEnUS,
+  ...timePickerEnUS
+};
+var datePickerItIT = {
+  Date: "Data",
+  "MM/DD/YYYY": "DD/MM/YYYY",
+  "Next month": "Mese successivo",
+  "Previous month": "Mese precedente",
+  "Choose Date": "Scegli la data"
+};
+var calendarItIT = {
+  Today: "Oggi",
+  Month: "Mese",
+  Week: "Settimana",
+  Day: "Giorno",
+  List: "Lista",
+  "Select View": "Seleziona la vista",
+  View: "Vista",
+  "+ {{n}} events": "+ {{n}} eventi",
+  "+ 1 event": "+ 1 evento",
+  "No events": "Nessun evento",
+  "Next period": "Periodo successivo",
+  "Previous period": "Periodo precedente",
+  to: "a",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "Eventi della giornata e plurigiornalieri",
+  "Link to {{n}} more events on {{date}}": "Link a {{n}} eventi in pi\xF9 il {{date}}",
+  "Link to 1 more event on {{date}}": "Link a 1 evento in pi\xF9 il {{date}}",
+  CW: "Settimana {{week}}"
+};
+var timePickerItIT = {
+  Time: "Ora",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "Annulla",
+  OK: "OK",
+  "Select time": "Seleziona ora"
+};
+var itIT = {
+  ...datePickerItIT,
+  ...calendarItIT,
+  ...timePickerItIT
+};
+var datePickerEnGB = {
+  Date: "Date",
+  "MM/DD/YYYY": "DD/MM/YYYY",
+  "Next month": "Next month",
+  "Previous month": "Previous month",
+  "Choose Date": "Choose Date"
+};
+var calendarEnGB = {
+  Today: "Today",
+  Month: "Month",
+  Week: "Week",
+  Day: "Day",
+  List: "List",
+  "Select View": "Select View",
+  "+ {{n}} events": "+ {{n}} events",
+  "+ 1 event": "+ 1 event",
+  "No events": "No events",
+  "Next period": "Next period",
+  "Previous period": "Previous period",
+  to: "to",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "Full day- and multiple day events",
+  "Link to {{n}} more events on {{date}}": "Link to {{n}} more events on {{date}}",
+  "Link to 1 more event on {{date}}": "Link to 1 more event on {{date}}",
+  CW: "Week {{week}}",
+  View: "View"
+};
+var timePickerEnGB = {
+  Time: "Time",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "Cancel",
+  OK: "OK",
+  "Select time": "Select time"
+};
+var enGB = {
+  ...datePickerEnGB,
+  ...calendarEnGB,
+  ...timePickerEnGB
+};
+var datePickerSvSE = {
+  Date: "Datum",
+  "MM/DD/YYYY": "\xC5\xC5\xC5\xC5-MM-DD",
+  "Next month": "N\xE4sta m\xE5nad",
+  "Previous month": "F\xF6reg\xE5ende m\xE5nad",
+  "Choose Date": "V\xE4lj datum"
+};
+var calendarSvSE = {
+  Today: "Idag",
+  Month: "M\xE5nad",
+  Week: "Vecka",
+  Day: "Dag",
+  List: "Lista",
+  "Select View": "V\xE4lj vy",
+  View: "Vy",
+  "+ {{n}} events": "+ {{n}} h\xE4ndelser",
+  "+ 1 event": "+ 1 h\xE4ndelse",
+  "No events": "Inga h\xE4ndelser",
+  "Next period": "N\xE4sta period",
+  "Previous period": "F\xF6reg\xE5ende period",
+  to: "till",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "Heldags- och flerdagsh\xE4ndelser",
+  "Link to {{n}} more events on {{date}}": "L\xE4nk till {{n}} fler h\xE4ndelser den {{date}}",
+  "Link to 1 more event on {{date}}": "L\xE4nk till 1 h\xE4ndelse till den {{date}}",
+  CW: "Vecka {{week}}"
+};
+var timePickerSvSE = {
+  Time: "Tid",
+  AM: "FM",
+  PM: "EM",
+  Cancel: "Avbryt",
+  OK: "OK",
+  "Select time": "V\xE4lj tid"
+};
+var svSE = {
+  ...datePickerSvSE,
+  ...calendarSvSE,
+  ...timePickerSvSE
+};
+var datePickerZhCN = {
+  Date: "\u65E5\u671F",
+  "MM/DD/YYYY": "\u5E74/\u6708/\u65E5",
+  "Next month": "\u4E0B\u4E2A\u6708",
+  "Previous month": "\u4E0A\u4E2A\u6708",
+  "Choose Date": "\u9009\u62E9\u65E5\u671F"
+};
+var calendarZhCN = {
+  Today: "\u4ECA\u5929",
+  Month: "\u6708",
+  Week: "\u5468",
+  Day: "\u65E5",
+  List: "\u5217\u8868",
+  "Select View": "\u9009\u62E9\u89C6\u56FE",
+  View: "\u89C6\u56FE",
+  "+ {{n}} events": "+ {{n}} \u573A\u6D3B\u52A8",
+  "+ 1 event": "+ 1 \u6D3B\u52A8",
+  "No events": "\u6CA1\u6709\u6D3B\u52A8",
+  "Next period": "\u4E0B\u4E00\u6BB5\u65F6\u95F4",
+  "Previous period": "\u4E0A\u4E00\u6BB5\u65F6\u95F4",
+  to: "\u81F3",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "\u5168\u5929\u548C\u591A\u5929\u6D3B\u52A8",
+  "Link to {{n}} more events on {{date}}": "\u94FE\u63A5\u5230{{date}}\u4E0A\u7684{{n}}\u4E2A\u66F4\u591A\u6D3B\u52A8",
+  "Link to 1 more event on {{date}}": "\u94FE\u63A5\u5230{{date}}\u4E0A\u76841\u4E2A\u66F4\u591A\u6D3B\u52A8",
+  CW: "\u7B2C{{week}}\u5468"
+};
+var timePickerZhCN = {
+  Time: "\u65F6\u95F4",
+  AM: "\u4E0A\u5348",
+  PM: "\u4E0B\u5348",
+  Cancel: "\u53D6\u6D88",
+  OK: "\u786E\u5B9A",
+  "Select time": "\u9009\u62E9\u65F6\u95F4"
+};
+var zhCN = {
+  ...datePickerZhCN,
+  ...calendarZhCN,
+  ...timePickerZhCN
+};
+var datePickerZhTW = {
+  Date: "\u65E5\u671F",
+  "MM/DD/YYYY": "\u5E74/\u6708/\u65E5",
+  "Next month": "\u4E0B\u500B\u6708",
+  "Previous month": "\u4E0A\u500B\u6708",
+  "Choose Date": "\u9078\u64C7\u65E5\u671F"
+};
+var calendarZhTW = {
+  Today: "\u4ECA\u5929",
+  Month: "\u6708",
+  Week: "\u5468",
+  Day: "\u65E5",
+  List: "\u5217\u8868",
+  "Select View": "\u9078\u64C7\u6AA2\u8996\u6A21\u5F0F",
+  View: "\u6AA2\u8996",
+  "+ {{n}} events": "+ {{n}} \u5834\u6D3B\u52D5",
+  "+ 1 event": "+ 1 \u6D3B\u52D5",
+  "No events": "\u6C92\u6709\u6D3B\u52D5",
+  "Next period": "\u4E0B\u4E00\u6BB5\u6642\u9593",
+  "Previous period": "\u4E0A\u4E00\u6BB5\u6642\u9593",
+  to: "\u5230",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "\u5168\u5929\u548C\u591A\u5929\u6D3B\u52D5",
+  "Link to {{n}} more events on {{date}}": "\u9023\u63A5\u5230{{date}}\u4E0A\u7684{{n}}\u500B\u66F4\u591A\u6D3B\u52D5",
+  "Link to 1 more event on {{date}}": "\u9023\u63A5\u5230{{date}}\u4E0A\u76841\u500B\u66F4\u591A\u6D3B\u52D5",
+  CW: "\u7B2C{{week}}\u5468"
+};
+var timePickerZhTW = {
+  Time: "\u6642\u9593",
+  AM: "\u4E0A\u5348",
+  PM: "\u4E0B\u5348",
+  Cancel: "\u53D6\u6D88",
+  OK: "\u78BA\u5B9A",
+  "Select time": "\u9078\u64C7\u6642\u9593"
+};
+var zhTW = {
+  ...datePickerZhTW,
+  ...calendarZhTW,
+  ...timePickerZhTW
+};
+var datePickerJaJP = {
+  Date: "\u65E5\u4ED8",
+  "MM/DD/YYYY": "\u5E74/\u6708/\u65E5",
+  "Next month": "\u6B21\u306E\u6708",
+  "Previous month": "\u524D\u306E\u6708",
+  "Choose Date": "\u65E5\u4ED8\u3092\u9078\u629E"
+};
+var calendarJaJP = {
+  Today: "\u4ECA\u65E5",
+  Month: "\u6708",
+  Week: "\u9031",
+  Day: "\u65E5",
+  List: "\u30EA\u30B9\u30C8",
+  "Select View": "\u30D3\u30E5\u30FC\u3092\u9078\u629E",
+  View: "\u30D3\u30E5\u30FC",
+  "+ {{n}} events": "+ {{n}} \u30A4\u30D9\u30F3\u30C8",
+  "+ 1 event": "+ 1 \u30A4\u30D9\u30F3\u30C8",
+  "No events": "\u30A4\u30D9\u30F3\u30C8\u306A\u3057",
+  "Next period": "\u6B21\u306E\u671F\u9593",
+  "Previous period": "\u524D\u306E\u671F\u9593",
+  to: "\u304B\u3089",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "\u7D42\u65E5\u304A\u3088\u3073\u8907\u6570\u65E5\u30A4\u30D9\u30F3\u30C8",
+  "Link to {{n}} more events on {{date}}": "{{date}} \u306B{{n}}\u4EF6\u306E\u30A4\u30D9\u30F3\u30C8\u3078\u306E\u30EA\u30F3\u30AF",
+  "Link to 1 more event on {{date}}": "{{date}} \u306B1\u4EF6\u306E\u30A4\u30D9\u30F3\u30C8\u3078\u306E\u30EA\u30F3\u30AF",
+  CW: "\u9031 {{week}}"
+};
+var timePickerJaJP = {
+  Time: "\u6642\u9593",
+  AM: "\u5348\u524D",
+  PM: "\u5348\u5F8C",
+  Cancel: "\u30AD\u30E3\u30F3\u30BB\u30EB",
+  OK: "OK",
+  "Select time": "\u6642\u9593\u3092\u9078\u629E"
+};
+var jaJP = {
+  ...datePickerJaJP,
+  ...calendarJaJP,
+  ...timePickerJaJP
+};
+var datePickerRuRU = {
+  Date: "\u0414\u0430\u0442\u0430",
+  "MM/DD/YYYY": "\u041C\u041C/\u0414\u0414/\u0413\u0413\u0413\u0413",
+  "Next month": "\u0421\u043B\u0435\u0434\u0443\u044E\u0449\u0438\u0439 \u043C\u0435\u0441\u044F\u0446",
+  "Previous month": "\u041F\u0440\u043E\u0448\u043B\u044B\u0439 \u043C\u0435\u0441\u044F\u0446",
+  "Choose Date": "\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0434\u0430\u0442\u0443"
+};
+var calendarRuRU = {
+  Today: "\u0421\u0435\u0433\u043E\u0434\u043D\u044F",
+  Month: "\u041C\u0435\u0441\u044F\u0446",
+  Week: "\u041D\u0435\u0434\u0435\u043B\u044F",
+  Day: "\u0414\u0435\u043D\u044C",
+  List: "\u0421\u043F\u0438\u0441\u043E\u043A",
+  "Select View": "\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0438\u0434",
+  "+ {{n}} events": "+ {{n}} \u0441\u043E\u0431\u044B\u0442\u0438\u044F",
+  "+ 1 event": "+ 1 \u0441\u043E\u0431\u044B\u0442\u0438\u0435",
+  "No events": "\u041D\u0435\u0442 \u0441\u043E\u0431\u044B\u0442\u0438\u0439",
+  "Next period": "\u0421\u043B\u0435\u0434\u0443\u044E\u0449\u0438\u0439 \u043F\u0435\u0440\u0438\u043E\u0434",
+  "Previous period": "\u041F\u0440\u043E\u0448\u043B\u044B\u0439 \u043F\u0435\u0440\u0438\u043E\u0434",
+  to: "\u043F\u043E",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "\u0421\u043E\u0431\u044B\u0442\u0438\u044F \u043D\u0430 \u0446\u0435\u043B\u044B\u0439 \u0434\u0435\u043D\u044C \u0438 \u043D\u0435\u0441\u043A\u043E\u043B\u044C\u043A\u043E \u0434\u043D\u0435\u0439 \u043F\u043E\u0434\u0440\u044F\u0434",
+  "Link to {{n}} more events on {{date}}": "\u0421\u0441\u044B\u043B\u043A\u0430 \u043D\u0430 {{n}} \u0434\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C\u043D\u044B\u0445 \u0441\u043E\u0431\u044B\u0442\u0438\u0439 \u043D\u0430 {{date}}",
+  "Link to 1 more event on {{date}}": "\u0421\u0441\u044B\u043B\u043A\u0430 \u043D\u0430 1 \u0434\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0435 \u0441\u043E\u0431\u044B\u0442\u0438\u0435 \u043D\u0430 {{date}}",
+  CW: "\u041D\u0435\u0434\u0435\u043B\u044F {{week}}",
+  View: "\u0412\u0438\u0434"
+};
+var timePickerRuRU = {
+  Time: "\u0412\u0440\u0435\u043C\u044F",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "\u041E\u0442\u043C\u0435\u043D\u0430",
+  OK: "\u041E\u041A",
+  "Select time": "\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0440\u0435\u043C\u044F"
+};
+var ruRU = {
+  ...datePickerRuRU,
+  ...calendarRuRU,
+  ...timePickerRuRU
+};
+var datePickerKoKR = {
+  Date: "\uC77C\uC790",
+  "MM/DD/YYYY": "\uB144/\uC6D4/\uC77C",
+  "Next month": "\uB2E4\uC74C \uB2EC",
+  "Previous month": "\uC774\uC804 \uB2EC",
+  "Choose Date": "\uB0A0\uC9DC \uC120\uD0DD"
+};
+var calendarKoKR = {
+  Today: "\uC624\uB298",
+  Month: "\uC6D4",
+  Week: "\uC8FC",
+  Day: "\uC77C",
+  List: "\uBAA9\uB85D",
+  "Select View": "\uBCF4\uAE30 \uC120\uD0DD",
+  "+ {{n}} events": "+ {{n}} \uC77C\uC815\uB4E4",
+  "+ 1 event": "+ 1 \uC77C\uC815",
+  "No events": "\uC77C\uC815 \uC5C6\uC74C",
+  "Next period": "\uB2E4\uC74C",
+  "Previous period": "\uC774\uC804",
+  to: "\uBD80\uD130",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "\uC885\uC77C \uBC0F \uBCF5\uC218\uC77C \uC77C\uC815",
+  "Link to {{n}} more events on {{date}}": "{{date}}\uC5D0 {{n}}\uAC1C \uC774\uC0C1\uC758 \uC774\uBCA4\uD2B8\uB85C \uC774\uB3D9",
+  "Link to 1 more event on {{date}}": "{{date}}\uC5D0 1\uAC1C \uC774\uC0C1\uC758 \uC774\uBCA4\uD2B8\uB85C \uC774\uB3D9",
+  CW: "{{week}}\uC8FC",
+  View: "\uBCF4\uAE30"
+};
+var timePickerKoKR = {
+  Time: "\uC2DC\uAC04",
+  AM: "\uC624\uC804",
+  PM: "\uC624\uD6C4",
+  Cancel: "\uCDE8\uC18C",
+  OK: "\uD655\uC778",
+  "Select time": "\uC2DC\uAC04 \uC120\uD0DD"
+};
+var koKR = {
+  ...datePickerKoKR,
+  ...calendarKoKR,
+  ...timePickerKoKR
+};
+var datePickerFrFR = {
+  Date: "Date",
+  "MM/DD/YYYY": "JJ/MM/AAAA",
+  "Next month": "Mois suivant",
+  "Previous month": "Mois pr\xE9c\xE9dent",
+  "Choose Date": "Choisir une date"
+};
+var calendarFrFR = {
+  Today: "Aujourd'hui",
+  Month: "Mois",
+  Week: "Semaine",
+  Day: "Jour",
+  List: "Liste",
+  "Select View": "S\xE9lectionner la vue",
+  View: "Vue",
+  "+ {{n}} events": "+ {{n}} \xE9v\xE9nements",
+  "+ 1 event": "+ 1 \xE9v\xE9nement",
+  "No events": "Aucun \xE9v\xE9nement",
+  "Next period": "P\xE9riode suivante",
+  "Previous period": "P\xE9riode pr\xE9c\xE9dente",
+  to: "au",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "\xC9v\xE9nements sur une journ\xE9e ou plusieurs jours",
+  "Link to {{n}} more events on {{date}}": "Lien vers {{n}} \xE9v\xE9nements suppl\xE9mentaires le {{date}}",
+  "Link to 1 more event on {{date}}": "Lien vers 1 \xE9v\xE9nement suppl\xE9mentaire le {{date}}",
+  CW: "S{{week}}"
+};
+var timePickerFrFR = {
+  Time: "Heure",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "Annuler",
+  OK: "OK",
+  "Select time": "S\xE9lectionner l'heure"
+};
+var frFR = {
+  ...datePickerFrFR,
+  ...calendarFrFR,
+  ...timePickerFrFR
+};
+var datePickerDaDK = {
+  Date: "Dato",
+  "MM/DD/YYYY": "\xC5\xC5\xC5\xC5-MM-DD",
+  "Next month": "N\xE6ste m\xE5ned",
+  "Previous month": "Foreg\xE5ende m\xE5ned",
+  "Choose Date": "V\xE6lg dato"
+};
+var calendarDaDK = {
+  Today: "I dag",
+  Month: "M\xE5ned",
+  Week: "Uge",
+  Day: "Dag",
+  List: "Liste",
+  "Select View": "V\xE6lg visning",
+  "+ {{n}} events": "+ {{n}} begivenheder",
+  "+ 1 event": "+ 1 begivenhed",
+  "No events": "Ingen begivenheder",
+  "Next period": "N\xE6ste periode",
+  "Previous period": "Forg\xE5ende periode",
+  to: "til",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "Heldagsbegivenheder og flerdagsbegivenheder",
+  "Link to {{n}} more events on {{date}}": "Link til {{n}} flere begivenheder den {{date}}",
+  "Link to 1 more event on {{date}}": "Link til 1 mere begivenhed den {{date}}",
+  CW: "Uge {{week}}",
+  View: "Visning"
+};
+var timePickerDaDK = {
+  Time: "Tid",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "Annuller",
+  OK: "OK",
+  "Select time": "V\xE6lg tid"
+};
+var daDK = {
+  ...datePickerDaDK,
+  ...calendarDaDK,
+  ...timePickerDaDK
+};
+var datePickerPlPL = {
+  Date: "Data",
+  "MM/DD/YYYY": "DD/MM/YYYY",
+  "Next month": "Nast\u0119pny miesi\u0105c",
+  "Previous month": "Poprzedni miesi\u0105c",
+  "Choose Date": "Wybiewrz dat\u0119"
+};
+var calendarPlPL = {
+  Today: "Dzisiaj",
+  Month: "Miesi\u0105c",
+  Week: "Tydzie\u0144",
+  Day: "Dzie\u0144",
+  List: "Lista",
+  "Select View": "Wybierz widok",
+  "+ {{n}} events": "+ {{n}} wydarzenia",
+  "+ 1 event": "+ 1 wydarzenie",
+  "No events": "Brak wydarze\u0144",
+  "Next period": "Nast\u0119pny okres",
+  "Previous period": "Poprzedni okres",
+  to: "do",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "Wydarzenia ca\u0142odniowe i wielodniowe",
+  "Link to {{n}} more events on {{date}}": "Link do {{n}} kolejnych wydarze\u0144 w dniu {{date}}",
+  "Link to 1 more event on {{date}}": "Link do 1 kolejnego wydarzenia w dniu {{date}}",
+  CW: "Tydzie\u0144 {{week}}",
+  View: "Widok"
+};
+var timePickerPlPL = {
+  Time: "Godzina",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "Anuluj",
+  OK: "OK",
+  "Select time": "Wybierz godzin\u0119"
+};
+var plPL = {
+  ...datePickerPlPL,
+  ...calendarPlPL,
+  ...timePickerPlPL
+};
+var datePickerEsES = {
+  Date: "Fecha",
+  "MM/DD/YYYY": "DD/MM/YYYY",
+  "Next month": "Siguiente mes",
+  "Previous month": "Mes anterior",
+  "Choose Date": "Seleccione una fecha"
+};
+var calendarEsES = {
+  Today: "Hoy",
+  Month: "Mes",
+  Week: "Semana",
+  Day: "D\xEDa",
+  List: "Lista",
+  "Select View": "Seleccionar vista",
+  View: "Vista",
+  "+ {{n}} events": "+ {{n}} eventos",
+  "+ 1 event": "+ 1 evento",
+  "No events": "No hay eventos",
+  "Next period": "Siguiente per\xEDodo",
+  "Previous period": "Per\xEDodo anterior",
+  to: "a",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "D\xEDa completo y eventos de m\xFAltiples d\xEDas",
+  "Link to {{n}} more events on {{date}}": "Enlace a {{n}} eventos m\xE1s el {{date}}",
+  "Link to 1 more event on {{date}}": "Enlace a 1 evento m\xE1s el {{date}}",
+  CW: "Semana {{week}}"
+};
+var timePickerEsES = {
+  Time: "Hora",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "Cancelar",
+  OK: "Aceptar",
+  "Select time": "Seleccionar hora"
+};
+var esES = {
+  ...datePickerEsES,
+  ...calendarEsES,
+  ...timePickerEsES
+};
+var calendarNlNL = {
+  Today: "Vandaag",
+  Month: "Maand",
+  Week: "Week",
+  Day: "Dag",
+  List: "Lijst",
+  "Select View": "Kies weergave",
+  "+ {{n}} events": "+ {{n}} gebeurtenissen",
+  "+ 1 event": "+ 1 gebeurtenis",
+  "No events": "Geen gebeurtenissen",
+  "Next period": "Volgende periode",
+  "Previous period": "Vorige periode",
+  to: "tot",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "Evenementen van een hele dag en meerdere dagen",
+  "Link to {{n}} more events on {{date}}": "Link naar {{n}} meer evenementen op {{date}}",
+  "Link to 1 more event on {{date}}": "Link naar 1 meer evenement op {{date}}",
+  CW: "Week {{week}}",
+  View: "Weergave"
+};
+var datePickerNlNL = {
+  Date: "Datum",
+  "MM/DD/YYYY": "DD-MM-JJJJ",
+  "Next month": "Volgende maand",
+  "Previous month": "Vorige maand",
+  "Choose Date": "Kies datum"
+};
+var timePickerNlNL = {
+  Time: "Tijd",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "Annuleren",
+  OK: "OK",
+  "Select time": "Selecteer tijd"
+};
+var nlNL = {
+  ...datePickerNlNL,
+  ...calendarNlNL,
+  ...timePickerNlNL
+};
+var datePickerPtBR = {
+  Date: "Data",
+  "MM/DD/YYYY": "DD/MM/YYYY",
+  "Next month": "M\xEAs seguinte",
+  "Previous month": "M\xEAs anterior",
+  "Choose Date": "Escolha uma data"
+};
+var calendarPtBR = {
+  Today: "Hoje",
+  Month: "M\xEAs",
+  Week: "Semana",
+  Day: "Dia",
+  List: "Lista",
+  "Select View": "Selecione uma visualiza\xE7\xE3o",
+  "+ {{n}} events": "+ {{n}} eventos",
+  "+ 1 event": "+ 1 evento",
+  "No events": "Sem eventos",
+  "Next period": "Per\xEDodo seguinte",
+  "Previous period": "Per\xEDodo anterior",
+  to: "a",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "Dia inteiro e eventos de v\xE1rios dias",
+  "Link to {{n}} more events on {{date}}": "Link para mais {{n}} eventos em {{date}}",
+  "Link to 1 more event on {{date}}": "Link para mais 1 evento em {{date}}",
+  CW: "Semana {{week}}",
+  View: "Visualiza\xE7\xE3o"
+};
+var timePickerPtBR = {
+  Time: "Hora",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "Cancelar",
+  OK: "OK",
+  "Select time": "Selecionar hora"
+};
+var ptBR = {
+  ...datePickerPtBR,
+  ...calendarPtBR,
+  ...timePickerPtBR
+};
+var datePickerSkSK = {
+  Date: "D\xE1tum",
+  "MM/DD/YYYY": "DD/MM/YYYY",
+  "Next month": "\u010Eal\u0161\xED mesiac",
+  "Previous month": "Predch\xE1dzaj\xFAci mesiac",
+  "Choose Date": "Vyberte d\xE1tum"
+};
+var calendarSkSK = {
+  Today: "Dnes",
+  Month: "Mesiac",
+  Week: "T\xFD\u017Ede\u0148",
+  Day: "De\u0148",
+  List: "Zoznam",
+  "Select View": "Vyberte zobrazenie",
+  "+ {{n}} events": "+ {{n}} udalosti",
+  "+ 1 event": "+ 1 udalos\u0165",
+  "No events": "\u017Diadne udalosti",
+  "Next period": "\u010Eal\u0161ie obdobie",
+  "Previous period": "Predch\xE1dzaj\xFAce obdobie",
+  to: "do",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "Celodenn\xE9 a viacd\u0148ov\xE9 udalosti",
+  "Link to {{n}} more events on {{date}}": "Odkaz na {{n}} \u010Fal\u0161\xEDch udalost\xED d\u0148a {{date}}",
+  "Link to 1 more event on {{date}}": "Odkaz na 1 \u010Fal\u0161iu udalos\u0165 d\u0148a {{date}}",
+  CW: "{{week}}. t\xFD\u017Ede\u0148",
+  View: "Zobrazenie"
+};
+var timePickerSkSK = {
+  Time: "\u010Cas",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "Zru\u0161i\u0165",
+  OK: "OK",
+  "Select time": "Vybra\u0165 \u010Das"
+};
+var skSK = {
+  ...datePickerSkSK,
+  ...calendarSkSK,
+  ...timePickerSkSK
+};
+var datePickerMkMK = {
+  Date: "\u0414\u0430\u0442\u0443\u043C",
+  "MM/DD/YYYY": "DD/MM/YYYY",
+  "Next month": "\u0421\u043B\u0435\u0434\u0435\u043D \u043C\u0435\u0441\u0435\u0446",
+  "Previous month": "\u041F\u0440\u0435\u0442\u0445\u043E\u0434\u0435\u043D \u043C\u0435\u0441\u0435\u0446",
+  "Choose Date": "\u0418\u0437\u0431\u0435\u0440\u0438 \u0414\u0430\u0442\u0443\u043C"
+};
+var calendarMkMK = {
+  Today: "\u0414\u0435\u043D\u0435\u0441",
+  Month: "\u041C\u0435\u0441\u0435\u0446",
+  Week: "\u041D\u0435\u0434\u0435\u043B\u0430",
+  Day: "\u0414\u0435\u043D",
+  List: "\u041B\u0438\u0441\u0442\u0430",
+  "Select View": "\u0418\u0437\u0431\u0435\u0440\u0438 \u041F\u0440\u0435\u0433\u043B\u0435\u0434",
+  "+ {{n}} events": "+ {{n}} \u043D\u0430\u0441\u0442\u0430\u043D\u0438",
+  "+ 1 event": "+ 1 \u043D\u0430\u0441\u0442\u0430\u043D",
+  "No events": "\u041D\u0435\u043C\u0430 \u043D\u0430\u0441\u0442\u0430\u043D\u0438",
+  "Next period": "\u0421\u043B\u0435\u0434\u0435\u043D \u043F\u0435\u0440\u0438\u043E\u0434",
+  "Previous period": "\u041F\u0440\u0435\u0442\u0445\u043E\u0434\u0435\u043D \u043F\u0435\u0440\u0438\u043E\u0434",
+  to: "\u0434\u043E",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "\u0426\u0435\u043B\u043E\u0434\u043D\u0435\u0432\u043D\u0438 \u0438 \u043F\u043E\u0432\u0435\u045C\u0435\u0434\u043D\u0435\u0432\u043D\u0438 \u043D\u0430\u0441\u0442\u0430\u043D\u0438",
+  "Link to {{n}} more events on {{date}}": "\u041B\u0438\u043D\u043A \u0434\u043E {{n}} \u043F\u043E\u0432\u0435\u045C\u0435 \u043D\u0430\u0441\u0442\u0430\u043D\u0438 \u043D\u0430 {{date}}",
+  "Link to 1 more event on {{date}}": "\u041B\u0438\u043D\u043A \u0434\u043E 1 \u043F\u043E\u0432\u0435\u045C\u0435 \u043D\u0430\u0441\u0442\u0430\u043D \u043D\u0430 {{date}}",
+  CW: "\u041D\u0435\u0434\u0435\u043B\u0430 {{week}}",
+  View: "\u041F\u0440\u0435\u0433\u043B\u0435\u0434"
+};
+var timePickerMkMK = {
+  Time: "\u0412\u0440\u0435\u043C\u0435",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "\u041E\u0442\u043A\u0430\u0436\u0438",
+  OK: "\u0423 \u0440\u0435\u0434\u0443",
+  "Select time": "\u0418\u0437\u0431\u0435\u0440\u0438 \u0432\u0440\u0435\u043C\u0435"
+};
+var mkMK = {
+  ...datePickerMkMK,
+  ...calendarMkMK,
+  ...timePickerMkMK
+};
+var datePickerNbNO = {
+  Date: "Dato",
+  "MM/DD/YYYY": "DD.MM.YYYY",
+  "Next month": "Neste m\xE5ned",
+  "Previous month": "Forrige m\xE5ned",
+  "Choose Date": "Velg dato"
+};
+var calendarNbNO = {
+  Today: "I dag",
+  Month: "M\xE5ned",
+  Week: "Uke",
+  Day: "Dag",
+  List: "Liste",
+  "Select View": "Velg visning",
+  View: "Visning",
+  "+ {{n}} events": "+ {{n}} hendelser",
+  "+ 1 event": "+ 1 hendelse",
+  "No events": "Ingen hendelser",
+  "Next period": "Neste periode",
+  "Previous period": "Forrige periode",
+  to: "til",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "Heldags- og flerdagshendelser",
+  "Link to {{n}} more events on {{date}}": "Lenke til {{n}} flere hendelser p\xE5 {{date}}",
+  "Link to 1 more event on {{date}}": "Lenke til 1 hendelse til p\xE5 {{date}}",
+  CW: "Uke {{week}}"
+};
+var timePickerNbNO = {
+  Time: "Tid",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "Avbryt",
+  OK: "OK",
+  "Select time": "Velg tid"
+};
+var nbNO = {
+  ...datePickerNbNO,
+  ...calendarNbNO,
+  ...timePickerNbNO
+};
+var datePickerTrTR = {
+  Date: "Tarih",
+  "MM/DD/YYYY": "GG/AA/YYYY",
+  "Next month": "Sonraki ay",
+  "Previous month": "\xD6nceki ay",
+  "Choose Date": "Tarih Se\xE7"
+};
+var calendarTrTR = {
+  Today: "Bug\xFCn",
+  Month: "Ayl\u0131k",
+  Week: "Haftal\u0131k",
+  Day: "G\xFCnl\xFCk",
+  List: "Liste",
+  "Select View": "G\xF6r\xFCn\xFCm Se\xE7",
+  "+ {{n}} events": "+ {{n}} etkinlikler",
+  "+ 1 event": "+ 1 etkinlik",
+  "No events": "Etkinlik yok",
+  "Next period": "Sonraki d\xF6nem",
+  "Previous period": "\xD6nceki d\xF6nem",
+  to: "dan",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "T\xFCm g\xFCn ve \xE7oklu g\xFCn etkinlikleri",
+  "Link to {{n}} more events on {{date}}": "{{date}} tarihinde {{n}} etkinli\u011Fe ba\u011Flant\u0131",
+  "Link to 1 more event on {{date}}": "{{date}} tarihinde 1 etkinli\u011Fe ba\u011Flant\u0131",
+  CW: "{{week}}. Hafta",
+  View: "G\xF6r\xFCn\xFCm"
+};
+var timePickerTrTR = {
+  Time: "Zaman",
+  AM: "\xD6\xD6",
+  PM: "\xD6S",
+  Cancel: "\u0130ptal",
+  OK: "Tamam",
+  "Select time": "Zaman\u0131 se\xE7"
+};
+var trTR = {
+  ...datePickerTrTR,
+  ...calendarTrTR,
+  ...timePickerTrTR
+};
+var datePickerKyKG = {
+  Date: "\u0414\u0430\u0442\u0430\u0441\u044B",
+  "MM/DD/YYYY": "\u0410\u0410/\u041A\u041A/\u0416\u0416\u0416\u0416",
+  "Next month": "\u041A\u0438\u0439\u0438\u043D\u043A\u0438 \u0430\u0439",
+  "Previous month": "\u04E8\u0442\u043A\u04E9\u043D \u0430\u0439",
+  "Choose Date": "\u041A\u04AF\u043D\u0434\u04AF \u0442\u0430\u043D\u0434\u0430\u04A3\u044B\u0437"
+};
+var calendarKyKG = {
+  Today: "\u0411\u04AF\u0433\u04AF\u043D",
+  Month: "\u0410\u0439",
+  Week: "\u0410\u043F\u0442\u0430",
+  Day: "\u041A\u04AF\u043D",
+  List: "\u0422\u0438\u0437\u043C\u0435",
+  "Select View": "\u041A\u04E9\u0440\u04AF\u043D\u04AF\u0448\u0442\u04AF \u0442\u0430\u043D\u0434\u0430\u04A3\u044B\u0437",
+  "+ {{n}} events": "+ {{n}} \u041E\u043A\u0443\u044F\u043B\u0430\u0440",
+  "+ 1 event": "+ 1 \u041E\u043A\u0443\u044F",
+  "No events": "\u041E\u043A\u0443\u044F \u0436\u043E\u043A",
+  "Next period": "\u041A\u0438\u0439\u0438\u043D\u043A\u0438 \u043C\u0435\u0437\u0433\u0438\u043B",
+  "Previous period": "\u04E8\u0442\u043A\u04E9\u043D \u043C\u0435\u0437\u0433\u0438\u043B",
+  to: "\u0447\u0435\u0439\u0438\u043D",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "\u041A\u04AF\u043D \u0431\u043E\u044E \u0436\u0430\u043D\u0430 \u0431\u0438\u0440 \u043D\u0435\u0447\u0435 \u043A\u04AF\u043D \u043A\u0430\u0442\u0430\u0440\u044B \u043C\u0435\u043D\u0435\u043D \u0431\u043E\u043B\u0433\u043E\u043D \u043E\u043A\u0443\u044F\u043B\u0430\u0440",
+  "Link to {{n}} more events on {{date}}": "{{date}} \u043A\u04AF\u043D\u04AF\u043D\u0434\u04E9 {{n}} \u043E\u043A\u0443\u044F\u0433\u0430 \u0431\u0430\u0439\u043B\u0430\u043D\u044B\u0448",
+  "Link to 1 more event on {{date}}": "{{date}} \u043A\u04AF\u043D\u04AF\u043D\u0434\u04E9 1 \u043E\u043A\u0443\u044F\u0433\u0430 \u0431\u0430\u0439\u043B\u0430\u043D\u044B\u0448",
+  CW: "\u0410\u043F\u0442\u0430 {{week}}",
+  View: "\u041A\u04E9\u0440\u04AF\u043D\u04AF\u0448"
+};
+var timePickerKyKG = {
+  Time: "\u0423\u0431\u0430\u043A\u0442\u044B",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "\u0411\u043E\u043B\u0431\u043E\u0439",
+  OK: "\u041E\u043E\u0431\u0430",
+  "Select time": "\u0423\u0431\u0430\u043A\u0442\u044B \u0442\u0430\u043D\u0434\u0430\u04A3\u044B\u0437"
+};
+var kyKG = {
+  ...datePickerKyKG,
+  ...calendarKyKG,
+  ...timePickerKyKG
+};
+var datePickerIdID = {
+  Date: "Tanggal",
+  "MM/DD/YYYY": "DD.MM.YYYY",
+  "Next month": "Bulan depan",
+  "Previous month": "Bulan sebelumnya",
+  "Choose Date": "Pilih tanggal"
+};
+var calendarIdID = {
+  Today: "Hari Ini",
+  Month: "Bulan",
+  Week: "Minggu",
+  Day: "Hari",
+  List: "Daftar",
+  "Select View": "Pilih tampilan",
+  "+ {{n}} events": "+ {{n}} Acara",
+  "+ 1 event": "+ 1 Acara",
+  "No events": "Tidak ada acara",
+  "Next period": "Periode selanjutnya",
+  "Previous period": "Periode sebelumnya",
+  to: "sampai",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "Sepanjang hari dan acara beberapa hari ",
+  "Link to {{n}} more events on {{date}}": "Tautan ke {{n}} acara lainnya pada {{date}}",
+  "Link to 1 more event on {{date}}": "Tautan ke 1 acara lainnya pada {{date}}",
+  CW: "Minggu {{week}}",
+  View: "Tampilan"
+};
+var timePickerIdID = {
+  Time: "Waktu",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "Batalkan",
+  OK: "OK",
+  "Select time": "Pilih waktu"
+};
+var idID = {
+  ...datePickerIdID,
+  ...calendarIdID,
+  ...timePickerIdID
+};
+var datePickerCsCZ = {
+  Date: "Datum",
+  "MM/DD/YYYY": "DD/MM/YYYY",
+  "Next month": "Dal\u0161\xED m\u011Bs\xEDc",
+  "Previous month": "P\u0159edchoz\xED m\u011Bs\xEDc",
+  "Choose Date": "Vyberte datum"
+};
+var calendarCsCZ = {
+  Today: "Dnes",
+  Month: "M\u011Bs\xEDc",
+  Week: "T\xFDden",
+  Day: "Den",
+  List: "Seznam",
+  "Select View": "Vyberte zobrazen\xED",
+  "+ {{n}} events": "+ {{n}} ud\xE1losti",
+  "+ 1 event": "+ 1 ud\xE1lost",
+  "No events": "\u017D\xE1dn\xE9 ud\xE1losti",
+  "Next period": "P\u0159\xED\u0161t\xED obdob\xED",
+  "Previous period": "P\u0159edchoz\xED obdob\xED",
+  to: "do",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "Celodenn\xED a v\xEDcedenn\xED ud\xE1losti",
+  "Link to {{n}} more events on {{date}}": "Odkaz na {{n}} dal\u0161\xEDch ud\xE1lost\xED dne {{date}}",
+  "Link to 1 more event on {{date}}": "Odkaz na 1 dal\u0161\xED ud\xE1lost dne {{date}}",
+  CW: "T\xFDden {{week}}",
+  View: "Zobrazen\xED"
+};
+var timePickerCsCZ = {
+  Time: "\u010Cas",
+  AM: "Dopoledne",
+  PM: "Odpoledne",
+  Cancel: "Zru\u0161it",
+  OK: "OK",
+  "Select time": "Vyberte \u010Das"
+};
+var csCZ = {
+  ...datePickerCsCZ,
+  ...calendarCsCZ,
+  ...timePickerCsCZ
+};
+var datePickerEtEE = {
+  Date: "Kuup\xE4ev",
+  "MM/DD/YYYY": "PP.KK.AAAA",
+  "Next month": "J\xE4rgmine kuu",
+  "Previous month": "Eelmine kuu",
+  "Choose Date": "Vali kuup\xE4ev"
+};
+var calendarEtEE = {
+  Today: "T\xE4na",
+  Month: "Kuu",
+  Week: "N\xE4dal",
+  Day: "P\xE4ev",
+  List: "Nimekiri",
+  "Select View": "Vali vaade",
+  "+ {{n}} events": "+ {{n}} s\xFCndmused",
+  "+ 1 event": "+ 1 s\xFCndmus",
+  "No events": "Pole s\xFCndmusi",
+  "Next period": "J\xE4rgmine periood",
+  "Previous period": "Eelmine periood",
+  to: "kuni",
+  "Full day- and multiple day events": "T\xE4isp\xE4eva- ja mitmep\xE4evas\xFCndmused",
+  "Link to {{n}} more events on {{date}}": "Link {{n}} rohkematele s\xFCndmustele kuup\xE4eval {{date}}",
+  "Link to 1 more event on {{date}}": "Link \xFChele lisas\xFCndmusele kuup\xE4eval {{date}}",
+  CW: "N\xE4dala number {{week}}",
+  View: "Vaade"
+};
+var timePickerEtEE = {
+  Time: "Aeg",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "Loobu",
+  OK: "OK",
+  "Select time": "Vali aeg"
+};
+var etEE = {
+  ...datePickerEtEE,
+  ...calendarEtEE,
+  ...timePickerEtEE
+};
+var datePickerUkUA = {
+  Date: "\u0414\u0430\u0442\u0430",
+  "MM/DD/YYYY": "\u041C\u041C/\u0414\u0414/\u0420\u0420\u0420\u0420",
+  "Next month": "\u041D\u0430\u0441\u0442\u0443\u043F\u043D\u0438\u0439 \u043C\u0456\u0441\u044F\u0446\u044C",
+  "Previous month": "\u041C\u0438\u043D\u0443\u043B\u0438\u0439 \u043C\u0456\u0441\u044F\u0446\u044C",
+  "Choose Date": "\u0412\u0438\u0431\u0435\u0440\u0456\u0442\u044C \u0434\u0430\u0442\u0443"
+};
+var calendarUkUA = {
+  Today: "\u0421\u044C\u043E\u0433\u043E\u0434\u043D\u0456",
+  Month: "\u041C\u0456\u0441\u044F\u0446\u044C",
+  Week: "\u0422\u0438\u0436\u0434\u0435\u043D\u044C",
+  Day: "\u0414\u0435\u043D\u044C",
+  List: "\u0421\u043F\u0438\u0441\u043E\u043A",
+  "Select View": "\u0412\u0438\u0431\u0435\u0440\u0456\u0442\u044C \u0432\u0438\u0433\u043B\u044F\u0434",
+  "+ {{n}} events": "+ {{n}} \u043F\u043E\u0434\u0456\u0457",
+  "+ 1 event": "+ 1 \u043F\u043E\u0434\u0456\u044F",
+  "No events": "\u041D\u0435\u043C\u0430\u0454 \u043F\u043E\u0434\u0456\u0439",
+  "Next period": "\u041D\u0430\u0441\u0442\u0443\u043F\u043D\u0438\u0439 \u043F\u0435\u0440\u0456\u043E\u0434",
+  "Previous period": "\u041C\u0438\u043D\u0443\u043B\u0438\u0439 \u043F\u0435\u0440\u0456\u043E\u0434",
+  to: "\u043F\u043E",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "\u041F\u043E\u0434\u0456\u0457 \u043D\u0430 \u0446\u0456\u043B\u0438\u0439 \u0434\u0435\u043D\u044C \u0456 \u043A\u0456\u043B\u044C\u043A\u0430 \u0434\u043D\u0456\u0432 \u043F\u043E\u0441\u043F\u0456\u043B\u044C",
+  "Link to {{n}} more events on {{date}}": "\u041F\u043E\u0441\u0438\u043B\u0430\u043D\u043D\u044F \u043D\u0430 {{n}} \u0434\u043E\u0434\u0430\u0442\u043A\u043E\u0432\u0456 \u043F\u043E\u0434\u0456\u0457 \u043D\u0430 {{date}}",
+  "Link to 1 more event on {{date}}": "\u041F\u043E\u0441\u0438\u043B\u0430\u043D\u043D\u044F \u043D\u0430 1 \u0434\u043E\u0434\u0430\u0442\u043A\u043E\u0432\u0443 \u043F\u043E\u0434\u0456\u044E \u043D\u0430 {{date}}",
+  CW: "\u0422\u0438\u0436\u0434\u0435\u043D\u044C {{week}}",
+  View: "\u0412\u0438\u0433\u043B\u044F\u0434"
+};
+var timePickerUkUA = {
+  Time: "\u0427\u0430\u0441",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "\u0421\u043A\u0430\u0441\u0443\u0432\u0430\u0442\u0438",
+  OK: "\u0413\u0430\u0440\u0430\u0437\u0434",
+  "Select time": "\u0412\u0438\u0431\u0435\u0440\u0456\u0442\u044C \u0447\u0430\u0441"
+};
+var ukUA = {
+  ...datePickerUkUA,
+  ...calendarUkUA,
+  ...timePickerUkUA
+};
+var datePickerSrLatnRS = {
+  Date: "Datum",
+  "MM/DD/YYYY": "DD/MM/YYYY",
+  "Next month": "Slede\u0107i mesec",
+  "Previous month": "Prethodni mesec",
+  "Choose Date": "Izaberite datum"
+};
+var calendarSrLatnRS = {
+  Today: "Danas",
+  Month: "Mesec",
+  Week: "Nedelja",
+  Day: "Dan",
+  List: "Lista",
+  "Select View": "Odaberite pregled",
+  "+ {{n}} events": "+ {{n}} Doga\u0111aji",
+  "+ 1 event": "+ 1 Doga\u0111aj",
+  "No events": "Nema doga\u0111aja",
+  "Next period": "Naredni period",
+  "Previous period": "Prethodni period",
+  to: "do",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "Celodnevni i vi\u0161ednevni doga\u0111aji",
+  "Link to {{n}} more events on {{date}}": "Link do jo\u0161 {{n}} doga\u0111aja na {{date}}",
+  "Link to 1 more event on {{date}}": "Link do jednog doga\u0111aja na {{date}}",
+  CW: "Nedelja {{week}}",
+  View: "Pregled"
+};
+var timePickerSrLatnRS = {
+  Time: "Vrijeme",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "Otka\u017Ei",
+  OK: "U redu",
+  "Select time": "Odaberi vrijeme"
+};
+var srLatnRS = {
+  ...datePickerSrLatnRS,
+  ...calendarSrLatnRS,
+  ...timePickerSrLatnRS
+};
+var datePickerCaES = {
+  Date: "Data",
+  "MM/DD/YYYY": "DD/MM/YYYY",
+  "Next month": "Seg\xFCent mes",
+  "Previous month": "Mes anterior",
+  "Choose Date": "Selecciona una data"
+};
+var calendarCaES = {
+  Today: "Avui",
+  Month: "Mes",
+  Week: "Setmana",
+  Day: "Dia",
+  List: "Llista",
+  "Select View": "Selecciona una vista",
+  "+ {{n}} events": "+ {{n}} Esdeveniments",
+  "+ 1 event": "+ 1 Esdeveniment",
+  "No events": "Sense esdeveniments",
+  "Next period": "Seg\xFCent per\xEDode",
+  "Previous period": "Per\xEDode anterior",
+  to: "a",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "Esdeveniments de dia complet i de m\xFAltiples dies",
+  "Link to {{n}} more events on {{date}}": "Enlla\xE7 a {{n}} esdeveniments m\xE9s el {{date}}",
+  "Link to 1 more event on {{date}}": "Enlla\xE7 a 1 esdeveniment m\xE9s el {{date}}",
+  CW: "Setmana {{week}}",
+  View: "Vista"
+};
+var timePickerCaES = {
+  Time: "Hora",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "Cancel\xB7lar",
+  OK: "Acceptar",
+  "Select time": "Selecciona una hora"
+};
+var caES = {
+  ...datePickerCaES,
+  ...calendarCaES,
+  ...timePickerCaES
+};
+var datePickerSrRS = {
+  Date: "\u0414\u0430\u0442\u0443\u043C",
+  "MM/DD/YYYY": "DD/MM/YYYY",
+  "Next month": "\u0421\u043B\u0435\u0434\u0435\u045B\u0438 \u043C\u0435\u0441\u0435\u0446",
+  "Previous month": "\u041F\u0440\u0435\u0442\u0445\u043E\u0434\u043D\u0438 \u043C\u0435\u0441\u0435\u0446",
+  "Choose Date": "\u0418\u0437\u0430\u0431\u0435\u0440\u0438\u0442\u0435 \u0414\u0430\u0442\u0443\u043C"
+};
+var calendarSrRS = {
+  Today: "\u0414\u0430\u043D\u0430\u0441",
+  Month: "\u041C\u0435\u0441\u0435\u0446",
+  Week: "\u041D\u0435\u0434\u0435\u0459\u0430",
+  Day: "\u0414\u0430\u043D",
+  List: "\u041B\u0438\u0441\u0442\u0430",
+  "Select View": "\u0418\u0437\u0430\u0431\u0435\u0440\u0438\u0442\u0435 \u043F\u0440\u0435\u0433\u043B\u0435\u0434",
+  "+ {{n}} events": "+ {{n}} \u0414\u043E\u0433\u0430\u0452\u0430\u0458\u0438",
+  "+ 1 event": "+ 1 \u0414\u043E\u0433\u0430\u0452\u0430\u0458",
+  "No events": "\u041D\u0435\u043C\u0430 \u0434\u043E\u0433\u0430\u0452\u0430\u0458\u0430",
+  "Next period": "\u0421\u043B\u0435\u0434\u0435\u045B\u0438 \u043F\u0435\u0440\u0438\u043E\u0434",
+  "Previous period": "\u041F\u0440\u0435\u0442\u0445\u043E\u0434\u043D\u0438 \u043F\u0435\u0440\u0438\u043E\u0434",
+  to: "\u0434\u0430",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "\u0426\u0435\u043B\u043E\u0434\u043D\u0435\u0432\u043D\u0438 \u0438 \u0432\u0438\u0448\u0435\u0434\u043D\u0435\u0432\u043D\u0438 \u0434\u043E\u0433\u0430\u0452\u0430\u0458\u0438",
+  "Link to {{n}} more events on {{date}}": "\u041B\u0438\u043D\u043A \u0434\u043E \u0458\u043E\u0448 {{n}} \u0434\u043E\u0433\u0430\u0452\u0430\u0458\u0430 \u043D\u0430 {{date}}",
+  "Link to 1 more event on {{date}}": "\u041B\u0438\u043D\u043A \u0434\u043E \u0458\u043E\u0448 1 \u0434\u043E\u0433\u0430\u0452\u0430\u0458\u0430 {{date}}",
+  CW: "\u041D\u0435\u0434\u0435\u0459\u0430 {{week}}",
+  View: "\u041F\u0440\u0435\u0433\u043B\u0435\u0434"
+};
+var timePickerSrRS = {
+  Time: "\u0412\u0440\u0435\u043C\u0435",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "\u041E\u0442\u043A\u0430\u0436\u0438",
+  OK: "\u0423 \u0440\u0435\u0434\u0443",
+  "Select time": "\u0418\u0437\u0430\u0431\u0435\u0440\u0438 \u0432\u0440\u0435\u043C\u0435"
+};
+var srRS = {
+  ...datePickerSrRS,
+  ...calendarSrRS,
+  ...timePickerSrRS
+};
+var datePickerLtLT = {
+  Date: "Data",
+  "MM/DD/YYYY": "MMMM-MM-DD",
+  "Next month": "Kitas m\u0117nuo",
+  "Previous month": "Ankstesnis m\u0117nuo",
+  "Choose Date": "Pasirinkite dat\u0105"
+};
+var calendarLtLT = {
+  Today: "\u0160iandien",
+  Month: "M\u0117nuo",
+  Week: "Savait\u0117",
+  Day: "Diena",
+  List: "S\u0105ra\u0161as",
+  "Select View": "Pasirinkite vaizd\u0105",
+  "+ {{n}} events": "+ {{n}} \u012Fvykiai",
+  "+ 1 event": "+ 1 \u012Fvykis",
+  "No events": "\u012Evyki\u0173 n\u0117ra",
+  "Next period": "Kitas laikotarpis",
+  "Previous period": "Ankstesnis laikotarpis",
+  to: "iki",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "Visos dienos ir keli\u0173 dien\u0173 \u012Fvykiai",
+  "Link to {{n}} more events on {{date}}": "Nuoroda \u012F dar {{n}} \u012Fvykius {{date}}",
+  "Link to 1 more event on {{date}}": "Nuoroda \u012F dar 1 vien\u0105 \u012Fvyk\u012F {{date}}",
+  CW: "{{week}} savait\u0117",
+  View: "Vaizdas"
+};
+var timePickerLtLT = {
+  Time: "Laikas",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "At\u0161aukti",
+  OK: "Gerai",
+  "Select time": "Pasirinkite laik\u0105"
+};
+var ltLT = {
+  ...datePickerLtLT,
+  ...calendarLtLT,
+  ...timePickerLtLT
+};
+var datePickerHrHR = {
+  Date: "Datum",
+  "MM/DD/YYYY": "DD/MM/YYYY",
+  "Next month": "Sljede\u0107i mjesec",
+  "Previous month": "Prethodni mjesec",
+  "Choose Date": "Izaberite datum"
+};
+var calendarHrHR = {
+  Today: "Danas",
+  Month: "Mjesec",
+  Week: "Nedjelja",
+  Day: "Dan",
+  List: "Lista",
+  "Select View": "Odaberite pregled",
+  "+ {{n}} events": "+ {{n}} Doga\u0111aji",
+  "+ 1 event": "+ 1 Doga\u0111aj",
+  "No events": "Nema doga\u0111aja",
+  "Next period": "Sljede\u0107i period",
+  "Previous period": "Prethodni period",
+  to: "do",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "Cjelodnevni i vi\u0161ednevni doga\u0111aji",
+  "Link to {{n}} more events on {{date}}": "Link do jo\u0161 {{n}} doga\u0111aja na {{date}}",
+  "Link to 1 more event on {{date}}": "Link do jo\u0161 jednog doga\u0111aja na {{date}}",
+  CW: "{{week}}. tjedan",
+  View: "Pregled"
+};
+var timePickerHrHR = {
+  Time: "Vrijeme",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "Otka\u017Ei",
+  OK: "U redu",
+  "Select time": "Odaberi vrijeme"
+};
+var hrHR = {
+  ...datePickerHrHR,
+  ...calendarHrHR,
+  ...timePickerHrHR
+};
+var datePickerSlSI = {
+  Date: "Datum",
+  "MM/DD/YYYY": "MM.DD.YYYY",
+  "Next month": "Naslednji mesec",
+  "Previous month": "Prej\u0161nji mesec",
+  "Choose Date": "Izberi datum"
+};
+var calendarSlSI = {
+  Today: "Danes",
+  Month: "Mesec",
+  Week: "Teden",
+  Day: "Dan",
+  List: "Seznam",
+  "Select View": "Izberi pogled",
+  "+ {{n}} events": "+ {{n}} dogodki",
+  "+ 1 event": "+ 1 dogodek",
+  "No events": "Ni dogodkov",
+  "Next period": "Naslednji dogodek",
+  "Previous period": "Prej\u0161nji dogodek",
+  to: "do",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "Celodnevni in ve\u010Ddnevni dogodki",
+  "Link to {{n}} more events on {{date}}": "Povezava do {{n}} drugih dogodkov dne {{date}}",
+  "Link to 1 more event on {{date}}": "Povezava do \u0161e enega dogodka dne {{date}}",
+  CW: "Teden {{week}}",
+  View: "Pogled"
+};
+var timePickerSlSI = {
+  Time: "\u010Cas",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "Prekli\u010Di",
+  OK: "V redu",
+  "Select time": "Izberite \u010Das"
+};
+var slSI = {
+  ...datePickerSlSI,
+  ...calendarSlSI,
+  ...timePickerSlSI
+};
+var datePickerFiFI = {
+  Date: "P\xE4iv\xE4m\xE4\xE4r\xE4",
+  "MM/DD/YYYY": "VVVV-KK-PP",
+  "Next month": "Seuraava kuukausi",
+  "Previous month": "Edellinen kuukausi",
+  "Choose Date": "Valitse p\xE4iv\xE4m\xE4\xE4r\xE4"
+};
+var calendarFiFI = {
+  Today: "T\xE4n\xE4\xE4n",
+  Month: "Kuukausi",
+  Week: "Viikko",
+  Day: "P\xE4iv\xE4",
+  List: "Lista",
+  "Select View": "Valitse n\xE4kym\xE4",
+  "+ {{n}} events": "+ {{n}} tapahtumaa",
+  "+ 1 event": "+ 1 tapahtuma",
+  "No events": "Ei tapahtumia",
+  "Next period": "Seuraava ajanjakso",
+  "Previous period": "Edellinen ajanjakso",
+  to: "-",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "Koko ja usean p\xE4iv\xE4n tapahtumat",
+  "Link to {{n}} more events on {{date}}": "Linkki {{n}} lis\xE4tapahtumaan p\xE4iv\xE4m\xE4\xE4r\xE4ll\xE4 {{date}}",
+  "Link to 1 more event on {{date}}": "Linkki 1 lis\xE4tapahtumaan p\xE4iv\xE4m\xE4\xE4r\xE4ll\xE4 {{date}}",
+  CW: "Viikko {{week}}",
+  View: "N\xE4kym\xE4"
+};
+var timePickerFiFI = {
+  Time: "Aika",
+  AM: "ap.",
+  PM: "ip.",
+  Cancel: "Peruuta",
+  OK: "OK",
+  "Select time": "Valitse aika"
+};
+var fiFI = {
+  ...datePickerFiFI,
+  ...calendarFiFI,
+  ...timePickerFiFI
+};
+var datePickerRoRO = {
+  Date: "Data",
+  "MM/DD/YYYY": "LL/ZZ/AAAA",
+  "Next month": "Luna urm\u0103toare",
+  "Previous month": "Luna anterioar\u0103",
+  "Choose Date": "Alege data"
+};
+var calendarRoRO = {
+  Today: "Ast\u0103zi",
+  Month: "Lun\u0103",
+  Week: "S\u0103pt\u0103m\xE2n\u0103",
+  Day: "Zi",
+  List: "List\u0103",
+  "Select View": "Selecteaz\u0103 vizualizarea",
+  "+ {{n}} events": "+ {{n}} evenimente",
+  "+ 1 event": "+ 1 eveniment",
+  "No events": "F\u0103r\u0103 evenimente",
+  "Next period": "Perioada urm\u0103toare",
+  "Previous period": "Perioada anterioar\u0103",
+  to: "p\xE2n\u0103 la",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "Evenimente pe durata \xEEntregii zile \u0219i pe durata mai multor zile",
+  "Link to {{n}} more events on {{date}}": "Link c\u0103tre {{n}} evenimente suplimentare pe {{date}}",
+  "Link to 1 more event on {{date}}": "Link c\u0103tre 1 eveniment suplimentar pe {{date}}",
+  CW: "S\u0103pt\u0103m\xE2na {{week}}",
+  View: "Vizualizare"
+};
+var timePickerRoRO = {
+  Time: "Timp",
+  AM: "AM",
+  PM: "PM",
+  Cancel: "Anuleaz\u0103",
+  OK: "OK",
+  "Select time": "Selecta\u021Bi ora"
+};
+var roRO = {
+  ...datePickerRoRO,
+  ...calendarRoRO,
+  ...timePickerRoRO
+};
+var datePickerFaIR = {
+  Date: "\u062A\u0627\u0631\u06CC\u062E",
+  "MM/DD/YYYY": "MM/DD/YYYY",
+  "Next month": "\u0645\u0627\u0647 \u0628\u0639\u062F",
+  "Previous month": "\u0645\u0627\u0647 \u0642\u0628\u0644",
+  "Choose Date": "\u0627\u0646\u062A\u062E\u0627\u0628 \u062A\u0627\u0631\u06CC\u062E"
+};
+var calendarFaIR = {
+  Today: "\u0627\u0645\u0631\u0648\u0632",
+  Month: "\u0645\u0627\u0647",
+  Week: "\u0647\u0641\u062A\u0647",
+  Day: "\u0631\u0648\u0632",
+  List: "\u0644\u06CC\u0633\u062A",
+  "Select View": "\u0627\u0646\u062A\u062E\u0627\u0628 \u0646\u0645\u0627",
+  "+ {{n}} events": "+ {{n}} \u0631\u0648\u06CC\u062F\u0627\u062F\u0647\u0627",
+  "+ 1 event": "+ 1 \u0631\u0648\u06CC\u062F\u0627\u062F",
+  "No events": "\u0631\u0648\u06CC\u062F\u0627\u062F\u06CC \u0648\u062C\u0648\u062F \u0646\u062F\u0627\u0631\u062F",
+  "Next period": "\u062F\u0648\u0631\u0647 \u0628\u0639\u062F\u06CC",
+  "Previous period": "\u062F\u0648\u0631\u0647 \u0642\u0628\u0644\u06CC",
+  to: "\u062A\u0627",
+  "Full day- and multiple day events": "\u0631\u0648\u06CC\u062F\u0627\u062F\u0647\u0627\u06CC \u062A\u0645\u0627\u0645 \u0631\u0648\u0632 \u0648 \u0686\u0646\u062F \u0631\u0648\u0632\u0647",
+  "Link to {{n}} more events on {{date}}": "\u0644\u06CC\u0646\u06A9 \u0628\u0647 {{n}} \u0631\u0648\u06CC\u062F\u0627\u062F \u0628\u06CC\u0634\u062A\u0631 \u062F\u0631 \u062A\u0627\u0631\u06CC\u062E {{date}}",
+  "Link to 1 more event on {{date}}": "\u0644\u06CC\u0646\u06A9 \u0628\u0647 1 \u0631\u0648\u06CC\u062F\u0627\u062F \u0628\u06CC\u0634\u062A\u0631 \u062F\u0631 \u062A\u0627\u0631\u06CC\u062E {{date}}",
+  CW: "\u0647\u0641\u062A\u0647 {{week}}",
+  View: "\u0646\u0645\u0627\u06CC\u0634"
+};
+var timePickerFaIR = {
+  Time: "\u0632\u0645\u0627\u0646",
+  AM: "\u0642.\u0638",
+  PM: "\u0628.\u0638",
+  Cancel: "\u0644\u063A\u0648",
+  OK: "\u062A\u0627\u06CC\u06CC\u062F",
+  "Select time": "\u0627\u0646\u062A\u062E\u0627\u0628 \u0632\u0645\u0627\u0646"
+};
+var faIR = {
+  ...datePickerFaIR,
+  ...calendarFaIR,
+  ...timePickerFaIR
+};
+var InvalidLocaleError = class extends Error {
+  constructor(locale) {
+    super(`Invalid locale: ${locale}`);
+  }
+};
+var translate = (locale, languages) => (key, translationVariables) => {
+  if (!/^[a-z]{2}-[A-Z]{2}$/.test(locale.value) && "sr-Latn-RS" !== locale.value) {
+    throw new InvalidLocaleError(locale.value);
+  }
+  const deHyphenatedLocale = locale.value.replaceAll("-", "");
+  const language = languages.value[deHyphenatedLocale];
+  if (!language)
+    return key;
+  let translation = language[key] || key;
+  Object.keys(translationVariables || {}).forEach((variable) => {
+    const value = String(translationVariables === null || translationVariables === void 0 ? void 0 : translationVariables[variable]);
+    if (!value)
+      return;
+    translation = translation.replace(`{{${variable}}}`, value);
+  });
+  return translation;
+};
+var datePickerHeIL = {
+  Date: "\u05EA\u05B7\u05D0\u05B2\u05E8\u05B4\u05D9\u05DA",
+  "MM/DD/YYYY": "MM/DD/YYYY",
+  "Next month": "\u05D7\u05D5\u05D3\u05E9 \u05D4\u05D1\u05D0",
+  "Previous month": "\u05D7\u05D5\u05D3\u05E9 \u05E7\u05D5\u05D3\u05DD",
+  "Choose Date": "\u05D1\u05D7\u05E8 \u05EA\u05D0\u05E8\u05D9\u05DA"
+};
+var calendarHeIL = {
+  Today: "\u05D4\u05B7\u05D9\u05D5\u05B9\u05DD",
+  Month: "\u05D7\u05D5\u05B9\u05D3\u05B6\u05E9\u05C1",
+  Week: "\u05E9\u05C1\u05B8\u05D1\u05D5\u05BC\u05E2\u05B7",
+  Day: "\u05D9\u05D5\u05B9\u05DD",
+  List: "\u05E8\u05E9\u05D9\u05DE\u05D4",
+  "Select View": "\u05D1\u05D7\u05E8 \u05EA\u05E6\u05D5\u05D2\u05D4",
+  "+ {{n}} events": "+ {{n}} \u05D0\u05D9\u05E8\u05D5\u05E2\u05D9\u05DD",
+  "+ 1 event": "+ 1 \u05D0\u05D9\u05E8\u05D5\u05E2",
+  "No events": "\u05D0\u05D9\u05DF \u05D0\u05D9\u05E8\u05D5\u05E2\u05D9\u05DD",
+  "Next period": "\u05EA\u05E7\u05D5\u05E4\u05D4 \u05D4\u05D1\u05D0\u05D4",
+  "Previous period": "\u05EA\u05E7\u05D5\u05E4\u05D4 \u05E7\u05D5\u05D3\u05DE\u05EA",
+  to: "\u05E2\u05D3",
+  // as in 2/1/2020 to 2/2/2020
+  "Full day- and multiple day events": "\u05D0\u05D9\u05E8\u05D5\u05E2\u05D9\u05DD \u05DC\u05DB\u05DC \u05D4\u05D9\u05D5\u05DD \u05D5\u05DC\u05DE\u05E1\u05E4\u05E8 \u05D9\u05DE\u05D9\u05DD",
+  "Link to {{n}} more events on {{date}}": "\u05E7\u05D9\u05E9\u05D5\u05E8 \u05DC\u05E2\u05D5\u05D3 {{n}} \u05D0\u05D9\u05E8\u05D5\u05E2\u05D9\u05DD \u05D1-{{date}}",
+  "Link to 1 more event on {{date}}": "\u05E7\u05D9\u05E9\u05D5\u05E8 \u05DC\u05D0\u05D9\u05E8\u05D5\u05E2 \u05E0\u05D5\u05E1\u05E3 \u05D1-{{date}}",
+  CW: "{{week}} \u05E9\u05C1\u05B8\u05D1\u05D5\u05BC\u05E2\u05B7",
+  View: "\u05EA\u05E6\u05D5\u05D2\u05D4"
+};
+var timePickerHeIL = {
+  Time: "\u05E9\u05E2\u05D4",
+  AM: '\u05DC\u05E4\u05E0\u05D4"\u05E6',
+  PM: '\u05D0\u05D7\u05D4"\u05E6',
+  Cancel: "\u05D1\u05D9\u05D8\u05D5\u05DC",
+  OK: "\u05D0\u05D9\u05E9\u05D5\u05E8",
+  "Select time": "\u05D1\u05D7\u05E8 \u05E9\u05E2\u05D4"
+};
+var heIL = {
+  ...datePickerHeIL,
+  ...calendarHeIL,
+  ...timePickerHeIL
+};
+var translations = {
+  deDE,
+  enUS,
+  itIT,
+  enGB,
+  svSE,
+  zhCN,
+  zhTW,
+  jaJP,
+  ruRU,
+  koKR,
+  frFR,
+  daDK,
+  mkMK,
+  nbNO,
+  plPL,
+  heIL,
+  esES,
+  nlNL,
+  ptBR,
+  skSK,
+  trTR,
+  kyKG,
+  idID,
+  csCZ,
+  etEE,
+  ukUA,
+  caES,
+  srLatnRS,
+  srRS,
+  ltLT,
+  hrHR,
+  slSI,
+  fiFI,
+  roRO,
+  faIR,
+  arEG
+};
+var EventColors = class {
+  constructor(config2) {
+    Object.defineProperty(this, "config", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: config2
+    });
+  }
+  setLight() {
+    Object.entries(this.config.calendars.value || {}).forEach(([calendarName, calendar]) => {
+      if (!calendar.lightColors) {
+        console.warn(`No light colors defined for calendar ${calendarName}`);
+        return;
+      }
+      this.setColors(calendar.colorName, calendar.lightColors);
+    });
+  }
+  setDark() {
+    Object.entries(this.config.calendars.value || {}).forEach(([calendarName, calendar]) => {
+      if (!calendar.darkColors) {
+        console.warn(`No dark colors defined for calendar ${calendarName}`);
+        return;
+      }
+      this.setColors(calendar.colorName, calendar.darkColors);
+    });
+  }
+  setColors(colorName, colorDefinition) {
+    document.documentElement.style.setProperty(`--sx-color-${colorName}`, colorDefinition.main);
+    document.documentElement.style.setProperty(`--sx-color-${colorName}-container`, colorDefinition.container);
+    document.documentElement.style.setProperty(`--sx-color-on-${colorName}-container`, colorDefinition.onContainer);
+  }
+};
+var createCalendarState = (calendarConfig, timeUnitsImpl, selectedDate) => {
+  var _a;
+  const _view = d4(((_a = calendarConfig.views.value.find((view2) => view2.name === calendarConfig.defaultView)) === null || _a === void 0 ? void 0 : _a.name) || calendarConfig.views.value[0].name);
+  const view = w4(() => {
+    return _view.value;
+  });
+  const range = d4(null);
+  let wasInitialized = false;
+  let lastRangeEmitted__NEEDED_TO_PREVENT_RECURSION_IN_EVENT_RECURRENCE_PACKAGE_WHICH_CAUSES_RANGE_TO_UPDATE_AND_THUS_CAUSES_A_CYCLE = null;
+  const callOnRangeUpdate = (_range) => {
+    const lastRange = lastRangeEmitted__NEEDED_TO_PREVENT_RECURSION_IN_EVENT_RECURRENCE_PACKAGE_WHICH_CAUSES_RANGE_TO_UPDATE_AND_THUS_CAUSES_A_CYCLE;
+    if (!_range.value)
+      return;
+    if ((lastRange === null || lastRange === void 0 ? void 0 : lastRange.start.toString()) === _range.value.start.toString() && (lastRange === null || lastRange === void 0 ? void 0 : lastRange.end.toString()) === _range.value.end.toString())
+      return;
+    if (!wasInitialized)
+      return wasInitialized = true;
+    if (calendarConfig.callbacks.onRangeUpdate && _range.value) {
+      calendarConfig.callbacks.onRangeUpdate(_range.value);
+    }
+    Object.values(calendarConfig.plugins || {}).forEach((plugin) => {
+      var _a2;
+      (_a2 = plugin === null || plugin === void 0 ? void 0 : plugin.onRangeUpdate) === null || _a2 === void 0 ? void 0 : _a2.call(plugin, _range.value);
+      lastRangeEmitted__NEEDED_TO_PREVENT_RECURSION_IN_EVENT_RECURRENCE_PACKAGE_WHICH_CAUSES_RANGE_TO_UPDATE_AND_THUS_CAUSES_A_CYCLE = _range.value;
+    });
+  };
+  E4(() => {
+    if (range.value) {
+      callOnRangeUpdate(range);
+    }
+  });
+  const setRange = (date) => {
+    var _a2, _b;
+    const selectedView = calendarConfig.views.value.find((availableView) => availableView.name === _view.value);
+    const newRange = selectedView.setDateRange({
+      calendarConfig,
+      date,
+      range,
+      timeUnitsImpl
+    });
+    if (newRange.start.toString() === ((_a2 = range.value) === null || _a2 === void 0 ? void 0 : _a2.start.toString()) && newRange.end.toString() === ((_b = range.value) === null || _b === void 0 ? void 0 : _b.end.toString()))
+      return;
+    range.value = newRange;
+  };
+  setRange(selectedDate || Temporal.PlainDate.from(Temporal.Now.plainDateISO(calendarConfig.timezone.value)));
+  const isCalendarSmall = d4(void 0);
+  const isDark = d4(calendarConfig.isDark.value || false);
+  E4(() => {
+    const eventColors = new EventColors(calendarConfig);
+    if (isDark.value) {
+      eventColors.setDark();
+    } else {
+      eventColors.setLight();
+    }
+  });
+  return {
+    view,
+    isDark,
+    setRange,
+    range,
+    isCalendarSmall,
+    setView: (newView, selectedDate2) => {
+      r4(() => {
+        _view.value = newView;
+        setRange(selectedDate2);
+      });
+    }
+  };
+};
+var createCalendarEventsImpl = (events, backgroundEvents, config2) => {
+  const list = d4(events.map((event) => {
+    return externalEventToInternal(event, config2);
+  }));
+  const filterPredicate = d4(void 0);
+  return {
+    list,
+    filterPredicate,
+    backgroundEvents: d4(backgroundEvents)
+  };
+};
+var timePointsPerDay = (dayStart, dayEnd, isHybridDay) => {
+  if (dayStart === dayEnd)
+    return 2400;
+  if (isHybridDay)
+    return 2400 - dayStart + dayEnd;
+  return dayEnd - dayStart;
+};
+var getDirection = () => {
+  const html = document.querySelector("html");
+  if (!html) {
+    return "ltr";
+  }
+  const direction = html.getAttribute("dir");
+  if (direction === "rtl") {
+    return "rtl";
+  }
+  return "ltr";
+};
+var CalendarConfigImpl = class {
+  constructor(locale = DEFAULT_LOCALE, firstDayOfWeek = DEFAULT_FIRST_DAY_OF_WEEK, defaultView = InternalViewName.Week, views = [], dayBoundaries = DEFAULT_DAY_BOUNDARIES, weekOptions, calendars = {}, plugins = {}, isDark = false, isResponsive = true, callbacks = {}, _customComponentFns = {}, minDate = void 0, maxDate = void 0, monthGridOptions = {
+    nEventsPerDay: 4
+  }, theme = void 0, translations2 = {}, showWeekNumbers = false, timezone = "UTC", resources = [], resourceGridOptions = { nDays: 7 }) {
+    Object.defineProperty(this, "defaultView", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: defaultView
+    });
+    Object.defineProperty(this, "plugins", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: plugins
+    });
+    Object.defineProperty(this, "isResponsive", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: isResponsive
+    });
+    Object.defineProperty(this, "callbacks", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: callbacks
+    });
+    Object.defineProperty(this, "_customComponentFns", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: _customComponentFns
+    });
+    Object.defineProperty(this, "firstDayOfWeek", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "views", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "dayBoundaries", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "weekOptions", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "calendars", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "isDark", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "minDate", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "maxDate", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "monthGridOptions", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "locale", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: d4(DEFAULT_LOCALE)
+    });
+    Object.defineProperty(this, "theme", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "translations", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "showWeekNumbers", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: d4(false)
+    });
+    Object.defineProperty(this, "direction", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: "ltr"
+    });
+    Object.defineProperty(this, "timezone", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "resources", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "resourceGridOptions", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "_destroyCustomComponentInstance", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    this.locale = d4(locale);
+    this.firstDayOfWeek = d4(firstDayOfWeek);
+    this.views = d4(views);
+    this.dayBoundaries = d4(dayBoundaries);
+    this.weekOptions = d4(weekOptions);
+    this.calendars = d4(calendars);
+    this.isDark = d4(isDark);
+    this.minDate = d4(minDate);
+    this.maxDate = d4(maxDate);
+    this.monthGridOptions = d4(monthGridOptions);
+    this.theme = theme;
+    this.translations = d4(translations2);
+    this.showWeekNumbers = d4(showWeekNumbers);
+    this.direction = getDirection();
+    this.timezone = d4(timezone);
+    this.resources = d4(resources);
+    this.resourceGridOptions = d4(resourceGridOptions);
+  }
+  get isHybridDay() {
+    return this.dayBoundaries.value.start > this.dayBoundaries.value.end || this.dayBoundaries.value.start !== 0 && this.dayBoundaries.value.start === this.dayBoundaries.value.end;
+  }
+  get timePointsPerDay() {
+    return timePointsPerDay(this.dayBoundaries.value.start, this.dayBoundaries.value.end, this.isHybridDay);
+  }
+};
+var CalendarConfigBuilder = class {
+  constructor() {
+    Object.defineProperty(this, "locale", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "firstDayOfWeek", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "defaultView", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "views", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "dayBoundaries", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "weekOptions", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: {
+        gridHeight: DEFAULT_WEEK_GRID_HEIGHT,
+        nDays: 7,
+        eventWidth: 100,
+        timeAxisFormatOptions: { hour: "numeric" },
+        eventOverlap: true,
+        gridStep: 60
+      }
+    });
+    Object.defineProperty(this, "monthGridOptions", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "calendars", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "plugins", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: {}
+    });
+    Object.defineProperty(this, "isDark", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: false
+    });
+    Object.defineProperty(this, "isResponsive", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: true
+    });
+    Object.defineProperty(this, "callbacks", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "minDate", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "maxDate", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "backgroundEvents", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "timezone", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "theme", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "translations", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "showWeekNumbers", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "resources", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: []
+    });
+    Object.defineProperty(this, "resourceGridOptions", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: {
+        nDays: 7
+      }
+    });
+  }
+  build() {
+    const minDate = this.minDate ? Temporal.PlainDate.from(this.minDate) : void 0;
+    const maxDate = this.maxDate ? Temporal.PlainDate.from(this.maxDate) : void 0;
+    return new CalendarConfigImpl(this.locale || DEFAULT_LOCALE, typeof this.firstDayOfWeek === "number" ? this.firstDayOfWeek : DEFAULT_FIRST_DAY_OF_WEEK, this.defaultView || InternalViewName.Week, this.views || [], this.dayBoundaries || DEFAULT_DAY_BOUNDARIES, this.weekOptions, this.calendars, this.plugins, this.isDark, this.isResponsive, this.callbacks, {}, minDate, maxDate, this.monthGridOptions, this.theme, this.translations, this.showWeekNumbers, this.timezone, this.resources, this.resourceGridOptions);
+  }
+  withLocale(locale) {
+    this.locale = locale;
+    return this;
+  }
+  withTranslations(translation) {
+    this.translations = translation;
+    return this;
+  }
+  withFirstDayOfWeek(firstDayOfWeek) {
+    this.firstDayOfWeek = firstDayOfWeek;
+    return this;
+  }
+  withDefaultView(defaultView) {
+    this.defaultView = defaultView;
+    return this;
+  }
+  withViews(views) {
+    this.views = views;
+    return this;
+  }
+  withDayBoundaries(dayBoundaries) {
+    if (!dayBoundaries)
+      return this;
+    this.dayBoundaries = {
+      start: timePointsFromString(dayBoundaries.start),
+      end: timePointsFromString(dayBoundaries.end)
+    };
+    return this;
+  }
+  withWeekOptions(userDefinedWeekOptions) {
+    this.weekOptions = {
+      ...this.weekOptions,
+      ...userDefinedWeekOptions
+    };
+    if (this.weekOptions.gridStep !== 60 && (userDefinedWeekOptions === null || userDefinedWeekOptions === void 0 ? void 0 : userDefinedWeekOptions.timeAxisFormatOptions) === void 0) {
+      this.weekOptions.timeAxisFormatOptions = {
+        hour: "numeric",
+        minute: "numeric"
+      };
+    }
+    return this;
+  }
+  withCalendars(calendars) {
+    this.calendars = calendars;
+    return this;
+  }
+  withPlugins(plugins) {
+    if (!plugins)
+      return this;
+    plugins.forEach((plugin) => {
+      this.plugins[plugin.name] = plugin;
+    });
+    return this;
+  }
+  withIsDark(isDark) {
+    this.isDark = isDark;
+    return this;
+  }
+  withIsResponsive(isResponsive) {
+    this.isResponsive = isResponsive;
+    return this;
+  }
+  withCallbacks(listeners) {
+    this.callbacks = listeners;
+    return this;
+  }
+  withMinDate(minDate) {
+    this.minDate = minDate;
+    return this;
+  }
+  withMaxDate(maxDate) {
+    this.maxDate = maxDate;
+    return this;
+  }
+  withMonthGridOptions(monthOptions) {
+    this.monthGridOptions = monthOptions;
+    return this;
+  }
+  withBackgroundEvents(backgroundEvents) {
+    this.backgroundEvents = backgroundEvents;
+    return this;
+  }
+  withTheme(theme) {
+    this.theme = theme;
+    return this;
+  }
+  withWeekNumbers(showWeekNumbers) {
+    this.showWeekNumbers = showWeekNumbers;
+    return this;
+  }
+  withTimezone(timezone) {
+    this.timezone = timezone;
+    return this;
+  }
+  withResources(resources) {
+    if (resources) {
+      this.resources = resources;
+    }
+    return this;
+  }
+  withResourceGridOptions(resourceGridOptions) {
+    this.resourceGridOptions = {
+      ...this.resourceGridOptions,
+      ...resourceGridOptions
+    };
+    return this;
+  }
+};
+var createInternalConfig = (config2, plugins) => {
+  return new CalendarConfigBuilder().withLocale(config2.locale).withFirstDayOfWeek(config2.firstDayOfWeek).withDefaultView(config2.defaultView).withViews(config2.views).withDayBoundaries(config2.dayBoundaries).withWeekOptions(config2.weekOptions).withCalendars(config2.calendars).withPlugins(plugins).withIsDark(config2.isDark).withIsResponsive(config2.isResponsive).withCallbacks(config2.callbacks).withMinDate(config2.minDate ? config2.minDate.toString() : void 0).withMaxDate(config2.maxDate ? config2.maxDate.toString() : void 0).withMonthGridOptions(config2.monthGridOptions).withBackgroundEvents(config2.backgroundEvents).withTheme(config2.theme).withTranslations(config2.translations || translations).withWeekNumbers(config2.showWeekNumbers).withTimezone(config2.timezone).withResources(config2.resources).withResourceGridOptions(config2.resourceGridOptions).build();
+};
+var Month;
+(function(Month2) {
+  Month2[Month2["JANUARY"] = 1] = "JANUARY";
+  Month2[Month2["FEBRUARY"] = 2] = "FEBRUARY";
+  Month2[Month2["MARCH"] = 3] = "MARCH";
+  Month2[Month2["APRIL"] = 4] = "APRIL";
+  Month2[Month2["MAY"] = 5] = "MAY";
+  Month2[Month2["JUNE"] = 6] = "JUNE";
+  Month2[Month2["JULY"] = 7] = "JULY";
+  Month2[Month2["AUGUST"] = 8] = "AUGUST";
+  Month2[Month2["SEPTEMBER"] = 9] = "SEPTEMBER";
+  Month2[Month2["OCTOBER"] = 10] = "OCTOBER";
+  Month2[Month2["NOVEMBER"] = 11] = "NOVEMBER";
+  Month2[Month2["DECEMBER"] = 12] = "DECEMBER";
+})(Month || (Month = {}));
+var NoYearZeroError = class extends Error {
+  constructor() {
+    super("Year zero does not exist in the Gregorian calendar.");
+  }
+};
+var TimeUnitsImpl = class {
+  constructor(config2) {
+    Object.defineProperty(this, "config", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: config2
+    });
+  }
+  get firstDayOfWeek() {
+    return this.config.firstDayOfWeek.value;
+  }
+  set firstDayOfWeek(firstDayOfWeek) {
+    this.config.firstDayOfWeek.value = firstDayOfWeek;
+  }
+  getMonth(year, month) {
+    if (year === 0)
+      throw new NoYearZeroError();
+    const firstDateOfMonth = Temporal.PlainDate.from({
+      year,
+      month,
+      day: 1
+    });
+    const lastDateOfMonth = firstDateOfMonth.toPlainYearMonth().toPlainDate({ day: firstDateOfMonth.toPlainYearMonth().daysInMonth });
+    const dates = [];
+    let currentDate = firstDateOfMonth;
+    while (Temporal.PlainDate.compare(currentDate, lastDateOfMonth) <= 0) {
+      dates.push(currentDate.toZonedDateTime(this.config.timezone.value));
+      currentDate = currentDate.add({ days: 1 });
+    }
+    return dates;
+  }
+  getMonthWithTrailingAndLeadingDays(year, month) {
+    if (year === 0)
+      throw new NoYearZeroError();
+    const firstDateOfMonth = Temporal.PlainDate.from({
+      year,
+      month,
+      day: 1
+    });
+    const monthWithDates = [this.getWeekForTemporal(firstDateOfMonth)];
+    let isInMonth = true;
+    let currentWeekStart = monthWithDates[0][0];
+    while (isInMonth) {
+      const nextWeekStart = currentWeekStart.add({ days: 7 });
+      const nextWeekDates = this.getWeekForTemporal(nextWeekStart);
+      const hasDatesInTargetMonth = nextWeekDates.some((date) => date.month === month);
+      if (hasDatesInTargetMonth) {
+        monthWithDates.push(nextWeekDates);
+        currentWeekStart = nextWeekStart;
+      } else {
+        isInMonth = false;
+      }
+    }
+    return monthWithDates.map((week) => week.map((plainDate) => plainDate.toZonedDateTime(this.config.timezone.value)));
+  }
+  getWeekFor(date) {
+    const plainDate = date instanceof Temporal.PlainDate ? date : date.toPlainDate();
+    const week = [
+      this.getFirstDateOfWeekTemporal(plainDate).toZonedDateTime(this.config.timezone.value)
+    ];
+    while (week.length < 7) {
+      const lastDateOfWeek = week[week.length - 1];
+      const nextDateOfWeek = lastDateOfWeek.add({ days: 1 });
+      week.push(nextDateOfWeek);
+    }
+    return week;
+  }
+  getMonthsFor(year) {
+    if (year === 0)
+      throw new NoYearZeroError();
+    return Object.values(Month).filter((month) => !isNaN(Number(month))).map((month) => Temporal.PlainDate.from({ year, month: Number(month), day: 1 }));
+  }
+  getWeekForTemporal(date) {
+    const week = [this.getFirstDateOfWeekTemporal(date)];
+    while (week.length < 7) {
+      const lastDateOfWeek = week[week.length - 1];
+      const nextDateOfWeek = lastDateOfWeek.add({ days: 1 });
+      week.push(nextDateOfWeek);
+    }
+    return week;
+  }
+  getFirstDateOfWeekTemporal(date) {
+    const dateIsNthDayOfWeek = date.dayOfWeek - this.firstDayOfWeek;
+    if (dateIsNthDayOfWeek === 0) {
+      return date;
+    } else if (dateIsNthDayOfWeek > 0) {
+      return date.subtract({ days: dateIsNthDayOfWeek });
+    } else {
+      return date.subtract({ days: 7 + dateIsNthDayOfWeek });
+    }
+  }
+};
+var TimeUnitsBuilder = class {
+  constructor() {
+    Object.defineProperty(this, "config", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+  }
+  build() {
+    return new TimeUnitsImpl(this.config);
+  }
+  withConfig(config2) {
+    this.config = config2;
+    return this;
+  }
+};
+var createTimeUnitsImpl = (internalConfig) => {
+  return new TimeUnitsBuilder().withConfig(internalConfig).build();
+};
+var Placement;
+(function(Placement2) {
+  Placement2["TOP_START"] = "top-start";
+  Placement2["TOP_END"] = "top-end";
+  Placement2["BOTTOM_START"] = "bottom-start";
+  Placement2["BOTTOM_END"] = "bottom-end";
+})(Placement || (Placement = {}));
+var ConfigImpl = class {
+  constructor(locale = DEFAULT_LOCALE, firstDayOfWeek = DEFAULT_FIRST_DAY_OF_WEEK, timezone = "UTC", min = Temporal.PlainDate.from({
+    year: 1970,
+    month: 1,
+    day: 1
+  }), max = Temporal.PlainDate.from({
+    year: (/* @__PURE__ */ new Date()).getFullYear() + 50,
+    month: 11,
+    day: 31
+  }), placement = Placement.BOTTOM_START, listeners = {}, style = {}, teleportTo, label, name, disabled, hasPlaceholder) {
+    Object.defineProperty(this, "min", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: min
+    });
+    Object.defineProperty(this, "max", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: max
+    });
+    Object.defineProperty(this, "placement", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: placement
+    });
+    Object.defineProperty(this, "listeners", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: listeners
+    });
+    Object.defineProperty(this, "style", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: style
+    });
+    Object.defineProperty(this, "teleportTo", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: teleportTo
+    });
+    Object.defineProperty(this, "label", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: label
+    });
+    Object.defineProperty(this, "name", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: name
+    });
+    Object.defineProperty(this, "disabled", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: disabled
+    });
+    Object.defineProperty(this, "hasPlaceholder", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: hasPlaceholder
+    });
+    Object.defineProperty(this, "locale", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "firstDayOfWeek", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "timezone", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    this.locale = d4(locale);
+    this.firstDayOfWeek = d4(firstDayOfWeek);
+    this.timezone = d4(timezone);
+  }
+};
+var ConfigBuilder = class {
+  constructor() {
+    Object.defineProperty(this, "locale", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "firstDayOfWeek", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "timezone", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "min", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "max", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "placement", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "listeners", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "style", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "teleportTo", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "label", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "name", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "disabled", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "hasPlaceholder", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+  }
+  build() {
+    return new ConfigImpl(this.locale, this.firstDayOfWeek, this.timezone, this.min, this.max, this.placement, this.listeners, this.style, this.teleportTo, this.label, this.name, this.disabled, this.hasPlaceholder);
+  }
+  withLocale(locale) {
+    this.locale = locale;
+    return this;
+  }
+  withFirstDayOfWeek(firstDayOfWeek) {
+    this.firstDayOfWeek = firstDayOfWeek;
+    return this;
+  }
+  withTimezone(timezone) {
+    this.timezone = timezone;
+    return this;
+  }
+  withMin(min) {
+    this.min = min;
+    return this;
+  }
+  withMax(max) {
+    this.max = max;
+    return this;
+  }
+  withPlacement(placement) {
+    this.placement = placement;
+    return this;
+  }
+  withListeners(listeners) {
+    this.listeners = listeners;
+    return this;
+  }
+  withStyle(style) {
+    this.style = style;
+    return this;
+  }
+  withTeleportTo(teleportTo) {
+    this.teleportTo = teleportTo;
+    return this;
+  }
+  withLabel(label) {
+    this.label = label;
+    return this;
+  }
+  withName(name) {
+    this.name = name;
+    return this;
+  }
+  withDisabled(disabled) {
+    this.disabled = disabled;
+    return this;
+  }
+  withHasPlaceholder(hasPlaceholder) {
+    this.hasPlaceholder = hasPlaceholder;
+    return this;
+  }
+};
+var createDatePickerConfig = (config2, dateSelectionCallback) => {
+  var _a, _b;
+  let teleportTo;
+  if ((_a = config2.datePicker) === null || _a === void 0 ? void 0 : _a.teleportTo) {
+    teleportTo = config2.datePicker.teleportTo;
+  }
+  const dynamicPlacement = (datePickerWrapper) => {
+    if (datePickerWrapper) {
+      const rect = datePickerWrapper.getBoundingClientRect();
+      const viewportCenterX = window.innerWidth / 2;
+      const isMoreOnLeftSide = rect.x + rect.width / 2 <= viewportCenterX;
+      return isMoreOnLeftSide ? Placement.BOTTOM_START : Placement.BOTTOM_END;
+    }
+    return Placement.BOTTOM_END;
+  };
+  return new ConfigBuilder().withLocale(config2.locale).withFirstDayOfWeek(config2.firstDayOfWeek).withTimezone(config2.timezone).withMin(config2.minDate).withMax(config2.maxDate).withTeleportTo(teleportTo).withStyle((_b = config2.datePicker) === null || _b === void 0 ? void 0 : _b.style).withPlacement(dynamicPlacement).withListeners({ onChange: dateSelectionCallback }).build();
+};
+var createDateSelectionCallback = (calendarState, config2) => {
+  let lastEmittedDate = null;
+  return (date) => {
+    var _a;
+    calendarState.setRange(date);
+    if (((_a = config2.callbacks) === null || _a === void 0 ? void 0 : _a.onSelectedDateUpdate) && date.toString() !== (lastEmittedDate === null || lastEmittedDate === void 0 ? void 0 : lastEmittedDate.toString())) {
+      lastEmittedDate = date;
+      config2.callbacks.onSelectedDateUpdate(date);
+    }
+  };
+};
+var validatePlugins = (configPlugins, pluginArg) => {
+  if (configPlugins && pluginArg) {
+    throw new Error("You cannot provide plugins over the config object and as an argument to createCalendar.");
+  }
+};
+var validateConfig = (config2) => {
+  var _a, _b, _c, _d;
+  if (config2.selectedDate && !(config2.selectedDate instanceof Temporal.PlainDate)) {
+    throw new Error("[Schedule-X error]: selectedDate must have the format YYYY-MM-DD");
+  }
+  if (config2.minDate && !(config2.minDate instanceof Temporal.PlainDate)) {
+    throw new Error("[Schedule-X error]: minDate must be a temporal plain date");
+  }
+  if (config2.maxDate && !(config2.maxDate instanceof Temporal.PlainDate)) {
+    throw new Error("[Schedule-X error]: maxDate must be a temporal plain date");
+  }
+  if (typeof config2.firstDayOfWeek !== "undefined" && (config2.firstDayOfWeek < 1 || config2.firstDayOfWeek > 7)) {
+    throw new Error("[Schedule-X error]: firstDayOfWeek must be a number between 1 and 7");
+  }
+  if (typeof ((_a = config2.weekOptions) === null || _a === void 0 ? void 0 : _a.gridHeight) !== "undefined" && config2.weekOptions.gridHeight < 0) {
+    throw new Error("[Schedule-X error]: weekOptions.gridHeight must be a positive number");
+  }
+  if (typeof ((_b = config2.weekOptions) === null || _b === void 0 ? void 0 : _b.nDays) !== "undefined" && (config2.weekOptions.nDays < 1 || config2.weekOptions.nDays > 7)) {
+    throw new Error("[Schedule-X error]: weekOptions.nDays must be a number between 1 and 7");
+  }
+  if (typeof ((_c = config2.weekOptions) === null || _c === void 0 ? void 0 : _c.eventWidth) !== "undefined" && (config2.weekOptions.eventWidth < 1 || config2.weekOptions.eventWidth > 100)) {
+    throw new Error("[Schedule-X error]: weekOptions.eventWidth must be an integer between 1 and 100");
+  }
+  if (typeof ((_d = config2.monthGridOptions) === null || _d === void 0 ? void 0 : _d.nEventsPerDay) !== "undefined" && config2.monthGridOptions.nEventsPerDay < 0) {
+    throw new Error("[Schedule-X error]: monthGridOptions.nEventsPerDay must be a positive number");
+  }
+  const dayBoundaryPattern = /^\d{2}:00$/;
+  if (typeof config2.dayBoundaries !== "undefined") {
+    const startFormatIsInvalid = !dayBoundaryPattern.test(config2.dayBoundaries.start);
+    const endFormatIsInvalid = !dayBoundaryPattern.test(config2.dayBoundaries.end);
+    if (startFormatIsInvalid || endFormatIsInvalid) {
+      throw new Error('[Schedule-X error]: dayBoundaries must be an object with "start"- and "end" properties, each with the format HH:mm');
+    }
+  }
+};
+var validateEvents = (events = []) => {
+  events === null || events === void 0 ? void 0 : events.forEach((event) => {
+    if (!(event.start instanceof Temporal.ZonedDateTime) && !(event.start instanceof Temporal.PlainDate)) {
+      throw new Error(`[Schedule-X error]: Event start time needs to be a Temporal.ZonedDateTime or Temporal.PlainDate.`);
+    }
+    if (!(event.end instanceof Temporal.ZonedDateTime) && !(event.end instanceof Temporal.PlainDate)) {
+      throw new Error(`[Schedule-X error]: Event end time needs to be a Temporal.ZonedDateTime or Temporal.PlainDate.`);
+    }
+    const isIdDecimalNumber = typeof event.id === "number" && event.id % 1 !== 0;
+    if (isIdDecimalNumber) {
+      throw new Error(`[Schedule-X error]: Event id ${event.id} is not a valid id. Only non-unicode characters that can be used by document.querySelector is allowed, see: https://developer.mozilla.org/en-US/docs/Web/CSS/ident. We recommend using uuids or integers.`);
+    }
+    if (typeof event.id === "string" && !/^[a-zA-Z0-9_-]*$/.test(event.id)) {
+      throw new Error(`[Schedule-X error]: Event id ${event.id} is not a valid id. Only non-unicode characters that can be used by document.querySelector is allowed, see: https://developer.mozilla.org/en-US/docs/Web/CSS/ident. We recommend using uuids or integers.`);
+    }
+    if (typeof event.id !== "string" && typeof event.id !== "number") {
+      throw new Error(`[Schedule-X error]: Event id ${event.id} is not a valid id. Only non-unicode characters that can be used by document.querySelector is allowed, see: https://developer.mozilla.org/en-US/docs/Web/CSS/ident. We recommend using uuids or integers.`);
+    }
+  });
+};
+var createCalendarAppSingleton = (config2, plugins) => {
+  var _a;
+  const internalConfig = createInternalConfig(config2, plugins);
+  const timeUnitsImpl = createTimeUnitsImpl(internalConfig);
+  const calendarState = createCalendarState(internalConfig, timeUnitsImpl, config2.selectedDate);
+  const dateSelectionCallback = createDateSelectionCallback(calendarState, config2);
+  const datePickerConfig = createDatePickerConfig(config2, (date) => dateSelectionCallback(date));
+  const datePickerState = createDatePickerState(datePickerConfig, config2.selectedDate || ((_a = config2.datePicker) === null || _a === void 0 ? void 0 : _a.selectedDate));
+  const calendarEvents = createCalendarEventsImpl(config2.events || [], config2.backgroundEvents || [], internalConfig);
+  return new CalendarAppSingletonBuilder().withConfig(internalConfig).withTimeUnitsImpl(timeUnitsImpl).withDatePickerState(datePickerState).withCalendarEvents(calendarEvents).withDatePickerConfig(datePickerConfig).withCalendarState(calendarState).withTranslate(translate(internalConfig.locale, internalConfig.translations)).build();
+};
+var createCalendar = (config2, plugins) => {
+  validatePlugins(config2.plugins, plugins);
+  if (config2.skipValidation !== true) {
+    validateEvents(config2.events);
+    validateConfig(config2);
+  }
+  return new CalendarApp(createCalendarAppSingleton(config2, plugins || config2.plugins || []));
+};
+var createWeekForMonth = (week, day) => {
+  week.push({
+    date: Temporal.ZonedDateTime.from(day.toString()).toPlainDate(),
+    events: {},
+    backgroundEvents: []
+  });
+  return week;
+};
+var createMonth = (date, timeUnitsImpl) => {
+  const monthWithDates = timeUnitsImpl.getMonthWithTrailingAndLeadingDays(date.year, date.month);
+  const month = [];
+  for (const week of monthWithDates) {
+    month.push(week.reduce(createWeekForMonth, []));
+  }
+  return month;
+};
+function MonthGridEvent({ gridRow, calendarEvent, date, isFirstWeek, isLastWeek }) {
+  var _a, _b, _c, _d, _e2;
+  const $app = x3(AppContext);
+  const hasOverflowLeft = isFirstWeek && ((_a = $app.calendarState.range.value) === null || _a === void 0 ? void 0 : _a.start) && calendarEvent.start.toString() < $app.calendarState.range.value.start.toString();
+  const hasOverflowRight = isLastWeek && ((_b = $app.calendarState.range.value) === null || _b === void 0 ? void 0 : _b.end) && calendarEvent.end.toString() > $app.calendarState.range.value.end.toString();
+  const { createDragStartTimeout, setClickedEventIfNotDragging, setClickedEvent } = useEventInteractions($app);
+  const plainDate = Temporal.PlainDate.from(date).toString();
+  const hasStartDate = dateFromDateTime(calendarEvent.start.toString()) === plainDate;
+  const nDays = calendarEvent._eventFragments[date];
+  const eventCSSVariables = {
+    borderInlineStart: hasStartDate ? `4px solid var(--sx-color-${calendarEvent._color})` : void 0,
+    color: `var(--sx-color-on-${calendarEvent._color}-container)`,
+    backgroundColor: `var(--sx-color-${calendarEvent._color}-container)`,
+    // CORRELATION ID: 2 (10px subtracted from width)
+    // nDays * 100% for the width of each day + 1px for border - 10 px for horizontal gap between events
+    width: `calc(${nDays * 100 + "%"} + ${nDays}px - 10px)`
+  };
+  const handleStartDrag = (uiEvent) => {
+    var _a2;
+    if (isUIEventTouchEvent(uiEvent))
+      uiEvent.preventDefault();
+    if (!uiEvent.target)
+      return;
+    if (!$app.config.plugins.dragAndDrop || ((_a2 = calendarEvent._options) === null || _a2 === void 0 ? void 0 : _a2.disableDND))
+      return;
+    $app.config.plugins.dragAndDrop.startMonthGridDrag(calendarEvent, $app);
+  };
+  const customComponent = $app.config._customComponentFns.monthGridEvent;
+  const customComponentId = A3(customComponent ? "custom-month-grid-event-" + randomStringId() : void 0);
+  y3(() => {
+    if (!customComponent)
+      return;
+    customComponent(getElementByCCID(customComponentId.current), {
+      calendarEvent: calendarEvent._getExternalEvent(),
+      hasStartDate
+    });
+    return () => {
+      var _a2, _b2;
+      (_b2 = (_a2 = $app.config)._destroyCustomComponentInstance) === null || _b2 === void 0 ? void 0 : _b2.call(_a2, customComponentId.current);
+    };
+  }, [calendarEvent]);
+  const handleOnClick = (e5) => {
+    e5.stopPropagation();
+    invokeOnEventClickCallback($app, calendarEvent, e5);
+  };
+  const handleOnDoubleClick = (e5) => {
+    e5.stopPropagation();
+    invokeOnEventDoubleClickCallback($app, calendarEvent, e5);
+  };
+  const handleKeyDown = (e5) => {
+    if (e5.key === "Enter" || e5.key === " ") {
+      e5.stopPropagation();
+      setClickedEvent(e5, calendarEvent);
+      invokeOnEventClickCallback($app, calendarEvent, e5);
+      nextTick(() => {
+        focusModal($app);
+      });
+    }
+  };
+  const classNames = [
+    "sx__event",
+    "sx__month-grid-event",
+    "sx__month-grid-cell"
+  ];
+  if ((_c = calendarEvent._options) === null || _c === void 0 ? void 0 : _c.additionalClasses) {
+    classNames.push(...calendarEvent._options.additionalClasses);
+  }
+  if (wasEventAddedInLastSecond(calendarEvent))
+    classNames.push("is-event-new");
+  if (hasOverflowLeft)
+    classNames.push("sx__month-grid-event--overflow-left");
+  if (hasOverflowRight)
+    classNames.push("sx__month-grid-event--overflow-right");
+  const hasCustomContent = (_d = calendarEvent._customContent) === null || _d === void 0 ? void 0 : _d.monthGrid;
+  return u3("div", { draggable: !!$app.config.plugins.dragAndDrop, "data-event-id": calendarEvent.id, "data-ccid": customComponentId.current, onMouseDown: (e5) => createDragStartTimeout(handleStartDrag, e5), onMouseUp: (e5) => setClickedEventIfNotDragging(calendarEvent, e5), onTouchStart: (e5) => createDragStartTimeout(handleStartDrag, e5), onTouchEnd: (e5) => setClickedEventIfNotDragging(calendarEvent, e5), onClick: handleOnClick, onDblClick: handleOnDoubleClick, onKeyDown: handleKeyDown, className: classNames.join(" "), style: {
+    gridRow,
+    width: eventCSSVariables.width,
+    padding: customComponent ? "0px" : void 0,
+    borderInlineStart: customComponent ? void 0 : eventCSSVariables.borderInlineStart,
+    color: customComponent ? void 0 : eventCSSVariables.color,
+    backgroundColor: customComponent ? void 0 : eventCSSVariables.backgroundColor
+  }, tabIndex: 0, role: "button", children: [!customComponent && !hasCustomContent && u3(k2, { children: [calendarEvent.start instanceof Temporal.ZonedDateTime && u3("div", { className: "sx__month-grid-event-time", children: timeFn(calendarEvent.start, $app.config.locale.value) }), u3("div", { className: "sx__month-grid-event-title", children: calendarEvent.title })] }), hasCustomContent && u3("div", { dangerouslySetInnerHTML: {
+    __html: ((_e2 = calendarEvent._customContent) === null || _e2 === void 0 ? void 0 : _e2.monthGrid) || ""
+  } })] });
+}
+function MonthGridDay({ day, isFirstWeek, isLastWeek }) {
+  const $app = x3(AppContext);
+  const nEventsInDay = Object.values(day.events).filter((event) => typeof event === "object" || event === DATE_GRID_BLOCKER).length;
+  const getEventTranslationSingularOrPlural = (nOfAdditionalEvents) => {
+    if (nOfAdditionalEvents === 1)
+      return $app.translate("+ 1 event");
+    return $app.translate("+ {{n}} events", { n: nOfAdditionalEvents });
+  };
+  const getAriaLabelSingularOrPlural = (nOfAdditionalEvents) => {
+    if (nOfAdditionalEvents === 1) {
+      return $app.translate("Link to 1 more event on {{date}}", {
+        date: getLocalizedDate$1(day.date, $app.config.locale.value)
+      });
+    }
+    return $app.translate("Link to {{n}} more events on {{date}}", {
+      date: getLocalizedDate$1(day.date, $app.config.locale.value),
+      n: nEventsInDay - $app.config.monthGridOptions.value.nEventsPerDay
+    });
+  };
+  const handleClickAdditionalEvents = (e5) => {
+    e5.stopPropagation();
+    if ($app.config.callbacks.onClickPlusEvents)
+      $app.config.callbacks.onClickPlusEvents(day.date, e5);
+    if (!$app.config.views.value.find((view) => view.name === InternalViewName.Day))
+      return;
+    setTimeout(() => {
+      $app.datePickerState.selectedDate.value = day.date;
+      $app.calendarState.setView(InternalViewName.Day, day.date);
+    }, 250);
+  };
+  const dateClassNames = ["sx__month-grid-day__header-date"];
+  const dayDate = day.date;
+  if (isToday(dayDate.toZonedDateTime($app.config.timezone.value), $app.config.timezone.value))
+    dateClassNames.push("sx__is-today");
+  const selectedDateMonth = $app.datePickerState.selectedDate.value.month;
+  const dayMonth = day.date.month;
+  const baseClasses = [
+    "sx__month-grid-day",
+    getClassNameForWeekday(dayDate.dayOfWeek)
+  ];
+  const [wrapperClasses, setWrapperClasses] = d3(baseClasses);
+  y3(() => {
+    const classes = [...baseClasses];
+    if (dayMonth !== selectedDateMonth)
+      classes.push("is-leading-or-trailing");
+    if (isSameDay($app.datePickerState.selectedDate.value, day.date))
+      classes.push("is-selected");
+    setWrapperClasses(classes);
+  }, [$app.datePickerState.selectedDate.value]);
+  const getNumberOfNonDisplayedEvents = () => {
+    return Object.values(day.events).slice($app.config.monthGridOptions.value.nEventsPerDay).filter((event) => event === DATE_GRID_BLOCKER || typeof event === "object").length;
+  };
+  const numberOfNonDisplayedEvents = getNumberOfNonDisplayedEvents();
+  const dayStartDateTime = Temporal.ZonedDateTime.from({
+    year: day.date.year,
+    month: day.date.month,
+    day: day.date.day,
+    hour: 0,
+    minute: 0,
+    second: 0,
+    timeZone: $app.config.timezone.value
+  });
+  const dayEndDateTime = Temporal.ZonedDateTime.from({
+    year: day.date.year,
+    month: day.date.month,
+    day: day.date.day,
+    hour: 23,
+    minute: 59,
+    second: 59,
+    timeZone: $app.config.timezone.value
+  });
+  const fullDayBackgroundEvent = day.backgroundEvents.find((event) => {
+    const eventStartWithTime = event.start instanceof Temporal.PlainDate ? event.start.toZonedDateTime($app.config.timezone.value) : event.start;
+    const eventEndWithTime = event.end instanceof Temporal.PlainDate ? event.end.toZonedDateTime($app.config.timezone.value).with({
+      hour: 23,
+      minute: 59,
+      second: 59
+    }) : event.end;
+    return eventStartWithTime.toString() <= dayStartDateTime.toString() && eventEndWithTime.toString() >= dayEndDateTime.toString();
+  });
+  const handleMouseDown = (e5) => {
+    const target = e5.target;
+    if (!target.classList.contains("sx__month-grid-day"))
+      return;
+    const callback = $app.config.callbacks.onMouseDownMonthGridDate;
+    if (callback)
+      callback(day.date, e5);
+  };
+  const monthGridDayNameCustomComponent = $app.config._customComponentFns.monthGridDayName;
+  const monthGridDayNameCCID = d3(monthGridDayNameCustomComponent ? randomStringId() : "")[0];
+  y3(() => {
+    if (!monthGridDayNameCustomComponent)
+      return;
+    const dayNameEl = document.querySelector(`[data-ccid="${monthGridDayNameCCID}"]`);
+    if (!(dayNameEl instanceof HTMLElement)) {
+      return;
+    }
+    monthGridDayNameCustomComponent(dayNameEl, {
+      day: toJSDate(day.date.toString()).getDay()
+    });
+  }, [day]);
+  const monthGridDateCustomComponent = $app.config._customComponentFns.monthGridDate;
+  const monthGridDateCCID = d3(monthGridDateCustomComponent ? randomStringId() : "")[0];
+  y3(() => {
+    if (!monthGridDateCustomComponent)
+      return;
+    const dateEl = document.querySelector(`[data-ccid="${monthGridDateCCID}"]`);
+    if (!(dateEl instanceof HTMLElement))
+      return;
+    monthGridDateCustomComponent(dateEl, {
+      date: toJSDate(day.date.toString()).getDate(),
+      jsDate: toJSDate(day.date.toString())
+    });
+  }, [day]);
+  return u3("div", { className: wrapperClasses.join(" "), "data-date": toDateString$1(day.date), onClick: (e5) => $app.config.callbacks.onClickDate && $app.config.callbacks.onClickDate(day.date, e5), "aria-label": getLocalizedDate$1(day.date, $app.config.locale.value), onDblClick: (e5) => {
+    var _a, _b;
+    return (_b = (_a = $app.config.callbacks).onDoubleClickDate) === null || _b === void 0 ? void 0 : _b.call(_a, day.date, e5);
+  }, onMouseDown: handleMouseDown, children: [fullDayBackgroundEvent && u3(k2, { children: u3("div", { className: "sx__month-grid-background-event", title: fullDayBackgroundEvent.title, style: {
+    ...fullDayBackgroundEvent.style
+  } }) }), u3("div", { className: "sx__month-grid-day__header", children: [isFirstWeek ? u3(k2, { children: monthGridDayNameCustomComponent ? u3("div", { "data-ccid": monthGridDayNameCCID }) : u3("div", { className: "sx__month-grid-day__header-day-name", children: getDayNameShort(dayDate, $app.config.locale.value) }) }) : null, monthGridDateCCID ? u3("div", { "data-ccid": monthGridDateCCID }) : u3("div", { className: dateClassNames.join(" "), children: dayDate.day })] }), u3("div", { className: "sx__month-grid-day__events", children: Object.values(day.events).slice(0, $app.config.monthGridOptions.value.nEventsPerDay).map((event, index) => {
+    if (typeof event !== "object")
+      return u3("div", { className: "sx__month-grid-blocker sx__month-grid-cell", style: { gridRow: index + 1 } });
+    return u3(MonthGridEvent, { gridRow: index + 1, calendarEvent: event, date: day.date.toString(), isFirstWeek, isLastWeek });
+  }) }), numberOfNonDisplayedEvents > 0 ? u3("button", { type: "button", className: "sx__button sx__month-grid-day__events-more sx__ripple--wide", "aria-label": getAriaLabelSingularOrPlural(numberOfNonDisplayedEvents), onClick: handleClickAdditionalEvents, children: getEventTranslationSingularOrPlural(numberOfNonDisplayedEvents) }) : null] });
+}
+function MonthGridWeek({ week, isFirstWeek, isLastWeek }) {
+  const $app = x3(AppContext);
+  return u3("div", { className: "sx__month-grid-week", children: [$app.config.showWeekNumbers.value && u3("div", { className: "sx__month-grid-week__week-number", children: getWeekNumber(week[0].date, $app.config.firstDayOfWeek.value) }), week.map((day) => {
+    return u3(MonthGridDay, { day, isFirstWeek, isLastWeek }, toDateString$1(day.date));
+  })] });
+}
+var positionInMonthWeek = (sortedEvents, week) => {
+  const weekDates = Object.keys(week).sort();
+  const firstDateOfWeek = weekDates[0];
+  const lastDateOfWeek = weekDates[weekDates.length - 1];
+  const occupiedLevels = /* @__PURE__ */ new Set();
+  for (const event of sortedEvents) {
+    const eventOriginalStartDate = dateFromDateTime(event.start.toString());
+    const eventOriginalEndDate = dateFromDateTime(event.end.toString());
+    const isEventStartInWeek = !!week[eventOriginalStartDate];
+    let isEventInWeek = isEventStartInWeek;
+    if (!isEventStartInWeek && eventOriginalStartDate < firstDateOfWeek && eventOriginalEndDate >= firstDateOfWeek) {
+      isEventInWeek = true;
+    }
+    if (!isEventInWeek)
+      continue;
+    const firstDateOfEvent = isEventStartInWeek ? eventOriginalStartDate : firstDateOfWeek;
+    const lastDateOfEvent = eventOriginalEndDate <= lastDateOfWeek ? eventOriginalEndDate : lastDateOfWeek;
+    const eventDays = Object.values(week).filter((day) => {
+      const plainDate = Temporal.PlainDate.from(day.date).toString();
+      return plainDate >= firstDateOfEvent && plainDate <= lastDateOfEvent;
+    });
+    let levelInWeekForEvent;
+    let testLevel = 0;
+    while (levelInWeekForEvent === void 0) {
+      const isLevelFree = eventDays.every((day) => {
+        return !day.events[testLevel];
+      });
+      if (isLevelFree) {
+        levelInWeekForEvent = testLevel;
+        occupiedLevels.add(testLevel);
+      } else
+        testLevel++;
+    }
+    for (const [eventDayIndex, eventDay] of eventDays.entries()) {
+      if (eventDayIndex === 0) {
+        event._eventFragments[firstDateOfEvent] = eventDays.length;
+        eventDay.events[levelInWeekForEvent] = event;
+      } else {
+        eventDay.events[levelInWeekForEvent] = DATE_GRID_BLOCKER;
+      }
+    }
+  }
+  for (const level of Array.from(occupiedLevels)) {
+    for (const [, day] of Object.entries(week)) {
+      if (!day.events[level]) {
+        day.events[level] = void 0;
+      }
+    }
+  }
+  return week;
+};
+var positionInMonth = (month, sortedEvents) => {
+  const weeks = [];
+  month.forEach((week) => {
+    const weekMap = {};
+    week.forEach((day) => {
+      const plainDate = Temporal.PlainDate.from(day.date);
+      weekMap[plainDate.toString()] = day;
+    });
+    weeks.push(weekMap);
+  });
+  weeks.forEach((week) => positionInMonthWeek(sortedEvents, week));
+  return month;
+};
+var MonthGridWrapper = ({ $app, id }) => {
+  const [month, setMonth] = d3([]);
+  useSignalEffect(() => {
+    $app.calendarEvents.list.value.forEach((event) => {
+      event._eventFragments = {};
+    });
+    const newMonth = createMonth(Temporal.PlainDate.from($app.datePickerState.selectedDate.value), $app.timeUnitsImpl);
+    newMonth.forEach((week) => {
+      week.forEach((day) => {
+        const plainDate = Temporal.PlainDate.from(day.date);
+        const rangeStartDateTime = Temporal.ZonedDateTime.from({
+          year: plainDate.year,
+          month: plainDate.month,
+          day: plainDate.day,
+          hour: 0,
+          minute: 0,
+          second: 0,
+          timeZone: $app.config.timezone.value
+        });
+        const rangeEndDateTime = Temporal.ZonedDateTime.from({
+          year: plainDate.year,
+          month: plainDate.month,
+          day: plainDate.day,
+          hour: 23,
+          minute: 59,
+          second: 59,
+          timeZone: $app.config.timezone.value
+        });
+        day.backgroundEvents = filterByRange($app.calendarEvents.backgroundEvents.value, {
+          start: rangeStartDateTime,
+          end: rangeEndDateTime
+        }, $app.config.timezone.value);
+      });
+    });
+    const filteredEvents = $app.calendarEvents.filterPredicate.value ? $app.calendarEvents.list.value.filter($app.calendarEvents.filterPredicate.value) : $app.calendarEvents.list.value;
+    setMonth(positionInMonth(newMonth, filteredEvents.sort(sortEventsForMonthGrid)));
+  });
+  return u3(AppContext.Provider, { value: $app, children: u3("div", { id, className: "sx__month-grid-wrapper", children: month.map((week, index) => u3(MonthGridWeek, { week, isFirstWeek: index === 0, isLastWeek: index === month.length - 1 }, index)) }) });
+};
+var config$2 = {
+  name: InternalViewName.MonthGrid,
+  label: "Month",
+  setDateRange: setRangeForMonth,
+  Component: MonthGridWrapper,
+  hasWideScreenCompat: true,
+  hasSmallScreenCompat: false,
+  backwardForwardFn: addMonths,
+  backwardForwardUnits: 1
+};
+var viewMonthGrid = createPreactView(config$2);
+var createViewMonthGrid = () => createPreactView(config$2);
+var createAgendaMonth = (date, timeUnitsImpl) => {
+  const monthWithDates = timeUnitsImpl.getMonthWithTrailingAndLeadingDays(date.year, date.month);
+  return {
+    weeks: monthWithDates.map((week) => {
+      return week.map((date2) => {
+        return {
+          date: Temporal.PlainDate.from(date2),
+          events: []
+        };
+      });
+    })
+  };
+};
+function MonthAgendaDay({ day, isActive, setActiveDate }) {
+  const $app = x3(AppContext);
+  const monthSelected = $app.datePickerState.selectedDate.value.month;
+  const monthOfDay = day.date.month;
+  const dayClasses = [
+    "sx__month-agenda-day",
+    getClassNameForWeekday(day.date.dayOfWeek)
+  ];
+  if (isActive)
+    dayClasses.push("sx__month-agenda-day--active");
+  if (monthOfDay !== monthSelected)
+    dayClasses.push("is-leading-or-trailing");
+  const handleClick = (e5, callback) => {
+    setActiveDate(day.date);
+    if (!callback)
+      return;
+    callback(day.date, e5);
+  };
+  const hasFocus = (weekDay) => weekDay.date.toString() === $app.datePickerState.selectedDate.value.toString();
+  const handleKeyDown = (event) => {
+    const keyMapDaysToAdd = /* @__PURE__ */ new Map([
+      ["ArrowDown", 7],
+      ["ArrowUp", -7],
+      ["ArrowLeft", -1],
+      ["ArrowRight", 1]
+    ]);
+    $app.datePickerState.selectedDate.value = Temporal.PlainDate.from(addDays($app.datePickerState.selectedDate.value, keyMapDaysToAdd.get(event.key) || 0));
+  };
+  const isBeforeMinDate = !!($app.config.minDate.value && day.date.toString() < $app.config.minDate.value.toString());
+  const isPastMaxDate = !!($app.config.maxDate.value && day.date.toString() > $app.config.maxDate.value.toString());
+  return u3("button", { type: "button", className: `sx__button ${dayClasses.join(" ")}`, onClick: (e5) => handleClick(e5, $app.config.callbacks.onClickAgendaDate), onDblClick: (e5) => handleClick(e5, $app.config.callbacks.onDoubleClickAgendaDate), disabled: isBeforeMinDate || isPastMaxDate, "aria-label": getLocalizedDate$1(day.date, $app.config.locale.value), tabIndex: hasFocus(day) ? 0 : -1, "data-agenda-focus": hasFocus(day) ? "true" : void 0, onKeyDown: handleKeyDown, children: [u3("div", { children: day.date.day }), u3("div", { className: "sx__month-agenda-day__event-icons", children: day.events.slice(0, 3).map((event) => u3("div", { style: { backgroundColor: `var(--sx-color-${event._color})` }, className: "sx__month-agenda-day__event-icon" })) })] });
+}
+function MonthAgendaWeek({ week, setActiveDate, activeDate }) {
+  const $app = x3(AppContext);
+  return u3("div", { className: "sx__month-agenda-week", children: [$app.config.showWeekNumbers.value && u3("div", { className: "sx__month-agenda-week__week-number", children: getWeekNumber(Temporal.PlainDate.from(week[0].date), $app.config.firstDayOfWeek.value) }), week.map((day, index) => u3(MonthAgendaDay, { setActiveDate, day, isActive: isSameDay(activeDate, day.date) }, index + day.date.toString()))] });
+}
+function MonthAgendaDayNames({ week }) {
+  const $app = x3(AppContext);
+  const localizedShortDayNames = getOneLetterOrShortDayNames(week.map((day) => day.date), $app.config.locale.value);
+  const classNames = T3(() => {
+    const ret = ["sx__month-agenda-day-names"];
+    if ($app.config.showWeekNumbers.value) {
+      ret.push("sx__has-week-numbers");
+    }
+    return ret.join(" ");
+  }, [$app.config.showWeekNumbers.value]);
+  return u3("div", { className: classNames, children: localizedShortDayNames.map((oneLetterDayName) => u3("div", { className: "sx__month-agenda-day-name", children: oneLetterDayName })) });
+}
+var getAllEventDates = (startDate, endDate) => {
+  let currentDate = startDate;
+  const dates = [currentDate];
+  while (currentDate < endDate) {
+    currentDate = addDays(Temporal.PlainDate.from(currentDate), 1).toString();
+    dates.push(currentDate);
+  }
+  return dates;
+};
+var placeEventInDay = (allDaysMap) => (event) => {
+  getAllEventDates(dateFromDateTime(event.start.toString()), dateFromDateTime(event.end.toString())).forEach((date) => {
+    if (allDaysMap[date]) {
+      allDaysMap[date].events.push(event);
+    }
+  });
+};
+var positionEventsInAgenda = (agendaMonth, eventsSortedByStart) => {
+  const allDaysMap = agendaMonth.weeks.reduce((acc, week) => {
+    week.forEach((day) => {
+      acc[day.date.toString()] = day;
+    });
+    return acc;
+  }, {});
+  eventsSortedByStart.forEach(placeEventInDay(allDaysMap));
+  return agendaMonth;
+};
+function MonthAgendaEvent({ calendarEvent }) {
+  var _a, _b, _c;
+  const $app = x3(AppContext);
+  const { setClickedEvent } = useEventInteractions($app);
+  const eventCSSVariables = {
+    backgroundColor: `var(--sx-color-${calendarEvent._color}-container)`,
+    color: `var(--sx-color-on-${calendarEvent._color}-container)`,
+    borderInlineStart: `4px solid var(--sx-color-${calendarEvent._color})`
+  };
+  const customComponent = $app.config._customComponentFns.monthAgendaEvent;
+  const customComponentId = A3(customComponent ? "custom-month-agenda-event-" + randomStringId() : void 0);
+  y3(() => {
+    if (!customComponent)
+      return;
+    customComponent(getElementByCCID(customComponentId.current), {
+      calendarEvent: calendarEvent._getExternalEvent()
+    });
+    return () => {
+      var _a2, _b2;
+      (_b2 = (_a2 = $app.config)._destroyCustomComponentInstance) === null || _b2 === void 0 ? void 0 : _b2.call(_a2, customComponentId.current);
+    };
+  }, [calendarEvent]);
+  const onClick = (e5) => {
+    setClickedEvent(e5, calendarEvent);
+    invokeOnEventClickCallback($app, calendarEvent, e5);
+  };
+  const onDoubleClick = (e5) => {
+    setClickedEvent(e5, calendarEvent);
+    invokeOnEventDoubleClickCallback($app, calendarEvent, e5);
+  };
+  const onKeyDown = (e5) => {
+    if (e5.key === "Enter" || e5.key === " ") {
+      e5.stopPropagation();
+      setClickedEvent(e5, calendarEvent);
+      invokeOnEventClickCallback($app, calendarEvent, e5);
+      nextTick(() => {
+        focusModal($app);
+      });
+    }
+  };
+  const hasCustomContent = (_a = calendarEvent._customContent) === null || _a === void 0 ? void 0 : _a.monthAgenda;
+  const classNames = ["sx__event", "sx__month-agenda-event"];
+  if ((_b = calendarEvent._options) === null || _b === void 0 ? void 0 : _b.additionalClasses) {
+    classNames.push(...calendarEvent._options.additionalClasses);
+  }
+  if (wasEventAddedInLastSecond(calendarEvent))
+    classNames.push("is-event-new");
+  return u3("div", { className: classNames.join(" "), "data-ccid": customComponentId.current, "data-event-id": calendarEvent.id, style: {
+    backgroundColor: customComponent ? void 0 : eventCSSVariables.backgroundColor,
+    color: customComponent ? void 0 : eventCSSVariables.color,
+    borderInlineStart: customComponent ? void 0 : eventCSSVariables.borderInlineStart,
+    padding: customComponent ? "0px" : void 0
+  }, onClick: (e5) => onClick(e5), onDblClick: (e5) => onDoubleClick(e5), onKeyDown, tabIndex: 0, role: "button", children: [!customComponent && !hasCustomContent && u3(k2, { children: [u3("div", { className: "sx__month-agenda-event__title", children: calendarEvent.title }), u3("div", { className: "sx__month-agenda-event__time sx__month-agenda-event__has-icon", children: [u3(TimeIcon, { strokeColor: `var(--sx-color-on-${calendarEvent._color}-container)` }), u3("div", { dangerouslySetInnerHTML: {
+    __html: getTimeStamp(calendarEvent, $app.config.locale.value)
+  } })] })] }), hasCustomContent && u3("div", { dangerouslySetInnerHTML: {
+    __html: ((_c = calendarEvent._customContent) === null || _c === void 0 ? void 0 : _c.monthAgenda) || ""
+  } })] });
+}
+function MonthAgendaEvents({ events }) {
+  const $app = x3(AppContext);
+  return u3("div", { className: "sx__month-agenda-events", children: events.length ? events.map((event) => u3(MonthAgendaEvent, { calendarEvent: event }, event.id)) : u3("div", { className: "sx__month-agenda-events__empty", children: $app.translate("No events") }) });
+}
+var MonthAgendaWrapper = ({ $app, id }) => {
+  var _a;
+  const getMonth = () => {
+    const filteredEvents = $app.calendarEvents.filterPredicate.value ? $app.calendarEvents.list.value.filter($app.calendarEvents.filterPredicate.value) : $app.calendarEvents.list.value;
+    return positionEventsInAgenda(createAgendaMonth($app.datePickerState.selectedDate.value.toZonedDateTime($app.config.timezone.value), $app.timeUnitsImpl), filteredEvents.sort(sortEventsByStartAndEnd));
+  };
+  const [agendaMonth, setAgendaMonth] = d3(getMonth());
+  y3(() => {
+    setAgendaMonth(getMonth());
+  }, [
+    $app.datePickerState.selectedDate.value,
+    $app.calendarEvents.list.value,
+    $app.calendarEvents.filterPredicate.value
+  ]);
+  y3(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        const mutatedElement = mutation.target;
+        if (mutatedElement.dataset.agendaFocus === "true")
+          mutatedElement.focus();
+      });
+    });
+    const monthViewElement = document.getElementById(id);
+    observer.observe(monthViewElement, {
+      childList: true,
+      subtree: true,
+      attributes: true
+    });
+    return () => observer.disconnect();
+  }, []);
+  return u3(AppContext.Provider, { value: $app, children: u3("div", { id, className: "sx__month-agenda-wrapper", children: [u3(MonthAgendaDayNames, { week: agendaMonth.weeks[0] }), u3("div", { className: "sx__month-agenda-weeks", children: agendaMonth.weeks.map((week, index) => u3(MonthAgendaWeek, { week, setActiveDate: (date) => $app.datePickerState.selectedDate.value = date, activeDate: $app.datePickerState.selectedDate.value }, index)) }), u3(MonthAgendaEvents, { events: ((_a = agendaMonth.weeks.flat().find((day) => isSameDay(day.date, $app.datePickerState.selectedDate.value))) === null || _a === void 0 ? void 0 : _a.events) || [] }, $app.datePickerState.selectedDate.value)] }) });
+};
+var config$1 = {
+  name: InternalViewName.MonthAgenda,
+  label: "Month",
+  setDateRange: setRangeForMonth,
+  Component: MonthAgendaWrapper,
+  hasSmallScreenCompat: true,
+  hasWideScreenCompat: false,
+  backwardForwardFn: addMonths,
+  backwardForwardUnits: 1
+};
+var viewMonthAgenda = createPreactView(config$1);
+var scrollOnDateSelection = ($app, wrapperRef) => {
+  if (!wrapperRef.current)
+    return;
+  const selectedDate = $app.datePickerState.selectedDate.value;
+  const selectedDayElement = wrapperRef.current.querySelector(`.sx__list-day[data-date="${selectedDate}"]`);
+  if (selectedDayElement instanceof HTMLElement) {
+    requestAnimationFrame(() => {
+      selectedDayElement.scrollIntoView({
+        behavior: "instant",
+        block: "start"
+      });
+    });
+  }
+};
+var hasInfiniteRecurringEvents = (events) => {
+  return events.some((event) => {
+    var _a;
+    if (event.isCopy)
+      return false;
+    const rrule = (_a = event._getForeignProperties()) === null || _a === void 0 ? void 0 : _a.rrule;
+    if (!rrule || typeof rrule !== "string")
+      return false;
+    return !rrule.includes("COUNT") && !rrule.includes("UNTIL");
+  });
+};
+var performRangeExpansion = ({ $app, wrapperRef, lastDateInList, lastRangeExpansionRef, isExpandingRangeRef, scrollPositionBeforeExpansionRef }) => {
+  const currentRange = $app.calendarState.range.value;
+  if (!currentRange)
+    return;
+  const lastDate = Temporal.PlainDate.from(lastDateInList);
+  const lastDateZDT = lastDate.toZonedDateTime({
+    timeZone: $app.config.timezone.value,
+    plainTime: Temporal.PlainTime.from({
+      hour: 23,
+      minute: 59
+    })
+  });
+  const oneYearFromLast = lastDateZDT.add({ years: 1 });
+  const rangeEndString = oneYearFromLast.toString();
+  if (oneYearFromLast.epochNanoseconds > currentRange.end.epochNanoseconds && lastRangeExpansionRef.current !== rangeEndString) {
+    if (wrapperRef.current) {
+      scrollPositionBeforeExpansionRef.current = wrapperRef.current.scrollTop;
+      isExpandingRangeRef.current = true;
+    }
+    const extendedRange = {
+      start: currentRange.start,
+      end: oneYearFromLast
+    };
+    lastRangeExpansionRef.current = rangeEndString;
+    $app.calendarState.range.value = extendedRange;
+  }
+};
+var expandInfiniteRecurringEventsIfNeeded = ({ $app, wrapperRef, filteredEvents, lastRangeExpansionRef, isExpandingRangeRef, scrollPositionBeforeExpansionRef }) => {
+  if (!hasInfiniteRecurringEvents(filteredEvents) || filteredEvents.length === 0) {
+    return;
+  }
+  if (!wrapperRef.current)
+    return;
+  const allDayElements = Array.from(wrapperRef.current.querySelectorAll(".sx__list-day"));
+  if (allDayElements.length === 0)
+    return;
+  const lastDayElement = allDayElements[allDayElements.length - 1];
+  const rect = lastDayElement.getBoundingClientRect();
+  const wrapperRect = wrapperRef.current.getBoundingClientRect();
+  if (rect.top >= wrapperRect.top && rect.bottom <= wrapperRect.bottom && rect.top < wrapperRect.bottom) {
+    const lastDate = lastDayElement.getAttribute("data-date");
+    if (lastDate) {
+      const allDates = filteredEvents.map((e5) => dateFromDateTime(e5.end.toString())).sort();
+      const lastDateInList = allDates[allDates.length - 1];
+      if (lastDate === lastDateInList) {
+        performRangeExpansion({
+          $app,
+          wrapperRef,
+          lastDateInList,
+          lastRangeExpansionRef,
+          isExpandingRangeRef,
+          scrollPositionBeforeExpansionRef
+        });
+      }
+    }
+  }
+};
+var checkAndExpandInfiniteRecurringEvents = ({ $app, wrapperRef, filteredEvents, visibleDates, lastRangeExpansionRef, isExpandingRangeRef, scrollPositionBeforeExpansionRef }) => {
+  if (!hasInfiniteRecurringEvents(filteredEvents) || visibleDates.size === 0) {
+    return;
+  }
+  const allDates = filteredEvents.map((e5) => dateFromDateTime(e5.end.toString())).sort();
+  if (allDates.length === 0)
+    return;
+  const visibleDatesArray = Array.from(visibleDates).sort();
+  const lastVisibleDate = visibleDatesArray[visibleDatesArray.length - 1];
+  const lastDateInList = allDates[allDates.length - 1];
+  const lastTwoDates = allDates.slice(-2);
+  if (lastTwoDates.includes(lastVisibleDate)) {
+    performRangeExpansion({
+      $app,
+      wrapperRef,
+      lastDateInList,
+      lastRangeExpansionRef,
+      isExpandingRangeRef,
+      scrollPositionBeforeExpansionRef
+    });
+  }
+};
+var ListWrapper = ({ $app, id }) => {
+  const [daysWithEvents, setDaysWithEvents] = d3([]);
+  const wrapperRef = A3(null);
+  const { setClickedEvent } = useEventInteractions($app);
+  const blockOnScrollDayIntoViewCallback = A3(false);
+  const blockTimeoutRef = A3(null);
+  const lastRangeExpansionRef = A3(null);
+  const isExpandingRangeRef = A3(false);
+  const scrollPositionBeforeExpansionRef = A3(null);
+  const minDate = $app.config.minDate.value ? dateFromDateTime($app.config.minDate.value.toString()) : null;
+  const maxDate = $app.config.maxDate.value ? dateFromDateTime($app.config.maxDate.value.toString()) : null;
+  const updateDaysWithEvents = (events) => {
+    const daysWithEventsMap = events.reduce((acc, event) => {
+      const startDate = dateFromDateTime(event.start.toString());
+      const endDate = dateFromDateTime(event.end.toString());
+      let currentDate = startDate;
+      while (currentDate <= endDate) {
+        if (!acc[currentDate]) {
+          acc[currentDate] = [];
+        }
+        acc[currentDate].push(event);
+        currentDate = addDays(Temporal.PlainDate.from(currentDate), 1).toString();
+      }
+      return acc;
+    }, {});
+    const sortedDays = Object.entries(daysWithEventsMap).map(([date, events2]) => ({
+      date,
+      events: events2.sort((a5, b5) => a5.start.toString().localeCompare(b5.start.toString()))
+    })).sort((a5, b5) => a5.date.localeCompare(b5.date));
+    setDaysWithEvents(sortedDays);
+    if (blockTimeoutRef.current) {
+      clearTimeout(blockTimeoutRef.current);
+    }
+    blockTimeoutRef.current = setTimeout(() => {
+      blockOnScrollDayIntoViewCallback.current = false;
+      blockTimeoutRef.current = null;
+    }, 100);
+  };
+  y3(() => {
+    const filteredEvents = $app.calendarEvents.list.value.filter((event) => {
+      const startDate = dateFromDateTime(event.start.toString());
+      const endDate = dateFromDateTime(event.end.toString());
+      if (minDate && endDate < minDate)
+        return false;
+      if (maxDate && startDate > maxDate)
+        return false;
+      return true;
+    });
+    blockOnScrollDayIntoViewCallback.current = true;
+    updateDaysWithEvents(filteredEvents);
+    nextTick(() => {
+      expandInfiniteRecurringEventsIfNeeded({
+        $app,
+        wrapperRef,
+        filteredEvents,
+        lastRangeExpansionRef,
+        isExpandingRangeRef,
+        scrollPositionBeforeExpansionRef
+      });
+    });
+  }, [$app.calendarEvents.list.value]);
+  y3(() => {
+    const handleScroll = () => {
+      if (blockTimeoutRef.current) {
+        clearTimeout(blockTimeoutRef.current);
+        blockTimeoutRef.current = null;
+        blockOnScrollDayIntoViewCallback.current = false;
+      }
+    };
+    const wrapper = wrapperRef.current;
+    if (wrapper) {
+      wrapper.addEventListener("scroll", handleScroll);
+      return () => {
+        wrapper.removeEventListener("scroll", handleScroll);
+      };
+    }
+  }, []);
+  const [interSectionObserver, setIntersectionObserver] = d3(null);
+  y3(() => {
+    if (!wrapperRef.current)
+      return;
+    if (interSectionObserver) {
+      interSectionObserver.disconnect();
+    }
+    const _observer = new IntersectionObserver((entries) => {
+      const visibleDates = /* @__PURE__ */ new Set();
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.intersectionRatio > 0) {
+          const date = entry.target.getAttribute("data-date");
+          if (date) {
+            visibleDates.add(date);
+          }
+        }
+      });
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.intersectionRatio > 0) {
+          const date = entry.target.getAttribute("data-date");
+          if (date && $app.config.callbacks.onScrollDayIntoView && !blockOnScrollDayIntoViewCallback.current) {
+            $app.config.callbacks.onScrollDayIntoView(Temporal.PlainDate.from(date));
+          }
+        }
+      });
+      if (visibleDates.size > 0 && daysWithEvents.length > 0) {
+        checkAndExpandInfiniteRecurringEvents({
+          $app,
+          wrapperRef,
+          filteredEvents: $app.calendarEvents.list.value.filter((event) => {
+            const startDate = dateFromDateTime(event.start.toString());
+            const endDate = dateFromDateTime(event.end.toString());
+            if (minDate && endDate < minDate)
+              return false;
+            if (maxDate && startDate > maxDate)
+              return false;
+            return true;
+          }),
+          visibleDates,
+          lastRangeExpansionRef,
+          isExpandingRangeRef,
+          scrollPositionBeforeExpansionRef
+        });
+      }
+    }, {
+      root: wrapperRef.current,
+      rootMargin: "0px",
+      threshold: [0, 0.1, 1]
+    });
+    const dayElements = wrapperRef.current.querySelectorAll(".sx__list-day");
+    dayElements.forEach((dayElement) => {
+      _observer.observe(dayElement);
+    });
+    setIntersectionObserver(_observer);
+    return () => {
+      _observer.disconnect();
+    };
+  }, [daysWithEvents]);
+  y3(() => {
+    if (isExpandingRangeRef.current && scrollPositionBeforeExpansionRef.current !== null) {
+      nextTick(() => {
+        if (wrapperRef.current && scrollPositionBeforeExpansionRef.current !== null) {
+          wrapperRef.current.scrollTop = scrollPositionBeforeExpansionRef.current;
+          scrollPositionBeforeExpansionRef.current = null;
+          isExpandingRangeRef.current = false;
+        }
+      });
+    } else {
+      scrollOnDateSelection($app, wrapperRef);
+    }
+  }, [daysWithEvents, $app.datePickerState.selectedDate.value]);
+  const renderEventTimes = (event, dayDate) => {
+    const eventStartDate = dateFromDateTime(event.start.toString());
+    const eventEndDate = dateFromDateTime(event.end.toString());
+    const isFirstDay = eventStartDate === dayDate;
+    const isLastDay = eventEndDate === dayDate;
+    const isMultiDay = eventStartDate !== eventEndDate;
+    const timeOptions = {
+      hour: "numeric",
+      minute: "numeric",
+      hour12: $app.config.locale.value === "en-US"
+    };
+    const startZDT = Temporal.ZonedDateTime.from({
+      year: event.start.year,
+      month: event.start.month,
+      day: event.start.day,
+      hour: event.start instanceof Temporal.ZonedDateTime ? event.start.hour : 0,
+      minute: event.start instanceof Temporal.ZonedDateTime ? event.start.minute : 0,
+      timeZone: $app.config.timezone.value
+    });
+    const endZDT = Temporal.ZonedDateTime.from({
+      year: event.end.year,
+      month: event.end.month,
+      day: event.end.day,
+      hour: event.end instanceof Temporal.ZonedDateTime ? event.end.hour : 0,
+      minute: event.end instanceof Temporal.ZonedDateTime ? event.end.minute : 0,
+      timeZone: $app.config.timezone.value
+    });
+    if (!isMultiDay) {
+      return u3(k2, { children: [u3("div", { className: "sx__list-event-start-time", children: startZDT.toLocaleString($app.config.locale.value, timeOptions) }), event.end && u3("div", { className: "sx__list-event-end-time", children: endZDT.toLocaleString($app.config.locale.value, timeOptions) })] });
+    }
+    if (isFirstDay) {
+      return u3(k2, { children: [u3("div", { className: "sx__list-event-start-time", children: startZDT.toLocaleString($app.config.locale.value, timeOptions) }), u3("div", { className: "sx__list-event-arrow", children: "\u2192" })] });
+    }
+    if (isLastDay) {
+      return u3(k2, { children: [u3("div", { className: "sx__list-event-arrow", children: "\u2190" }), u3("div", { className: "sx__list-event-end-time", children: endZDT.toLocaleString($app.config.locale.value, timeOptions) })] });
+    }
+    return u3("div", { className: "sx__list-event-arrow", children: "\u2194" });
+  };
+  const handleEventClick = (e5, event) => {
+    setClickedEvent(e5, event);
+    invokeOnEventClickCallback($app, event, e5);
+  };
+  const handleEventDoubleClick = (e5, event) => {
+    setClickedEvent(e5, event);
+    invokeOnEventDoubleClickCallback($app, event, e5);
+  };
+  const handleEventKeyDown = (e5, event) => {
+    if (e5.key === "Enter" || e5.key === " ") {
+      e5.stopPropagation();
+      setClickedEvent(e5, event);
+      invokeOnEventClickCallback($app, event, e5);
+      nextTick(() => {
+        focusModal($app);
+      });
+    }
+  };
+  return u3(AppContext.Provider, { value: $app, children: u3("div", { id, className: "sx__list-wrapper", ref: wrapperRef, children: daysWithEvents.length === 0 ? u3("div", { className: "sx__list-no-events", children: $app.translate("No events") }) : daysWithEvents.map((day) => u3("div", { className: "sx__list-day", "data-date": day.date, children: [u3("div", { className: "sx__list-day-header", children: u3("div", { className: "sx__list-day-date", children: toJSDate(day.date).toLocaleDateString($app.config.locale.value, {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  }) }) }), u3("div", { className: "sx__list-day-events", children: day.events.map((event) => {
+    var _a;
+    const classNames = ["sx__event", "sx__list-event"];
+    if ((_a = event._options) === null || _a === void 0 ? void 0 : _a.additionalClasses) {
+      classNames.push(...event._options.additionalClasses);
+    }
+    return u3("div", { className: classNames.join(" "), onClick: (e5) => handleEventClick(e5, event), onDblClick: (e5) => handleEventDoubleClick(e5, event), onKeyDown: (e5) => handleEventKeyDown(e5, event), tabIndex: 0, role: "button", children: [u3("div", { className: `sx__list-event-color-line`, style: {
+      backgroundColor: `var(--sx-color-${event._color})`
+    } }), u3("div", { className: "sx__list-event-content", children: [u3("div", { className: "sx__list-event-title", children: event.title }), u3("div", { className: "sx__list-event-times", children: renderEventTimes(event, day.date) })] })] }, event.id);
+  }) }), u3("div", { className: "sx__list-day-margin" })] }, day.date)) }) });
+};
+var config = {
+  name: InternalViewName.List,
+  label: "List",
+  setDateRange: setRangeForMonth,
+  Component: ListWrapper,
+  hasSmallScreenCompat: true,
+  hasWideScreenCompat: true,
+  backwardForwardFn: addMonths,
+  backwardForwardUnits: 1
+};
+var viewList = createPreactView(config);
+var createViewList = () => createPreactView(config);
+
+// node_modules/@schedule-x/calendar-controls/dist/core.js
+var PluginName2;
+(function(PluginName4) {
+  PluginName4["DragAndDrop"] = "dragAndDrop";
+  PluginName4["EventModal"] = "eventModal";
+  PluginName4["ScrollController"] = "scrollController";
+  PluginName4["EventRecurrence"] = "eventRecurrence";
+  PluginName4["Resize"] = "resize";
+  PluginName4["CalendarControls"] = "calendarControls";
+  PluginName4["CurrentTime"] = "currentTime";
+})(PluginName2 || (PluginName2 = {}));
+var InvalidTimeStringError2 = class extends Error {
+  constructor(timeString) {
+    super(`Invalid time string: ${timeString}`);
+  }
+};
+var timeStringRegex2 = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]/;
+var NumberRangeError2 = class extends Error {
+  constructor(min, max) {
+    super(`Number must be between ${min} and ${max}.`);
+    Object.defineProperty(this, "min", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: min
+    });
+    Object.defineProperty(this, "max", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: max
+    });
+  }
+};
+var doubleDigit2 = (number) => {
+  if (number < 0 || number > 99)
+    throw new NumberRangeError2(0, 99);
+  return String(number).padStart(2, "0");
+};
+var minuteTimePointMultiplier2 = 1.6666666666666667;
+var timePointsFromString2 = (timeString) => {
+  if (!timeStringRegex2.test(timeString) && timeString !== "24:00")
+    throw new InvalidTimeStringError2(timeString);
+  const [hoursInt, minutesInt] = timeString.split(":").map((time) => parseInt(time, 10));
+  let minutePoints = (minutesInt * minuteTimePointMultiplier2).toString();
+  if (minutePoints.split(".")[0].length < 2)
+    minutePoints = `0${minutePoints}`;
+  return Number(hoursInt + minutePoints);
+};
+var timeStringFromTimePoints2 = (timePoints) => {
+  const hours = Math.floor(timePoints / 100);
+  const minutes = Math.round(timePoints % 100 / minuteTimePointMultiplier2);
+  return `${doubleDigit2(hours)}:${doubleDigit2(minutes)}`;
+};
+var definePlugin = (name, definition) => {
+  definition.name = name;
+  return definition;
+};
+var CalendarControlsPluginImpl = class {
+  constructor() {
+    Object.defineProperty(this, "name", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: PluginName2.CalendarControls
+    });
+    Object.defineProperty(this, "$app", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "getDate", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: () => this.$app.datePickerState.selectedDate.value
+    });
+    Object.defineProperty(this, "getView", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: () => this.$app.calendarState.view.value
+    });
+    Object.defineProperty(this, "getFirstDayOfWeek", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: () => this.$app.config.firstDayOfWeek.value
+    });
+    Object.defineProperty(this, "getLocale", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: () => this.$app.config.locale.value
+    });
+    Object.defineProperty(this, "getViews", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: () => this.$app.config.views.value
+    });
+    Object.defineProperty(this, "getDayBoundaries", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: () => ({
+        start: timeStringFromTimePoints2(this.$app.config.dayBoundaries.value.start),
+        end: timeStringFromTimePoints2(this.$app.config.dayBoundaries.value.end)
+      })
+    });
+    Object.defineProperty(this, "getWeekOptions", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: () => this.$app.config.weekOptions.value
+    });
+    Object.defineProperty(this, "getCalendars", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: () => this.$app.config.calendars.value
+    });
+    Object.defineProperty(this, "getMinDate", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: () => this.$app.config.minDate.value
+    });
+    Object.defineProperty(this, "getMaxDate", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: () => this.$app.config.maxDate.value
+    });
+    Object.defineProperty(this, "getMonthGridOptions", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: () => this.$app.config.monthGridOptions.value
+    });
+    Object.defineProperty(this, "getResources", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: () => this.$app.config.resources.value
+    });
+    Object.defineProperty(this, "getRange", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: () => this.$app.calendarState.range.value
+    });
+  }
+  beforeRender($app) {
+    this.$app = $app;
+  }
+  onRender($app) {
+    this.$app = $app;
+  }
+  setDate(date) {
+    this.$app.datePickerState.selectedDate.value = date;
+  }
+  setView(view) {
+    const viewToSet = this.$app.config.views.value.find((v5) => v5.name === view);
+    if (!viewToSet)
+      throw new Error(`Invalid view name. Expected one of ${this.$app.config.views.value.map((v5) => v5.name).join(", ")}`);
+    this.$app.calendarState.setView(view, this.$app.datePickerState.selectedDate.value);
+  }
+  setFirstDayOfWeek(firstDayOfWeek) {
+    this.$app.config.firstDayOfWeek.value = firstDayOfWeek;
+  }
+  setLocale(locale) {
+    this.$app.config.locale.value = locale;
+  }
+  setViews(views) {
+    const currentViewName = this.$app.calendarState.view.value;
+    const isCurrentViewInViews = views.some((view) => view.name === currentViewName);
+    if (!isCurrentViewInViews)
+      throw new Error(`Currently active view is not in given views. Expected to find ${currentViewName} in ${views.map((view) => view.name).join(",")}`);
+    this.$app.config.views.value = views;
+  }
+  setDayBoundaries(dayBoundaries) {
+    const newStart = timePointsFromString2(dayBoundaries.start);
+    const newEnd = timePointsFromString2(dayBoundaries.end);
+    this.$app.config.dayBoundaries.value = {
+      start: newStart,
+      end: newEnd
+    };
+    Object.values(this.$app.config.plugins).forEach((plugin) => {
+      if (plugin === null || plugin === void 0 ? void 0 : plugin.onDayBoundariesChange) {
+        plugin.onDayBoundariesChange({
+          start: newStart,
+          end: newEnd
+        });
+      }
+    });
+  }
+  setWeekOptions(weekOptions) {
+    this.$app.config.weekOptions.value = {
+      ...this.$app.config.weekOptions.value,
+      ...weekOptions
+    };
+  }
+  setCalendars(calendars) {
+    this.$app.config.calendars.value = calendars;
+  }
+  setMinDate(minDate) {
+    this.$app.config.minDate.value = minDate;
+    if (minDate) {
+      this.$app.datePickerConfig.min = minDate;
+    }
+  }
+  setMaxDate(maxDate) {
+    this.$app.config.maxDate.value = maxDate;
+    if (maxDate) {
+      this.$app.datePickerConfig.max = maxDate;
+    }
+  }
+  setMonthGridOptions(monthGridOptions) {
+    this.$app.config.monthGridOptions.value = monthGridOptions;
+  }
+  setTimezone(timezone) {
+    this.$app.config.timezone.value = timezone;
+    Object.values(this.$app.config.plugins).forEach((plugin) => {
+      if (plugin === null || plugin === void 0 ? void 0 : plugin.onTimezoneChange) {
+        plugin.onTimezoneChange(timezone);
+      }
+    });
+  }
+  setResources(resources) {
+    this.$app.config.resources.value = resources;
+  }
+};
+var createCalendarControlsPlugin = () => {
+  return definePlugin("calendarControls", new CalendarControlsPluginImpl());
+};
+
+// node_modules/@schedule-x/events-service/dist/core.js
+var NumberRangeError3 = class extends Error {
+  constructor(min, max) {
+    super(`Number must be between ${min} and ${max}.`);
+    Object.defineProperty(this, "min", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: min
+    });
+    Object.defineProperty(this, "max", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: max
+    });
+  }
+};
+var doubleDigit3 = (number) => {
+  if (number < 0 || number > 99)
+    throw new NumberRangeError3(0, 99);
+  return String(number).padStart(2, "0");
+};
+var toDateString2 = (date) => {
+  return `${date.year}-${doubleDigit3(date.month)}-${doubleDigit3(date.day)}`;
+};
+var InvalidTimeStringError3 = class extends Error {
+  constructor(timeString) {
+    super(`Invalid time string: ${timeString}`);
+  }
+};
+var timeStringRegex3 = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]/;
+var minuteTimePointMultiplier3 = 1.6666666666666667;
+var timePointsFromString3 = (timeString) => {
+  if (!timeStringRegex3.test(timeString) && timeString !== "24:00")
+    throw new InvalidTimeStringError3(timeString);
+  const [hoursInt, minutesInt] = timeString.split(":").map((time) => parseInt(time, 10));
+  let minutePoints = (minutesInt * minuteTimePointMultiplier3).toString();
+  if (minutePoints.split(".")[0].length < 2)
+    minutePoints = `0${minutePoints}`;
+  return Number(hoursInt + minutePoints);
+};
+var dateFromDateTime2 = (dateTime) => {
+  return dateTime.slice(0, 10);
+};
+var timeFromDateTime2 = (dateTime) => {
+  return dateTime.slice(11);
+};
+var WeekDay2;
+(function(WeekDay3) {
+  WeekDay3[WeekDay3["MONDAY"] = 1] = "MONDAY";
+  WeekDay3[WeekDay3["TUESDAY"] = 2] = "TUESDAY";
+  WeekDay3[WeekDay3["WEDNESDAY"] = 3] = "WEDNESDAY";
+  WeekDay3[WeekDay3["THURSDAY"] = 4] = "THURSDAY";
+  WeekDay3[WeekDay3["FRIDAY"] = 5] = "FRIDAY";
+  WeekDay3[WeekDay3["SATURDAY"] = 6] = "SATURDAY";
+  WeekDay3[WeekDay3["SUNDAY"] = 7] = "SUNDAY";
+})(WeekDay2 || (WeekDay2 = {}));
+WeekDay2.MONDAY;
+var DEFAULT_EVENT_COLOR_NAME2 = "primary";
+var CalendarEventImpl2 = class {
+  constructor(_config, id, _start, _end, title, people, location, description, calendarId, _options = void 0, _customContent = {}, _foreignProperties = {}, resourceId) {
+    Object.defineProperty(this, "_config", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: _config
+    });
+    Object.defineProperty(this, "id", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: id
+    });
+    Object.defineProperty(this, "_start", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: _start
+    });
+    Object.defineProperty(this, "_end", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: _end
+    });
+    Object.defineProperty(this, "title", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: title
+    });
+    Object.defineProperty(this, "people", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: people
+    });
+    Object.defineProperty(this, "location", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: location
+    });
+    Object.defineProperty(this, "description", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: description
+    });
+    Object.defineProperty(this, "calendarId", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: calendarId
+    });
+    Object.defineProperty(this, "_options", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: _options
+    });
+    Object.defineProperty(this, "_customContent", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: _customContent
+    });
+    Object.defineProperty(this, "_foreignProperties", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: _foreignProperties
+    });
+    Object.defineProperty(this, "resourceId", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: resourceId
+    });
+    Object.defineProperty(this, "_previousConcurrentEvents", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "_totalConcurrentEvents", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "_maxConcurrentEvents", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "_nDaysInGrid", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "_createdAt", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "_originalTimezone", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "_eventFragments", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: {}
+    });
+    this._originalTimezone = this._start instanceof Temporal.ZonedDateTime ? this._start.timeZoneId : void 0;
+  }
+  get start() {
+    if (this._start instanceof Temporal.PlainDate) {
+      return this._start;
+    }
+    return this._start.withTimeZone(this._config.timezone.value);
+  }
+  set start(value) {
+    this._start = value instanceof Temporal.ZonedDateTime ? value.withTimeZone(this._originalTimezone) : value;
+  }
+  get end() {
+    if (this._end instanceof Temporal.PlainDate) {
+      return this._end;
+    }
+    return this._end.withTimeZone(this._config.timezone.value);
+  }
+  set end(value) {
+    this._end = value instanceof Temporal.ZonedDateTime ? value.withTimeZone(this._originalTimezone) : value;
+  }
+  get _isSingleDayTimed() {
+    if (this.start instanceof Temporal.PlainDate || this.end instanceof Temporal.PlainDate)
+      return false;
+    const localStartDate = dateFromDateTime2(this.start.toString());
+    const localEndDate = dateFromDateTime2(this.end.toString());
+    return localStartDate === localEndDate;
+  }
+  get _isSingleDayFullDay() {
+    const startDate = dateFromDateTime2(this.start.toString());
+    const endDate = dateFromDateTime2(this.end.toString());
+    return startDate === endDate && this.start instanceof Temporal.PlainDate && this.end instanceof Temporal.PlainDate;
+  }
+  get _isMultiDayTimed() {
+    if (this.start instanceof Temporal.PlainDate || this.end instanceof Temporal.PlainDate)
+      return false;
+    const startDate = dateFromDateTime2(this.start.toString());
+    const endDate = dateFromDateTime2(this.end.toString());
+    return startDate !== endDate;
+  }
+  get _isMultiDayFullDay() {
+    const startDate = dateFromDateTime2(this.start.toString());
+    const endDate = dateFromDateTime2(this.end.toString());
+    return this.start instanceof Temporal.PlainDate && this.end instanceof Temporal.PlainDate && startDate !== endDate;
+  }
+  get _isSingleHybridDayTimed() {
+    if (!this._config.isHybridDay)
+      return false;
+    if (this.start instanceof Temporal.PlainDate || this.end instanceof Temporal.PlainDate)
+      return false;
+    const startDate = dateFromDateTime2(this.start.toString());
+    const endDate = dateFromDateTime2(this.end.toString());
+    const endDateMinusOneDay = toDateString2(Temporal.PlainDate.from(endDate).subtract({ days: 1 }));
+    if (startDate !== endDate && startDate !== endDateMinusOneDay)
+      return false;
+    const dayBoundaries = this._config.dayBoundaries.value;
+    const eventStartTimePoints = timePointsFromString3(timeFromDateTime2(this.start.toString()));
+    const eventEndTimePoints = timePointsFromString3(timeFromDateTime2(this.end.toString()));
+    const eventIsFullyInFirstDayOfBoundary = eventEndTimePoints > eventStartTimePoints && startDate === endDate;
+    return eventStartTimePoints >= dayBoundaries.start && (eventEndTimePoints <= dayBoundaries.end || eventIsFullyInFirstDayOfBoundary) || eventStartTimePoints < dayBoundaries.end && eventEndTimePoints <= dayBoundaries.end;
+  }
+  get _color() {
+    if (this.calendarId && this._config.calendars.value && this.calendarId in this._config.calendars.value) {
+      return this._config.calendars.value[this.calendarId].colorName;
+    }
+    return DEFAULT_EVENT_COLOR_NAME2;
+  }
+  _getForeignProperties() {
+    return this._foreignProperties;
+  }
+  _getExternalEvent() {
+    return {
+      id: this.id,
+      start: this._start,
+      end: this._end,
+      title: this.title,
+      people: this.people,
+      location: this.location,
+      description: this.description,
+      calendarId: this.calendarId,
+      resourceId: this.resourceId,
+      _options: this._options,
+      ...this._getForeignProperties()
+    };
+  }
+};
+var CalendarEventBuilder2 = class {
+  constructor(_config, id, start, end) {
+    Object.defineProperty(this, "_config", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: _config
+    });
+    Object.defineProperty(this, "id", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: id
+    });
+    Object.defineProperty(this, "start", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: start
+    });
+    Object.defineProperty(this, "end", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: end
+    });
+    Object.defineProperty(this, "people", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "location", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "description", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "title", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "calendarId", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "resourceId", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "_foreignProperties", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: {}
+    });
+    Object.defineProperty(this, "_options", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "_customContent", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: {}
+    });
+  }
+  build() {
+    return new CalendarEventImpl2(this._config, this.id, this.start, this.end, this.title, this.people, this.location, this.description, this.calendarId, this._options, this._customContent, this._foreignProperties, this.resourceId);
+  }
+  withTitle(title) {
+    this.title = title;
+    return this;
+  }
+  withPeople(people) {
+    this.people = people;
+    return this;
+  }
+  withLocation(location) {
+    this.location = location;
+    return this;
+  }
+  withDescription(description) {
+    this.description = description;
+    return this;
+  }
+  withForeignProperties(foreignProperties) {
+    this._foreignProperties = foreignProperties;
+    return this;
+  }
+  withCalendarId(calendarId) {
+    this.calendarId = calendarId;
+    return this;
+  }
+  withOptions(options) {
+    this._options = options;
+    return this;
+  }
+  withCustomContent(customContent) {
+    this._customContent = customContent;
+    return this;
+  }
+  withResourceId(resourceId) {
+    this.resourceId = resourceId;
+    return this;
+  }
+};
+var externalEventToInternal2 = (event, config2) => {
+  const { id, start, end, title, description, location, people, _options, ...foreignProperties } = event;
+  return new CalendarEventBuilder2(config2, id, start, end).withTitle(title).withDescription(description).withLocation(location).withPeople(people).withCalendarId(event.calendarId).withOptions(_options).withForeignProperties(foreignProperties).withCustomContent(event._customContent).withResourceId(event.resourceId).build();
+};
+var EventsFacadeImpl2 = class {
+  constructor($app) {
+    Object.defineProperty(this, "$app", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: $app
+    });
+  }
+  set(events) {
+    this.$app.calendarEvents.list.value = events.map((event) => externalEventToInternal2(event, this.$app.config));
+  }
+  add(event) {
+    const newEvent = externalEventToInternal2(event, this.$app.config);
+    newEvent._createdAt = /* @__PURE__ */ new Date();
+    const copiedEvents = [...this.$app.calendarEvents.list.value];
+    copiedEvents.push(newEvent);
+    this.$app.calendarEvents.list.value = copiedEvents;
+  }
+  get(id) {
+    var _a;
+    return (_a = this.$app.calendarEvents.list.value.find((event) => event.id === id)) === null || _a === void 0 ? void 0 : _a._getExternalEvent();
+  }
+  getAll() {
+    return this.$app.calendarEvents.list.value.map((event) => event._getExternalEvent());
+  }
+  remove(id) {
+    const index = this.$app.calendarEvents.list.value.findIndex((event) => event.id === id);
+    const copiedEvents = [...this.$app.calendarEvents.list.value];
+    copiedEvents.splice(index, 1);
+    this.$app.calendarEvents.list.value = copiedEvents;
+  }
+  update(event) {
+    const index = this.$app.calendarEvents.list.value.findIndex((e5) => e5.id === event.id);
+    const copiedEvents = [...this.$app.calendarEvents.list.value];
+    copiedEvents.splice(index, 1, externalEventToInternal2(event, this.$app.config));
+    this.$app.calendarEvents.list.value = copiedEvents;
+  }
+};
+var definePlugin2 = (name, definition) => {
+  definition.name = name;
+  return definition;
+};
+var validateEvents2 = (events = []) => {
+  events === null || events === void 0 ? void 0 : events.forEach((event) => {
+    if (!(event.start instanceof Temporal.ZonedDateTime) && !(event.start instanceof Temporal.PlainDate)) {
+      throw new Error(`[Schedule-X error]: Event start time needs to be a Temporal.ZonedDateTime or Temporal.PlainDate.`);
+    }
+    if (!(event.end instanceof Temporal.ZonedDateTime) && !(event.end instanceof Temporal.PlainDate)) {
+      throw new Error(`[Schedule-X error]: Event end time needs to be a Temporal.ZonedDateTime or Temporal.PlainDate.`);
+    }
+    const isIdDecimalNumber = typeof event.id === "number" && event.id % 1 !== 0;
+    if (isIdDecimalNumber) {
+      throw new Error(`[Schedule-X error]: Event id ${event.id} is not a valid id. Only non-unicode characters that can be used by document.querySelector is allowed, see: https://developer.mozilla.org/en-US/docs/Web/CSS/ident. We recommend using uuids or integers.`);
+    }
+    if (typeof event.id === "string" && !/^[a-zA-Z0-9_-]*$/.test(event.id)) {
+      throw new Error(`[Schedule-X error]: Event id ${event.id} is not a valid id. Only non-unicode characters that can be used by document.querySelector is allowed, see: https://developer.mozilla.org/en-US/docs/Web/CSS/ident. We recommend using uuids or integers.`);
+    }
+    if (typeof event.id !== "string" && typeof event.id !== "number") {
+      throw new Error(`[Schedule-X error]: Event id ${event.id} is not a valid id. Only non-unicode characters that can be used by document.querySelector is allowed, see: https://developer.mozilla.org/en-US/docs/Web/CSS/ident. We recommend using uuids or integers.`);
+    }
+  });
+};
+var EventsServicePluginImpl = class {
+  constructor() {
+    Object.defineProperty(this, "name", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: "EventsServicePlugin"
+    });
+    Object.defineProperty(this, "$app", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "eventsFacade", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+  }
+  beforeRender($app) {
+    this.$app = $app;
+    this.eventsFacade = new EventsFacadeImpl2($app);
+  }
+  update(event) {
+    validateEvents2([event]);
+    this.eventsFacade.update(event);
+  }
+  add(event) {
+    validateEvents2([event]);
+    this.eventsFacade.add(event);
+  }
+  remove(id) {
+    this.eventsFacade.remove(id);
+  }
+  get(id) {
+    return this.eventsFacade.get(id);
+  }
+  getAll() {
+    return this.eventsFacade.getAll();
+  }
+  set(events) {
+    validateEvents2(events);
+    this.eventsFacade.set(events);
+  }
+  setBackgroundEvents(backgroundEvents) {
+    this.$app.calendarEvents.backgroundEvents.value = backgroundEvents;
+  }
+};
+var createEventsServicePlugin = () => {
+  return definePlugin2("eventsService", new EventsServicePluginImpl());
+};
+
+// node_modules/@schedule-x/scroll-controller/dist/core.js
+var PluginName3;
+(function(PluginName4) {
+  PluginName4["DragAndDrop"] = "dragAndDrop";
+  PluginName4["EventModal"] = "eventModal";
+  PluginName4["ScrollController"] = "scrollController";
+  PluginName4["EventRecurrence"] = "eventRecurrence";
+  PluginName4["Resize"] = "resize";
+  PluginName4["CalendarControls"] = "calendarControls";
+  PluginName4["CurrentTime"] = "currentTime";
+})(PluginName3 || (PluginName3 = {}));
+var InternalViewName2;
+(function(InternalViewName3) {
+  InternalViewName3["Day"] = "day";
+  InternalViewName3["Week"] = "week";
+  InternalViewName3["MonthGrid"] = "month-grid";
+  InternalViewName3["MonthAgenda"] = "month-agenda";
+  InternalViewName3["List"] = "list";
+})(InternalViewName2 || (InternalViewName2 = {}));
+var definePlugin3 = (name, definition) => {
+  definition.name = name;
+  return definition;
+};
+var InvalidTimeStringError4 = class extends Error {
+  constructor(timeString) {
+    super(`Invalid time string: ${timeString}`);
+  }
+};
+var timeStringRegex4 = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]/;
+var minuteTimePointMultiplier4 = 1.6666666666666667;
+var timePointsFromString4 = (timeString) => {
+  if (!timeStringRegex4.test(timeString) && timeString !== "24:00")
+    throw new InvalidTimeStringError4(timeString);
+  const [hoursInt, minutesInt] = timeString.split(":").map((time) => parseInt(time, 10));
+  let minutePoints = (minutesInt * minuteTimePointMultiplier4).toString();
+  if (minutePoints.split(".")[0].length < 2)
+    minutePoints = `0${minutePoints}`;
+  return Number(hoursInt + minutePoints);
+};
+var ScrollControllerPlugin = class {
+  constructor(config2 = {}) {
+    Object.defineProperty(this, "config", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: config2
+    });
+    Object.defineProperty(this, "name", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: PluginName3.ScrollController
+    });
+    Object.defineProperty(this, "$app", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: null
+    });
+    Object.defineProperty(this, "observer", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: null
+    });
+    Object.defineProperty(this, "hasScrolledSinceViewRender", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: false
+    });
+  }
+  /**
+   * @internal
+   * */
+  onRender($app) {
+    this.$app = $app;
+    this.setInitialScroll($app);
+    this.setUpViewChangeEffect();
+  }
+  setInitialScroll($app) {
+    const gridDay = $app.elements.calendarWrapper.querySelector(".sx__time-grid-day");
+    if (gridDay)
+      this.scrollOnRender();
+    else
+      this.waitUntilGridDayExistsThenScroll();
+  }
+  setUpViewChangeEffect() {
+    E4(() => {
+      var _a, _b;
+      this.hasScrolledSinceViewRender = false;
+      if (InternalViewName2.Day === ((_a = this.$app) === null || _a === void 0 ? void 0 : _a.calendarState.view.value) || InternalViewName2.Week === ((_b = this.$app) === null || _b === void 0 ? void 0 : _b.calendarState.view.value)) {
+        this.setInitialScroll(this.$app);
+      }
+    });
+  }
+  scrollOnRender() {
+    this.scrollTo(this.config.initialScroll || "07:50");
+  }
+  destroy() {
+    var _a;
+    (_a = this.observer) === null || _a === void 0 ? void 0 : _a.disconnect();
+  }
+  /**
+   * @param {string} time - time in format 'HH:mm'
+   * */
+  scrollTo(time) {
+    if (!this.$app)
+      throw new Error("[Schedule-X error]: Plugin not yet initialized. You cannot scroll before the calendar is rendered. For configuring the initial scroll, use the `initialScroll` parameter");
+    const $app = this.$app;
+    const pixelsPerHour = $app.config.weekOptions.value.gridHeight / ($app.config.timePointsPerDay / 100);
+    const scrollToTimePoint = timePointsFromString4(time);
+    const hoursFromDayStart = $app.config.isHybridDay && scrollToTimePoint < $app.config.dayBoundaries.value.start ? 2400 - $app.config.dayBoundaries.value.start + scrollToTimePoint : scrollToTimePoint - $app.config.dayBoundaries.value.start;
+    const hoursPointsToScroll = hoursFromDayStart / 100;
+    const pixelsToScroll = hoursPointsToScroll * pixelsPerHour;
+    const viewContainer = $app.elements.calendarWrapper.querySelector(".sx__view-container");
+    viewContainer.scroll(0, pixelsToScroll);
+  }
+  waitUntilGridDayExistsThenScroll() {
+    this.observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        var _a, _b, _c;
+        const gridDayExists = (_b = (_a = this.$app) === null || _a === void 0 ? void 0 : _a.elements.calendarWrapper) === null || _b === void 0 ? void 0 : _b.querySelector(".sx__time-grid-day");
+        if (mutation.type === "childList" && gridDayExists && !this.hasScrolledSinceViewRender) {
+          this.scrollOnRender();
+          this.hasScrolledSinceViewRender = true;
+          (_c = this.observer) === null || _c === void 0 ? void 0 : _c.disconnect();
+        }
+      });
+    });
+    this.observer.observe(this.$app.elements.calendarWrapper, {
+      childList: true,
+      subtree: true
+    });
+  }
+};
+var createScrollControllerPlugin = (config2 = {}) => {
+  return definePlugin3("scrollController", new ScrollControllerPlugin(config2));
+};
+
+// app/static/main.js
+var selectedRange = null;
+var selectedTimeType = "available";
+var calendarInstance = null;
+var calendarControls = null;
+var eventsService = null;
+var calendarRange = null;
+var scrollController = null;
+var calendarDebug = false;
+var memberNameById = {};
+var autoSyncTimer = null;
+function applyTheme(theme) {
+  const root = document.documentElement;
+  if (!root) return;
+  if (theme === "dark") {
+    root.classList.add("dark");
+  } else {
+    root.classList.remove("dark");
+  }
+  const sunIcons = document.querySelectorAll("[data-theme-icon='sun']");
+  const moonIcons = document.querySelectorAll("[data-theme-icon='moon']");
+  if (theme === "dark") {
+    sunIcons.forEach(function(icon) {
+      icon.classList.remove("hidden");
+    });
+    moonIcons.forEach(function(icon) {
+      icon.classList.add("hidden");
+    });
+  } else {
+    sunIcons.forEach(function(icon) {
+      icon.classList.add("hidden");
+    });
+    moonIcons.forEach(function(icon) {
+      icon.classList.remove("hidden");
+    });
+  }
+}
+function setTheme(theme) {
+  try {
+    localStorage.setItem("theme", theme);
+  } catch (e5) {
+  }
+  applyTheme(theme);
+  if (window.__SXCAL__ && window.__SXCAL__.setTheme) {
+    window.__SXCAL__.setTheme(theme);
+  }
+}
+window.setTheme = setTheme;
+async function syncMe() {
+  if (window.__DEMO__) {
+    showToast("Demo mode \u2022 Sync simulated", "success");
+    return;
+  }
+  try {
+    const r5 = await fetch("/api/sync/me", { method: "POST" });
+    if (!r5.ok) {
+      const text = await r5.text();
+      console.error("Sync failed:", r5.status, text);
+      showToast(`Sync failed (${r5.status})`, "error");
+      return;
+    }
+    const j5 = await r5.json();
+    if (j5 && j5.ok) {
+      showToast(`Synced calendar \u2022 ${j5.busy_blocks} busy blocks`, "success");
+    } else {
+      showToast("Sync failed. Try again.", "error");
+    }
+  } catch (e5) {
+    console.error("Sync failed:", e5);
+    showToast("Sync failed. Try again.", "error");
+  }
+}
+window.syncMe = syncMe;
+function setAutoSync(minutes) {
+  if (autoSyncTimer) {
+    clearInterval(autoSyncTimer);
+    autoSyncTimer = null;
+  }
+  const mins = Number(minutes || 0);
+  try {
+    localStorage.setItem("autoSyncMinutes", String(mins));
+  } catch (e5) {
+  }
+  if (mins > 0) {
+    autoSyncTimer = setInterval(() => {
+      syncMe();
+    }, mins * 60 * 1e3);
+    showToast(`Auto-sync set to every ${mins} minutes`, "success");
+  } else {
+    showToast("Auto-sync disabled", "success");
+  }
+}
+function setAutoSyncFromDialog() {
+  const select = document.getElementById("syncInterval");
+  if (!select) return;
+  setAutoSync(select.value);
+}
+window.setAutoSyncFromDialog = setAutoSyncFromDialog;
+function getSelectedCalendarIds() {
+  const container = document.getElementById("syncCalendars");
+  if (!container) return [];
+  const inputs = Array.from(container.querySelectorAll("input[type='checkbox'][data-calendar-id]"));
+  return inputs.filter((input) => input.checked).map((input) => input.getAttribute("data-calendar-id"));
+}
+async function loadSyncCalendars() {
+  const container = document.getElementById("syncCalendars");
+  if (!container) return;
+  if (window.__DEMO__) {
+    container.innerHTML = `
+      <label class="calendar-select-item">
+        <input type="checkbox" checked disabled data-calendar-id="primary">
+        <span class="calendar-select-name">Primary Calendar</span>
+      </label>
+      <label class="calendar-select-item">
+        <input type="checkbox" checked disabled data-calendar-id="work">
+        <span class="calendar-select-name">Work</span>
+      </label>
+      <div class="calendar-select-hint">Demo mode: calendar selection is disabled.</div>
+    `;
+    return;
+  }
+  container.innerHTML = `<div class="calendar-select-empty">Loading calendars\u2026</div>`;
+  try {
+    const r5 = await fetch("/api/calendars");
+    if (!r5.ok) {
+      container.innerHTML = `<div class="calendar-select-empty">Unable to load calendars.</div>`;
+      return;
+    }
+    const j5 = await r5.json();
+    const items = j5 && j5.calendars || [];
+    if (!items.length) {
+      container.innerHTML = `<div class="calendar-select-empty">No calendars found.</div>`;
+      return;
+    }
+    container.innerHTML = items.map((c5) => {
+      const label = c5.primary ? `${c5.summary} (Primary)` : c5.summary;
+      const checked = c5.selected ? "checked" : "";
+      const disabled = c5.accessRole === "none" ? "disabled" : "";
+      return `
+        <label class="calendar-select-item">
+          <input type="checkbox" ${checked} ${disabled} data-calendar-id="${c5.id}">
+          <span class="calendar-select-name">${label}</span>
+        </label>
+      `;
+    }).join("");
+  } catch (e5) {
+    container.innerHTML = `<div class="calendar-select-empty">Unable to load calendars.</div>`;
+  }
+}
+async function saveCalendarSelection() {
+  if (window.__DEMO__) {
+    showToast("Demo mode \u2022 Selection not saved", "success");
+    return;
+  }
+  const selected = getSelectedCalendarIds();
+  if (!selected.length) {
+    showToast("Select at least one calendar", "error");
+    return;
+  }
+  try {
+    const r5 = await fetch("/api/calendars/selection", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ calendar_ids: selected })
+    });
+    if (!r5.ok) {
+      showToast("Unable to save calendars", "error");
+      return;
+    }
+    showToast("Calendar selection saved", "success");
+  } catch (e5) {
+    showToast("Unable to save calendars", "error");
+  }
+}
+async function saveCalendarsAndSync() {
+  await saveCalendarSelection();
+  await syncMe();
+}
+window.saveCalendarSelection = saveCalendarSelection;
+window.saveCalendarsAndSync = saveCalendarsAndSync;
+window.loadSyncCalendars = loadSyncCalendars;
+async function debugPost(url, body) {
+  try {
+    const r5 = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: body ? JSON.stringify(body) : "{}"
+    });
+    if (!r5.ok) {
+      showToast(`Debug action failed (${r5.status})`, "error");
+      return false;
+    }
+    showToast("Debug action complete", "success");
+    return true;
+  } catch (e5) {
+    showToast("Debug action failed", "error");
+    return false;
+  }
+}
+function getDebugGroupId() {
+  const select = document.getElementById("debugGroupSelect");
+  if (!select) return null;
+  const value = select.value;
+  return value ? Number(value) : null;
+}
+window.debugSyncNow = function() {
+  syncMe();
+};
+window.debugResetCalendarSelection = function() {
+  debugPost("/api/debug/reset/calendar-selection");
+};
+window.debugClearBusy = function() {
+  debugPost("/api/debug/clear/busy");
+};
+window.debugClearSpecials = function() {
+  const groupId = getDebugGroupId();
+  debugPost("/api/debug/clear/specials", groupId ? { group_id: groupId } : {});
+};
+window.debugClearProposals = function() {
+  const groupId = getDebugGroupId();
+  debugPost("/api/debug/clear/proposals", groupId ? { group_id: groupId } : {});
+};
+window.debugClearInvites = function() {
+  const groupId = getDebugGroupId();
+  debugPost("/api/debug/clear/invites", groupId ? { group_id: groupId } : {});
+};
+window.debugLeaveGroup = function() {
+  const groupId = getDebugGroupId();
+  if (!groupId) return;
+  if (!confirm("Leave this group?")) return;
+  debugPost("/api/debug/leave/group", { group_id: groupId });
+};
+window.debugDeleteGroup = function() {
+  const groupId = getDebugGroupId();
+  if (!groupId) return;
+  if (!confirm("Delete this group? This cannot be undone.")) return;
+  debugPost("/api/debug/delete/group", { group_id: groupId });
+};
+window.debugOpenGroup = function() {
+  const groupId = getDebugGroupId();
+  if (!groupId) return;
+  window.location.href = `/groups/${groupId}`;
+};
+window.debugEnsureDemo = function() {
+  debugPost("/api/debug/ensure-demo");
+};
+window.debugClearAll = function() {
+  if (!confirm("Clear all your cached/special/proposal data?")) return;
+  debugPost("/api/debug/clear/all");
+};
+window.debugClearAutoSync = function() {
+  try {
+    localStorage.removeItem("autoSyncMinutes");
+  } catch (e5) {
+  }
+  if (autoSyncTimer) {
+    clearInterval(autoSyncTimer);
+    autoSyncTimer = null;
+  }
+  showToast("Auto-sync cleared", "success");
+};
+window.debugSetTheme = function(theme) {
+  setTheme(theme);
+};
+window.debugClearTheme = function() {
+  try {
+    localStorage.removeItem("theme");
+  } catch (e5) {
+  }
+  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  setTheme(prefersDark ? "dark" : "light");
+  showToast("Theme preference cleared", "success");
+};
+async function createInvite(groupId) {
+  if (window.__DEMO__) {
+    const input2 = document.getElementById("inviteLink");
+    if (input2) input2.value = `${window.location.origin}/invite/demo-token`;
+    showToast("Demo invite link created", "success");
+    return;
+  }
+  const days = parseInt(document.getElementById("inviteDays").value || "7", 10);
+  const r5 = await fetch(`/groups/${groupId}/invite/create`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ days: String(days) })
+  });
+  const j5 = await r5.json();
+  const input = document.getElementById("inviteLink");
+  if (input && j5.share_url) {
+    input.value = j5.share_url;
+  }
+}
+window.createInvite = createInvite;
+async function copyInviteLink(groupId, btn) {
+  const input = document.getElementById("inviteLink");
+  let copied = false;
+  if (input && input.value) {
+    navigator.clipboard.writeText(input.value);
+    copied = true;
+  } else {
+    await createInvite(groupId);
+    if (input && input.value) {
+      navigator.clipboard.writeText(input.value);
+      copied = true;
+    }
+  }
+  if (copied && btn) {
+    const copyIcon = btn.querySelector(".copy-icon");
+    const checkIcon = btn.querySelector(".check-icon");
+    if (copyIcon && checkIcon) {
+      copyIcon.classList.add("hidden");
+      checkIcon.classList.remove("hidden");
+      setTimeout(function() {
+        copyIcon.classList.remove("hidden");
+        checkIcon.classList.add("hidden");
+      }, 2e3);
+    }
+  }
+}
+window.copyInviteLink = copyInviteLink;
+function showToast(message, tone) {
+  const container = document.getElementById("toastContainer");
+  if (!container) return;
+  const toast = document.createElement("div");
+  const base = "px-4 py-3 rounded-xl shadow-lg border text-sm font-medium flex items-center gap-2 animate-[fadeIn_0.2s_ease]";
+  const style = tone === "success" ? "bg-white/90 backdrop-blur border-green-200 text-green-700 dark:bg-slate-900/90 dark:border-green-500/30 dark:text-green-300" : "bg-white/90 backdrop-blur border-red-200 text-red-700 dark:bg-slate-900/90 dark:border-red-500/30 dark:text-red-300";
+  toast.className = `${base} ${style}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add("opacity-0");
+    toast.style.transition = "opacity 0.2s ease";
+    setTimeout(() => toast.remove(), 200);
+  }, 2400);
+}
+function copyWithFeedback(btn, text) {
+  if (!btn) return;
+  navigator.clipboard.writeText(text || "");
+  const copyIcon = btn.querySelector(".copy-icon");
+  const checkIcon = btn.querySelector(".check-icon");
+  if (copyIcon && checkIcon) {
+    copyIcon.classList.add("hidden");
+    checkIcon.classList.remove("hidden");
+    setTimeout(() => {
+      copyIcon.classList.remove("hidden");
+      checkIcon.classList.add("hidden");
+    }, 2e3);
+  }
+}
+function setTimeType(kind) {
+  selectedTimeType = kind;
+}
+window.setTimeType = setTimeType;
+function buildIso(dateStr, timeStr) {
+  if (!dateStr || !timeStr) return null;
+  const d6 = /* @__PURE__ */ new Date(`${dateStr}T${timeStr}`);
+  return d6.toISOString();
+}
+async function submitAddTime(groupId) {
+  const date = document.getElementById("timeDate")?.value;
+  const start = document.getElementById("timeStart")?.value;
+  const end = document.getElementById("timeEnd")?.value;
+  let startIso = buildIso(date, start);
+  let endIso = buildIso(date, end);
+  if (!startIso || !endIso) {
+    if (!selectedRange) {
+      alert("Select a time range on the calendar or fill the form.");
+      return;
+    }
+    startIso = selectedRange.startStr;
+    endIso = selectedRange.endStr;
+  }
+  const kind = selectedTimeType === "blocked" ? "block_off" : "available";
+  await fetch(`/api/groups/${groupId}/special`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ kind, start: startIso, end: endIso })
+  });
+  document.getElementById("addTimeDialog")?.close();
+  if (window.refreshCalendarEvents) await window.refreshCalendarEvents();
+}
+window.submitAddTime = submitAddTime;
+async function submitProposal(groupId) {
+  const date = document.getElementById("proposalDate")?.value;
+  const start = document.getElementById("proposalStart")?.value;
+  const end = document.getElementById("proposalEnd")?.value;
+  let startIso = buildIso(date, start);
+  let endIso = buildIso(date, end);
+  if (!startIso || !endIso) {
+    if (!selectedRange) {
+      alert("Select a time range on the calendar or fill the form.");
+      return;
+    }
+    startIso = selectedRange.startStr;
+    endIso = selectedRange.endStr;
+  }
+  const location = document.getElementById("meetLoc")?.value;
+  const description = document.getElementById("meetDesc")?.value;
+  const r5 = await fetch(`/api/groups/${groupId}/proposal`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ start: startIso, end: endIso, location, description })
+  });
+  const j5 = await r5.json();
+  if (j5 && Array.isArray(j5.conflicts) && j5.conflicts.length) {
+    const names = j5.conflicts.map(function(c5) {
+      return c5.name || c5.email || "member";
+    });
+    showToast(`Conflicts with: ${names.join(", ")}`, "error");
+  } else if (j5 && j5.ok) {
+    showToast("Proposal sent", "success");
+  }
+  document.getElementById("proposalDialog")?.close();
+  if (window.refreshCalendarEvents) await window.refreshCalendarEvents();
+}
+window.submitProposal = submitProposal;
+async function addSpecial(kind) {
+  if (window.__DEMO__) {
+    if (!eventsService) return;
+    const start = selectedRange ? selectedRange.start : /* @__PURE__ */ new Date();
+    const end = selectedRange ? selectedRange.end : new Date(Date.now() + 60 * 60 * 1e3);
+    eventsService.add({
+      id: `special:demo:${Date.now()}`,
+      title: kind === "block_off" ? "Blocked" : "Available",
+      start: formatScheduleXDate(start),
+      end: formatScheduleXDate(end),
+      calendarId: kind === "block_off" ? "blocked" : "available"
+    });
+    showToast("Demo event added", "success");
+    return;
+  }
+  if (!selectedRange) {
+    alert("Select a time range on the calendar first.");
+    return;
+  }
+  const r5 = await fetch(`/api/groups/${window.__GROUP_ID__}/special`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ kind, start: selectedRange.startStr, end: selectedRange.endStr })
+  });
+  await r5.json();
+  if (window.refreshCalendarEvents) await window.refreshCalendarEvents();
+}
+window.addSpecial = addSpecial;
+document.addEventListener("DOMContentLoaded", async function() {
+  window.__DEMO__ = document.body?.dataset?.demo === "1";
+  calendarDebug = document.body?.dataset?.calDebug === "1";
+  const debugLog = function(...args) {
+    if (!calendarDebug) return;
+    console.log("[CalendarDebug]", ...args);
+  };
+  let storedTheme = null;
+  try {
+    storedTheme = localStorage.getItem("theme");
+  } catch (e5) {
+    storedTheme = null;
+  }
+  if (storedTheme) {
+    applyTheme(storedTheme);
+  } else {
+    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    applyTheme(prefersDark ? "dark" : "light");
+  }
+  const toggle = document.getElementById("themeToggle");
+  const toggleMobile = document.getElementById("themeToggleMobile");
+  const handleToggle = function() {
+    const isDark = document.documentElement.classList.contains("dark");
+    const next = isDark ? "light" : "dark";
+    try {
+      localStorage.setItem("theme", next);
+    } catch (e5) {
+    }
+    applyTheme(next);
+    if (window.__SXCAL__ && window.__SXCAL__.setTheme) {
+      window.__SXCAL__.setTheme(next);
+    }
+  };
+  if (toggle) toggle.addEventListener("click", handleToggle);
+  if (toggleMobile) toggleMobile.addEventListener("click", handleToggle);
+  const syncIntervalSelect = document.getElementById("syncInterval");
+  if (syncIntervalSelect) {
+    let stored = 0;
+    try {
+      stored = Number(localStorage.getItem("autoSyncMinutes") || "0");
+    } catch (e5) {
+      stored = 0;
+    }
+    if (!Number.isNaN(stored)) {
+      syncIntervalSelect.value = String(stored);
+      if (stored > 0) setAutoSync(stored);
+    }
+  }
+  const mobileToggle = document.getElementById("mobileMenuToggle");
+  const mobileMenu = document.getElementById("mobileMenu");
+  if (mobileToggle && mobileMenu) {
+    mobileToggle.addEventListener("click", function() {
+      mobileMenu.classList.toggle("hidden");
+      const openIcon = mobileToggle.querySelector("[data-menu-icon='open']");
+      const closeIcon = mobileToggle.querySelector("[data-menu-icon='close']");
+      if (openIcon && closeIcon) {
+        openIcon.classList.toggle("hidden");
+        closeIcon.classList.toggle("hidden");
+      }
+    });
+  }
+  document.querySelectorAll("[data-dialog-open]").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      const targetId = btn.getAttribute("data-dialog-open");
+      if (!targetId) return;
+      if (targetId === "syncDialog") {
+        loadSyncCalendars();
+        syncMe();
+      }
+      const dialog = document.getElementById(targetId);
+      if (dialog && dialog.showModal) dialog.showModal();
+    });
+  });
+  document.querySelectorAll("[data-dialog-close]").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      const dialog = btn.closest("dialog");
+      if (dialog && dialog.close) dialog.close();
+    });
+  });
+  document.querySelectorAll("[data-copy-btn]").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      copyWithFeedback(btn, btn.getAttribute("data-copy-value") || "");
+    });
+  });
+  const el = document.getElementById("calendar");
+  if (!el) return;
+  const groupId = el.getAttribute("data-group-id");
+  const isDemo = el.getAttribute("data-demo") === "1";
+  window.__DEMO__ = window.__DEMO__ || isDemo;
+  function toZonedDateTime(iso) {
+    if (!iso) return null;
+    if (iso.includes("[")) return Temporal.ZonedDateTime.from(iso);
+    if (iso.endsWith("Z")) {
+      return Temporal.ZonedDateTime.from(iso.replace("Z", "+00:00[UTC]"));
+    }
+    return Temporal.ZonedDateTime.from(`${iso}[UTC]`);
+  }
+  function temporalToIso(temporalDateTime) {
+    if (!temporalDateTime) return null;
+    if (temporalDateTime.toInstant) {
+      return temporalDateTime.toInstant().toString();
+    }
+    if (temporalDateTime.toString) {
+      return temporalDateTime.toString();
+    }
+    return String(temporalDateTime);
+  }
+  async function loadCalendars() {
+    if (isDemo) {
+      debugLog("Loading demo calendars");
+      return {
+        available: { colorName: "available", lightColors: { main: "#0d9488", container: "#ccfbf1", onContainer: "#115e59" }, darkColors: { main: "#2dd4bf", container: "#0b1220", onContainer: "#ccfbf1" } },
+        blocked: { colorName: "blocked", lightColors: { main: "#ef4444", container: "#fee2e2", onContainer: "#7f1d1d" }, darkColors: { main: "#f87171", container: "#0b1220", onContainer: "#fee2e2" } },
+        proposal: { colorName: "proposal", lightColors: { main: "#f97316", container: "#ffedd5", onContainer: "#7c2d12" }, darkColors: { main: "#fb923c", container: "#0b1220", onContainer: "#ffedd5" } }
+      };
+    }
+    const r5 = await fetch(`/api/groups/${groupId}/members`);
+    const members = await r5.json();
+    memberNameById = {};
+    const calendars2 = {
+      available: { colorName: "available", lightColors: { main: "#0d9488", container: "#ccfbf1", onContainer: "#115e59" }, darkColors: { main: "#2dd4bf", container: "#0b1220", onContainer: "#ccfbf1" } },
+      blocked: { colorName: "blocked", lightColors: { main: "#ef4444", container: "#fee2e2", onContainer: "#7f1d1d" }, darkColors: { main: "#f87171", container: "#0b1220", onContainer: "#fee2e2" } },
+      proposal: { colorName: "proposal", lightColors: { main: "#f97316", container: "#ffedd5", onContainer: "#7c2d12" }, darkColors: { main: "#fb923c", container: "#0b1220", onContainer: "#ffedd5" } }
+    };
+    members.forEach((m5) => {
+      const key = `member${m5.user_id}`;
+      const color = m5.color || "#64748b";
+      memberNameById[m5.user_id] = m5.name || m5.email || `Member ${m5.user_id}`;
+      calendars2[key] = {
+        colorName: key.toLowerCase(),
+        lightColors: { main: color, container: "#eef2ff", onContainer: "#1f2937" },
+        darkColors: { main: color, container: "#0b1220", onContainer: "#e2e8f0" }
+      };
+    });
+    debugLog("Loaded calendars", calendars2);
+    return calendars2;
+  }
+  function mapApiEvents(apiEvents) {
+    const normalEvents = [];
+    const backgroundEvents = [];
+    debugLog("Raw API events", apiEvents);
+    apiEvents.forEach((ev) => {
+      const start = toZonedDateTime(ev.start);
+      const end = toZonedDateTime(ev.end);
+      if (!start || !end) return;
+      const type = ev.extendedProps?.type;
+      if (type === "busy") {
+        const userId = ev.extendedProps?.user_id;
+        const name = memberNameById[userId] || `Member ${userId || ""}`.trim();
+        normalEvents.push({
+          id: ev.id,
+          title: `Busy - ${name}`,
+          start,
+          end,
+          calendarId: userId ? `member${userId}` : "available"
+        });
+        return;
+      }
+      if (type === "special") {
+        normalEvents.push({
+          id: ev.id,
+          title: ev.title || "Special",
+          start,
+          end,
+          calendarId: ev.extendedProps?.kind === "block_off" ? "blocked" : "available"
+        });
+        return;
+      }
+      if (type === "proposal") {
+        normalEvents.push({
+          id: ev.id,
+          title: ev.title || "Meetup Proposal",
+          start,
+          end,
+          calendarId: "proposal"
+        });
+        return;
+      }
+      normalEvents.push({
+        id: ev.id,
+        title: ev.title || "Event",
+        start,
+        end,
+        calendarId: "available"
+      });
+    });
+    debugLog("Mapped events", { normal: normalEvents.length, background: backgroundEvents.length, normalEvents, backgroundEvents });
+    return { normalEvents, backgroundEvents };
+  }
+  async function fetchEventsForRange(start, end) {
+    const startIso = temporalToIso(start);
+    const endIso = temporalToIso(end);
+    if (!startIso || !endIso) return { normalEvents: [], backgroundEvents: [] };
+    debugLog("Fetching events", { start: startIso, end: endIso });
+    const url = `/api/groups/${groupId}/events?start=${encodeURIComponent(startIso)}&end=${encodeURIComponent(endIso)}`;
+    const r5 = await fetch(url);
+    const j5 = await r5.json();
+    return mapApiEvents(j5 || []);
+  }
+  window.refreshCalendarEvents = async function() {
+    if (!calendarRange) return;
+    const data = await fetchEventsForRange(calendarRange.start, calendarRange.end);
+    if (eventsService) {
+      eventsService.set(data.normalEvents);
+      eventsService.setBackgroundEvents(data.backgroundEvents);
+    }
+  };
+  eventsService = createEventsServicePlugin();
+  calendarControls = createCalendarControlsPlugin();
+  scrollController = createScrollControllerPlugin({ initialScroll: "08:00" });
+  const calendars = await loadCalendars();
+  function resolveTimezone(raw) {
+    if (!raw) return Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const cleaned = raw.replace("GMT", "").replace("UTC", "").trim();
+    if (cleaned === "+08:00" || cleaned === "+8" || cleaned === "+08") return "Asia/Singapore";
+    return raw;
+  }
+  const calendarTimezone = resolveTimezone(el?.dataset?.timezone || "");
+  function demoZdt(offsetDays, hour, minute) {
+    const now = Temporal.Now.zonedDateTimeISO(calendarTimezone);
+    const base = Temporal.ZonedDateTime.from({
+      timeZone: now.timeZoneId,
+      year: now.year,
+      month: now.month,
+      day: now.day,
+      hour,
+      minute,
+      second: 0,
+      millisecond: 0
+    });
+    return base.add({ days: offsetDays });
+  }
+  const demoEvents = [
+    {
+      id: "demo-available",
+      title: "Available - You",
+      start: demoZdt(0, 13, 30),
+      end: demoZdt(0, 16, 0),
+      calendarId: "available"
+    },
+    {
+      id: "demo-blocked",
+      title: "Blocked - Sarah",
+      start: demoZdt(0, 18, 0),
+      end: demoZdt(0, 20, 0),
+      calendarId: "blocked"
+    },
+    {
+      id: "demo-proposal",
+      title: "Proposed: Team Lunch",
+      start: demoZdt(1, 12, 0),
+      end: demoZdt(1, 13, 30),
+      calendarId: "proposal"
+    }
+  ];
+  debugLog("Demo events", demoEvents);
+  const viewWeek2 = createViewWeek ? createViewWeek() : null;
+  const viewDay2 = createViewDay ? createViewDay() : null;
+  const viewMonth = createViewMonthGrid ? createViewMonthGrid() : null;
+  const viewList2 = createViewList ? createViewList() : null;
+  const views = [viewWeek2, viewDay2, viewMonth, viewList2].filter(Boolean);
+  if (!views.length) {
+    showToast("Calendar views failed to load.", "error");
+    return;
+  }
+  const plugins = [];
+  if (calendarControls) plugins.push(calendarControls);
+  if (eventsService) plugins.push(eventsService);
+  if (scrollController) plugins.push(scrollController);
+  function scrollToFirstEvent(events) {
+    if (!scrollController || !events || !events.length) return;
+    const sorted = events.slice().sort((a5, b5) => Temporal.ZonedDateTime.compare(a5.start, b5.start));
+    const first = sorted[0]?.start;
+    if (!first) return;
+    const hh = String(first.hour).padStart(2, "0");
+    const mm = String(first.minute || 0).padStart(2, "0");
+    scrollController.scrollTo(`${hh}:${mm}`);
+  }
+  const defaultView = viewWeek2 ? viewWeek2.name : views[0].name;
+  calendarInstance = createCalendar({
+    selectedDate: Temporal.Now.plainDateISO(),
+    defaultView,
+    views,
+    calendars,
+    events: isDemo ? demoEvents : [],
+    callbacks: {
+      fetchEvents: async function(range) {
+        calendarRange = range;
+        debugLog("Range update", range);
+        if (isDemo) {
+          scrollToFirstEvent(demoEvents);
+          return demoEvents;
+        }
+        const data = await fetchEventsForRange(range.start, range.end);
+        if (eventsService) {
+          eventsService.setBackgroundEvents([]);
+        }
+        scrollToFirstEvent(data.normalEvents);
+        return data.normalEvents;
+      },
+      onClickDateTime: function(dateTime) {
+        if (!dateTime) return;
+        const startInstant = dateTime.toInstant().toString();
+        const endInstant = dateTime.add({ hours: 1 }).toInstant().toString();
+        selectedRange = {
+          start: new Date(startInstant),
+          end: new Date(endInstant),
+          startStr: startInstant,
+          endStr: endInstant
+        };
+      }
+    }
+  }, plugins);
+  calendarInstance.render(el);
+  debugLog("Calendar rendered", calendarInstance);
+  window.__SXCAL__ = calendarInstance;
+  const themeIsDark = document.documentElement.classList.contains("dark");
+  if (calendarInstance.setTheme) {
+    calendarInstance.setTheme(themeIsDark ? "dark" : "light");
+  }
+  if (calendarControls && calendarTimezone) {
+    calendarControls.setTimezone(calendarTimezone);
+  }
+});
+//# sourceMappingURL=main.bundle.js.map
