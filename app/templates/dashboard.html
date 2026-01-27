@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-slate-900 dark:via-slate-950 dark:to-indigo-950">
-  <main class="container mx-auto px-6 pt-24 pb-12">
+  <main class="container mx-auto px-6 pt-16 pb-10">
     <div>
-      <a href="/" class="inline-flex items-center text-sm text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors">
+      <a href="/" class="inline-flex items-center text-sm text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white mb-3 transition-colors">
         <svg class="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none">
           <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -11,8 +11,8 @@
       </a>
 
       {% set member_count = members|length %}
-      <div class="space-y-6">
-        <div class="flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/60 p-5">
+      <div class="space-y-4">
+        <div class="flex flex-col gap-4 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/60 p-4">
           <div class="flex flex-wrap items-center gap-4">
             <div class="flex items-center gap-3">
               <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
@@ -53,15 +53,15 @@
             </div>
           </div>
           <div class="grid gap-3 sm:grid-cols-3">
-            <div class="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3">
+            <div class="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2.5">
               <p class="text-xs uppercase text-gray-500 dark:text-slate-400">Members</p>
               <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ member_count }}</p>
             </div>
-            <div class="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3">
+            <div class="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2.5">
               <p class="text-xs uppercase text-gray-500 dark:text-slate-400">Timezone</p>
               <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ current_user.timezone or "GMT+00:00" }}</p>
             </div>
-            <div class="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3">
+            <div class="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2.5">
               <p class="text-xs uppercase text-gray-500 dark:text-slate-400">Join Code</p>
               <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ group.join_code }}</p>
             </div>
@@ -167,82 +167,64 @@
   </main>
 </div>
 
-<dialog id="addTimeDialog" class="p-0 border-0 bg-transparent">
-  <div class="bg-white dark:bg-slate-950 text-gray-900 dark:text-white rounded-2xl border border-gray-200 dark:border-slate-800 shadow-2xl p-6 w-[min(480px,90vw)]">
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold">Add Time Range</h3>
-      <p class="text-sm text-gray-600 dark:text-slate-300">Add when you're available or block off times you're busy.</p>
+<dialog id="addTimeDialog" class="dialog">
+  <div class="dialog-card">
+    <div class="dialog-header">
+      <h3>Add Time Range</h3>
+      <p>Add when you're available or block off times you're busy.</p>
     </div>
-    <div class="space-y-4">
+    <div class="dialog-body">
       <div class="flex gap-2">
-        <button type="button" class="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold" data-time-type="available" onclick="setTimeType('available')">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
-            <path d="M12 7v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          Available
-        </button>
-        <button type="button" class="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold" data-time-type="blocked" onclick="setTimeType('blocked')">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
-            <path d="M7 7l10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          Blocked
-        </button>
+        <button type="button" class="dialog-btn primary w-full" data-time-type="available" onclick="setTimeType('available')">Available</button>
+        <button type="button" class="dialog-btn primary w-full" data-time-type="blocked" onclick="setTimeType('blocked')">Blocked</button>
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2" for="timeDate">Date</label>
-        <input id="timeDate" type="date" class="w-full border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200"/>
+        <label class="dialog-label" for="timeDate">Date</label>
+        <input id="timeDate" type="date" class="dialog-input"/>
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2" for="timeStart">Start Time</label>
-          <input id="timeStart" type="time" class="w-full border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200"/>
+          <label class="dialog-label" for="timeStart">Start Time</label>
+          <input id="timeStart" type="time" class="dialog-input"/>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2" for="timeEnd">End Time</label>
-          <input id="timeEnd" type="time" class="w-full border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200"/>
+          <label class="dialog-label" for="timeEnd">End Time</label>
+          <input id="timeEnd" type="time" class="dialog-input"/>
         </div>
       </div>
-      <button type="button" class="w-full px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold" onclick="submitAddTime({{ group.id }})">Add Time Range</button>
+      <button type="button" class="dialog-btn primary" onclick="submitAddTime({{ group.id }})">Add Time Range</button>
+      <button type="button" class="dialog-btn ghost" data-dialog-close>Cancel</button>
     </div>
   </div>
 </dialog>
 
-<dialog id="proposalDialog" class="p-0 border-0 bg-transparent">
-  <div class="bg-white dark:bg-slate-950 text-gray-900 dark:text-white rounded-2xl border border-gray-200 dark:border-slate-800 shadow-2xl p-6 w-[min(480px,90vw)]">
-    <div class="mb-4">
-      <h3 class="text-lg font-semibold">Propose a Meetup</h3>
-      <p class="text-sm text-gray-600 dark:text-slate-300">Suggest a meeting time to your group.</p>
+<dialog id="proposalDialog" class="dialog">
+  <div class="dialog-card">
+    <div class="dialog-header">
+      <h3>Propose a Meetup</h3>
+      <p>Suggest a meeting time to your group.</p>
     </div>
-    <div class="space-y-4">
+    <div class="dialog-body">
       <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2" for="proposalDate">Date</label>
-        <input id="proposalDate" type="date" class="w-full border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200"/>
+        <label class="dialog-label" for="proposalDate">Date</label>
+        <input id="proposalDate" type="date" class="dialog-input"/>
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2" for="proposalStart">Start Time</label>
-          <input id="proposalStart" type="time" class="w-full border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200"/>
+          <label class="dialog-label" for="proposalStart">Start Time</label>
+          <input id="proposalStart" type="time" class="dialog-input"/>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2" for="proposalEnd">End Time</label>
-          <input id="proposalEnd" type="time" class="w-full border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200"/>
+          <label class="dialog-label" for="proposalEnd">End Time</label>
+          <input id="proposalEnd" type="time" class="dialog-input"/>
         </div>
       </div>
-      <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2" for="meetLoc">
-        <span class="inline-flex items-center gap-2">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <path d="M12 21s6-5.2 6-10a6 6 0 10-12 0c0 4.8 6 10 6 10z" stroke="currentColor" stroke-width="2"/>
-            <circle cx="12" cy="11" r="2" stroke="currentColor" stroke-width="2"/>
-          </svg>
-          Location
-        </span>
-      </label>
-      <input id="meetLoc" class="w-full border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200" placeholder="e.g., Conference Room A, Zoom link"/>
-      <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2" for="meetDesc">Description</label>
-      <textarea id="meetDesc" class="w-full border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200" rows="3" placeholder="What's this meeting about?"></textarea>
-      <button type="button" class="w-full px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold" onclick="submitProposal({{ group.id }})">Send Proposal</button>
+      <label class="dialog-label" for="meetLoc">Location</label>
+      <input id="meetLoc" class="dialog-input" placeholder="e.g., Conference Room A, Zoom link"/>
+      <label class="dialog-label" for="meetDesc">Description</label>
+      <textarea id="meetDesc" class="dialog-input" rows="3" placeholder="What's this meeting about?"></textarea>
+      <button type="button" class="dialog-btn primary" onclick="submitProposal({{ group.id }})">Send Proposal</button>
+      <button type="button" class="dialog-btn ghost" data-dialog-close>Cancel</button>
     </div>
   </div>
 </dialog>

@@ -2,6 +2,7 @@ from flask import Blueprint, redirect, url_for, session, current_app, request
 import re
 import secrets
 from authlib.integrations.flask_client import OAuth
+from authlib.integrations.base_client.errors import MismatchingStateError
 from flask_login import login_user, logout_user
 from datetime import datetime, timezone, timedelta
 
@@ -32,7 +33,12 @@ def login():
 
 @auth_bp.get("/callback")
 def callback():
-    token = oauth.google.authorize_access_token()
+    try:
+        token = oauth.google.authorize_access_token()
+    except MismatchingStateError:
+        # CSRF state mismatch; clear session and retry login flow
+        session.clear()
+        return redirect(url_for("auth.login"))
     userinfo = oauth.google.userinfo()
     if not userinfo:
         userinfo = token.get("userinfo", {})

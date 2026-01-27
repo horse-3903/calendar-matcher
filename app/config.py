@@ -12,6 +12,7 @@ class Config:
     APP_BASE_URL = os.getenv("APP_BASE_URL", "http://localhost:5000")
     UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", "app/static/uploads")
     MAX_CONTENT_LENGTH = 5 * 1024 * 1024
+    DEBUG_OWNER_EMAIL = os.getenv("DEBUG_OWNER_EMAIL", "")
 
     # Minimal scopes:
     # - openid/email/profile for login

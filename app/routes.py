@@ -51,6 +51,36 @@ def _get_user_groups(user_id: int):
         "member_count": int(count or 0),
     } for g, count in rows]
 
+def _get_debug_user():
+    user = User.query.filter_by(google_sub="debug_local").first()
+    if user:
+        return user
+    username = None
+    try:
+        username = _random_username()
+    except Exception:
+        username = f"debug_{secrets.token_hex(3)}"
+    user = User(
+        google_sub="debug_local",
+        email="debug@local",
+        name="Debug User",
+        username=username,
+        display_name="Debug User",
+    )
+    db.session.add(user)
+    db.session.commit()
+    return user
+
+def _require_debug_access():
+    if current_app.debug:
+        return current_user if current_user.is_authenticated else _get_debug_user()
+    owner = current_app.config.get("DEBUG_OWNER_EMAIL") or ""
+    if not current_user.is_authenticated:
+        abort(403)
+    if not owner or current_user.email != owner:
+        abort(403)
+    return current_user
+
 @main_bp.before_app_request
 def _ensure_demo_group_membership():
     if not current_app.debug or not current_user.is_authenticated:
@@ -81,11 +111,9 @@ def demo():
     return render_template("index.html", demo_mode=True, groups=[])
 
 @main_bp.get("/debug")
-@login_required
 def debug_menu():
-    if not current_app.debug:
-        abort(404)
-    groups = _get_user_groups(current_user.id)
+    user = _require_debug_access()
+    groups = _get_user_groups(user.id)
     return render_template("debug.html", groups=groups)
 
 @main_bp.get("/demo/group")
@@ -454,20 +482,18 @@ def _require_debug():
         abort(404)
 
 @api_bp.post("/debug/clear/busy")
-@login_required
 def debug_clear_busy():
-    _require_debug()
-    BusyInterval.query.filter_by(user_id=current_user.id).delete()
+    user = _require_debug_access()
+    BusyInterval.query.filter_by(user_id=user.id).delete()
     db.session.commit()
     return jsonify({"ok": True})
 
 @api_bp.post("/debug/clear/specials")
-@login_required
 def debug_clear_specials():
-    _require_debug()
+    user = _require_debug_access()
     data = request.get_json(force=True) or {}
     group_id = data.get("group_id")
-    q = SpecialEvent.query.filter_by(user_id=current_user.id)
+    q = SpecialEvent.query.filter_by(user_id=user.id)
     if group_id:
         q = q.filter_by(group_id=int(group_id))
     q.delete()
@@ -475,12 +501,11 @@ def debug_clear_specials():
     return jsonify({"ok": True})
 
 @api_bp.post("/debug/clear/proposals")
-@login_required
 def debug_clear_proposals():
-    _require_debug()
+    user = _require_debug_access()
     data = request.get_json(force=True) or {}
     group_id = data.get("group_id")
-    q = MeetupProposal.query.filter_by(created_by=current_user.id)
+    q = MeetupProposal.query.filter_by(created_by=user.id)
     if group_id:
         q = q.filter_by(group_id=int(group_id))
     q.delete()
@@ -488,16 +513,15 @@ def debug_clear_proposals():
     return jsonify({"ok": True})
 
 @api_bp.post("/debug/clear/invites")
-@login_required
 def debug_clear_invites():
-    _require_debug()
+    user = _require_debug_access()
     data = request.get_json(force=True) or {}
     group_id = data.get("group_id")
     q = InviteLink.query
     if group_id:
         q = q.filter_by(group_id=int(group_id))
     else:
-        owned_groups = Group.query.filter_by(created_by=current_user.id).all()
+        owned_groups = Group.query.filter_by(created_by=user.id).all()
         owned_ids = [g.id for g in owned_groups]
         if owned_ids:
             q = q.filter(InviteLink.group_id.in_(owned_ids))
@@ -508,35 +532,32 @@ def debug_clear_invites():
     return jsonify({"ok": True})
 
 @api_bp.post("/debug/reset/calendar-selection")
-@login_required
 def debug_reset_calendar_selection():
-    _require_debug()
-    current_user.calendar_ids_json = None
+    user = _require_debug_access()
+    user.calendar_ids_json = None
     db.session.commit()
     return jsonify({"ok": True})
 
 @api_bp.post("/debug/leave/group")
-@login_required
 def debug_leave_group():
-    _require_debug()
+    user = _require_debug_access()
     data = request.get_json(force=True) or {}
     group_id = data.get("group_id")
     if not group_id:
         abort(400, "group_id required")
-    Membership.query.filter_by(group_id=int(group_id), user_id=current_user.id).delete()
+    Membership.query.filter_by(group_id=int(group_id), user_id=user.id).delete()
     db.session.commit()
     return jsonify({"ok": True})
 
 @api_bp.post("/debug/delete/group")
-@login_required
 def debug_delete_group():
-    _require_debug()
+    user = _require_debug_access()
     data = request.get_json(force=True) or {}
     group_id = data.get("group_id")
     if not group_id:
         abort(400, "group_id required")
     g = Group.query.get_or_404(int(group_id))
-    if g.created_by != current_user.id:
+    if g.created_by != user.id:
         abort(403)
     InviteLink.query.filter_by(group_id=g.id).delete()
     SpecialEvent.query.filter_by(group_id=g.id).delete()
@@ -547,20 +568,18 @@ def debug_delete_group():
     return jsonify({"ok": True})
 
 @api_bp.post("/debug/ensure-demo")
-@login_required
 def debug_ensure_demo():
-    _require_debug()
+    _require_debug_access()
     _ensure_demo_group_membership()
     return jsonify({"ok": True})
 
 @api_bp.post("/debug/clear/all")
-@login_required
 def debug_clear_all():
-    _require_debug()
-    BusyInterval.query.filter_by(user_id=current_user.id).delete()
-    SpecialEvent.query.filter_by(user_id=current_user.id).delete()
-    MeetupProposal.query.filter_by(created_by=current_user.id).delete()
-    current_user.calendar_ids_json = None
+    user = _require_debug_access()
+    BusyInterval.query.filter_by(user_id=user.id).delete()
+    SpecialEvent.query.filter_by(user_id=user.id).delete()
+    MeetupProposal.query.filter_by(created_by=user.id).delete()
+    user.calendar_ids_json = None
     db.session.commit()
     return jsonify({"ok": True})
 
