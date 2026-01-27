@@ -12280,6 +12280,13 @@ async function syncMe() {
     const j5 = await r5.json();
     if (j5 && j5.ok) {
       showToast(`Synced calendar \u2022 ${j5.busy_blocks} busy blocks`, "success");
+      if (eventsService) {
+        eventsService.set([]);
+        eventsService.setBackgroundEvents([]);
+      }
+      if (window.refreshCalendarEvents) {
+        await window.refreshCalendarEvents();
+      }
     } else {
       showToast("Sync failed. Try again.", "error");
     }

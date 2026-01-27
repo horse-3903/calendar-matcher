@@ -67,6 +67,13 @@ async function syncMe() {
     const j = await r.json();
     if (j && j.ok) {
       showToast(`Synced calendar • ${j.busy_blocks} busy blocks`, "success");
+      if (eventsService) {
+        eventsService.set([]);
+        eventsService.setBackgroundEvents([]);
+      }
+      if (window.refreshCalendarEvents) {
+        await window.refreshCalendarEvents();
+      }
     } else {
       showToast("Sync failed. Try again.", "error");
     }
