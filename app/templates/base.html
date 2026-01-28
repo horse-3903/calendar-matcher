@@ -24,7 +24,7 @@
   <!-- Schedule-X -->
   <link rel="stylesheet" href="/static/schedule-x.css"/>
 </head>
-<body class="min-h-screen font-sans bg-white text-gray-900 dark:bg-slate-950 dark:text-slate-100" data-demo="{{ '1' if demo_mode else '' }}" data-cal-debug="{{ '1' if config.DEBUG else '' }}">
+<body class="min-h-screen font-sans bg-white text-gray-900 dark:bg-slate-950 dark:text-slate-100" data-demo="{{ '1' if demo_mode else '' }}" data-cal-debug="{{ '1' if config.APP_MODE == 'dev' else '' }}">
   {% set path = request.path %}
   {% set is_group_page = path.startswith('/groups') or path == '/demo/group' %}
   {% set is_dashboard_active = path == '/' %}
@@ -32,7 +32,7 @@
   {% set is_settings_active = path.startswith('/settings') %}
   {% set is_debug_active = path.startswith('/debug') %}
   {% set is_owner = current_user.is_authenticated and config.DEBUG_OWNER_EMAIL and current_user.email == config.DEBUG_OWNER_EMAIL %}
-  {% set show_debug_menu = config.DEBUG or is_owner %}
+  {% set show_dev_console = (config.APP_MODE == 'dev') or (config.APP_MODE == 'prod' and is_owner) %}
   <header class="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-gray-200/50 dark:border-slate-800/60">
     <nav class="container mx-auto px-6 flex items-center justify-between h-16">
       <a href="/" class="flex items-center gap-2 font-semibold text-lg">
@@ -54,8 +54,8 @@
           {% if config.DEBUG %}
             <a href="/demo" class="px-3 py-2 font-semibold {% if is_demo_active %}text-purple-600{% else %}text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white{% endif %}">Demo</a>
           {% endif %}
-          {% if show_debug_menu %}
-            <a href="/debug" class="px-3 py-2 font-semibold {% if is_debug_active %}text-purple-600{% else %}text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white{% endif %}">Debug Menu</a>
+          {% if show_dev_console %}
+            <a href="/debug" class="px-3 py-2 font-semibold {% if is_debug_active %}text-purple-600{% else %}text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white{% endif %}">Dev Console</a>
           {% endif %}
           <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
             {% if current_user.profile_pic_url %}
@@ -73,8 +73,8 @@
           {% if config.DEBUG %}
             <a href="/demo" class="px-3 py-2 font-semibold text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white">Demo</a>
           {% endif %}
-          {% if show_debug_menu %}
-            <a href="/debug" class="px-3 py-2 font-semibold text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white">Debug Menu</a>
+          {% if show_dev_console %}
+            <a href="/debug" class="px-3 py-2 font-semibold text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white">Dev Console</a>
           {% endif %}
           <a class="px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold" href="/auth/login">Login with Google</a>
         {% endif %}
@@ -106,8 +106,8 @@
           {% if config.DEBUG %}
             <a href="/demo" class="text-sm font-medium {% if is_demo_active %}text-purple-600{% else %}text-gray-900 dark:text-white{% endif %}">Demo</a>
           {% endif %}
-          {% if show_debug_menu %}
-            <a href="/debug" class="text-sm font-medium {% if is_debug_active %}text-purple-600{% else %}text-gray-900 dark:text-white{% endif %}">Debug Menu</a>
+          {% if show_dev_console %}
+            <a href="/debug" class="text-sm font-medium {% if is_debug_active %}text-purple-600{% else %}text-gray-900 dark:text-white{% endif %}">Dev Console</a>
           {% endif %}
           <a class="text-sm font-medium text-gray-600 dark:text-slate-300" href="/auth/logout">Sign Out</a>
         {% else %}
@@ -115,8 +115,8 @@
           {% if config.DEBUG %}
             <a href="/demo" class="text-sm font-medium text-gray-900 dark:text-white">Demo</a>
           {% endif %}
-          {% if show_debug_menu %}
-            <a href="/debug" class="text-sm font-medium text-gray-900 dark:text-white">Debug Menu</a>
+          {% if show_dev_console %}
+            <a href="/debug" class="text-sm font-medium text-gray-900 dark:text-white">Dev Console</a>
           {% endif %}
           <a class="w-fit px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold" href="/auth/login">Login with Google</a>
         {% endif %}

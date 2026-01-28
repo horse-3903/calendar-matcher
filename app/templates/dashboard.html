@@ -41,7 +41,7 @@
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
                   <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
-                Add Available Time
+                Add Time Range
               </button>
               <button data-dialog-open="proposalDialog" class="gap-2 px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold inline-flex items-center">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
@@ -49,6 +49,22 @@
                   <path d="M22 2L15 22l-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
                 Propose Meetup
+              </button>
+              <button type="button" class="gap-2 px-4 py-2 rounded-full border border-purple-200 dark:border-purple-500/30 text-purple-700 dark:text-purple-200 text-sm font-semibold inline-flex items-center hover:bg-purple-50 dark:hover:bg-purple-500/10 transition-colors" onclick="exportGroupCalendar({{ group.id }})">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 3v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M8 9l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M5 21h14a2 2 0 002-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M3 15v4a2 2 0 002 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                Export to Google
+              </button>
+              <button type="button" class="gap-2 px-4 py-2 rounded-full border border-purple-200 dark:border-purple-500/30 text-purple-700 dark:text-purple-200 text-sm font-semibold inline-flex items-center hover:bg-purple-50 dark:hover:bg-purple-500/10 transition-colors" data-dialog-open="groupSettingsDialog">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" stroke="currentColor" stroke-width="2"/>
+                  <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V22a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 5 15.4a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.65 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.65 1.7 1.7 0 0 0 10.55 3H11a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 20 9.4c0 .67.4 1.27 1 1.55H22a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.55 1z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Group Settings
               </button>
             </div>
           </div>
@@ -136,10 +152,21 @@
                       </div>
                     {% endif %}
                     <div class="flex-1">
-                      <p class="text-sm font-medium text-gray-900 dark:text-white">{{ u.display_name or u.name }}</p>
+                      <div class="flex flex-wrap items-center gap-2">
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">{{ u.display_name or u.name }}</p>
+                        {% if m.role == "admin" %}
+                          <span class="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-200 font-semibold">Admin</span>
+                        {% endif %}
+                        {% if current_user.is_authenticated and u.id == current_user.id %}
+                          <span class="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-200 font-semibold">You</span>
+                        {% endif %}
+                      </div>
                       <p class="text-xs text-gray-500 dark:text-slate-400">{{ u.email }}</p>
                     </div>
                     <span class="w-3 h-3 rounded-full" style="background: {{ m.color_hex }};"></span>
+                    {% if is_admin and u.id != current_user.id and m.role != "admin" %}
+                      <button type="button" class="text-xs font-semibold text-purple-600 dark:text-purple-300 hover:text-purple-700" onclick="promoteMember({{ group.id }}, {{ u.id }})">Make admin</button>
+                    {% endif %}
                   </div>
                 {% endfor %}
               {% else %}
@@ -157,7 +184,7 @@
             </div>
           </div>
           <div class="overflow-x-auto">
-            <div class="min-w-[600px]">
+            <div class="min-w-0">
               <div id="calendar" data-group-id="{{ group.id }}" data-demo="{{ '1' if demo_mode else '' }}" data-timezone="{{ current_user.timezone or '' }}"></div>
             </div>
           </div>
@@ -174,22 +201,22 @@
       <p>Add when you're available or block off times you're busy.</p>
     </div>
     <div class="dialog-body">
-      <div class="flex gap-2">
-        <button type="button" class="dialog-btn primary w-full" data-time-type="available" onclick="setTimeType('available')">Available</button>
-        <button type="button" class="dialog-btn primary w-full" data-time-type="blocked" onclick="setTimeType('blocked')">Blocked</button>
+      <div class="segmented-toggle">
+        <button type="button" class="segmented-btn is-available" data-time-type="available" onclick="setTimeType('available')">Available</button>
+        <button type="button" class="segmented-btn is-blocked" data-time-type="blocked" onclick="setTimeType('blocked')">Blocked</button>
       </div>
-      <div>
-        <label class="dialog-label" for="timeDate">Date</label>
-        <input id="timeDate" type="date" class="dialog-input"/>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid sm:grid-cols-2 gap-3">
+        <div class="sm:col-span-2">
+          <label class="dialog-label" for="timeDate">Date</label>
+          <input id="timeDate" type="date" class="dialog-input w-full"/>
+        </div>
         <div>
           <label class="dialog-label" for="timeStart">Start Time</label>
-          <input id="timeStart" type="time" class="dialog-input"/>
+          <input id="timeStart" type="time" class="dialog-input w-full"/>
         </div>
         <div>
           <label class="dialog-label" for="timeEnd">End Time</label>
-          <input id="timeEnd" type="time" class="dialog-input"/>
+          <input id="timeEnd" type="time" class="dialog-input w-full"/>
         </div>
       </div>
       <button type="button" class="dialog-btn primary" onclick="submitAddTime({{ group.id }})">Add Time Range</button>
@@ -205,18 +232,18 @@
       <p>Suggest a meeting time to your group.</p>
     </div>
     <div class="dialog-body">
-      <div>
-        <label class="dialog-label" for="proposalDate">Date</label>
-        <input id="proposalDate" type="date" class="dialog-input"/>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid sm:grid-cols-2 gap-3">
+        <div class="sm:col-span-2">
+          <label class="dialog-label" for="proposalDate">Date</label>
+          <input id="proposalDate" type="date" class="dialog-input w-full"/>
+        </div>
         <div>
           <label class="dialog-label" for="proposalStart">Start Time</label>
-          <input id="proposalStart" type="time" class="dialog-input"/>
+          <input id="proposalStart" type="time" class="dialog-input w-full"/>
         </div>
         <div>
           <label class="dialog-label" for="proposalEnd">End Time</label>
-          <input id="proposalEnd" type="time" class="dialog-input"/>
+          <input id="proposalEnd" type="time" class="dialog-input w-full"/>
         </div>
       </div>
       <label class="dialog-label" for="meetLoc">Location</label>
@@ -226,6 +253,35 @@
       <button type="button" class="dialog-btn primary" onclick="submitProposal({{ group.id }})">Send Proposal</button>
       <button type="button" class="dialog-btn ghost" data-dialog-close>Cancel</button>
     </div>
+  </div>
+</dialog>
+
+<dialog id="groupSettingsDialog" class="dialog">
+  <div class="dialog-card">
+    <div class="dialog-header">
+      <h3>Group Settings</h3>
+      <p>Update group details and calendar preferences.</p>
+    </div>
+    <form method="post" action="/groups/{{ group.id }}/settings" class="dialog-body">
+      <label class="dialog-label" for="groupName">Group name</label>
+      <input id="groupName" name="name" class="dialog-input" value="{{ group.name }}"/>
+
+      <label class="dialog-label" for="groupTimezone">Timezone</label>
+      <input id="groupTimezone" name="timezone" class="dialog-input" value="{{ current_user.timezone or 'UTC' }}"/>
+
+      <label class="dialog-label" for="groupJoinCode">Join code</label>
+      <div class="flex gap-2">
+        <input id="groupJoinCode" name="join_code" class="dialog-input flex-1" value="{{ group.join_code }}" {% if not is_admin %}readonly{% endif %}/>
+        <button type="button" class="dialog-btn ghost" onclick="copyText(document.getElementById('groupJoinCode').value)">Copy</button>
+      </div>
+
+      {% if is_admin %}
+        <button type="button" class="dialog-btn ghost" onclick="regenerateJoinCode({{ group.id }})">Regenerate join code</button>
+      {% endif %}
+
+      <button class="dialog-btn primary" type="submit">Save changes</button>
+      <button type="button" class="dialog-btn ghost" data-dialog-close>Close</button>
+    </form>
   </div>
 </dialog>
 

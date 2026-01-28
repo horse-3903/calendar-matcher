@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: calendar-matcher-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: calendar_matcher
+      POSTGRES_USER: horse3903
+      POSTGRES_PASSWORD: password123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

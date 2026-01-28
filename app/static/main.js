@@ -14,6 +14,8 @@ let scrollController = null;
 let calendarDebug = false;
 let memberNameById = {};
 let autoSyncTimer = null;
+let calendarReady = false;
+let pendingScrollTime = null;
 
 function applyTheme(theme) {
   const root = document.documentElement;
@@ -201,6 +203,77 @@ window.saveCalendarSelection = saveCalendarSelection;
 window.saveCalendarsAndSync = saveCalendarsAndSync;
 window.loadSyncCalendars = loadSyncCalendars;
 
+async function exportGroupCalendar(groupId) {
+  if (window.__DEMO__) {
+    showToast("Demo mode • Export disabled", "error");
+    return;
+  }
+  if (!groupId) return;
+  try {
+    const r = await fetch(`/api/groups/${groupId}/export/google`, { method: "POST" });
+    if (!r.ok) {
+      const text = await r.text();
+      console.error("Export failed:", r.status, text);
+      showToast("Export failed. Check permissions.", "error");
+      return;
+    }
+    const j = await r.json();
+    if (j && j.ok) {
+      showToast(`Exported ${j.events_created || 0} events`, "success");
+    } else {
+      showToast("Export failed. Try again.", "error");
+    }
+  } catch (e) {
+    console.error("Export failed:", e);
+    showToast("Export failed. Try again.", "error");
+  }
+}
+
+window.exportGroupCalendar = exportGroupCalendar;
+
+async function regenerateJoinCode(groupId) {
+  if (!groupId) return;
+  try {
+    const r = await fetch(`/groups/${groupId}/join-code/regenerate`, { method: "POST" });
+    if (!r.ok) {
+      showToast("Unable to regenerate join code", "error");
+      return;
+    }
+    const j = await r.json();
+    if (j && j.join_code) {
+      const input = document.getElementById("groupJoinCode");
+      if (input) input.value = j.join_code;
+      showToast("Join code regenerated", "success");
+    }
+  } catch (e) {
+    showToast("Unable to regenerate join code", "error");
+  }
+}
+
+window.regenerateJoinCode = regenerateJoinCode;
+
+async function promoteMember(groupId, userId) {
+  if (!groupId || !userId) return;
+  if (!confirm("Make this member an admin?")) return;
+  try {
+    const r = await fetch(`/api/groups/${groupId}/members/${userId}/role`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: "admin" })
+    });
+    if (!r.ok) {
+      showToast("Unable to update role", "error");
+      return;
+    }
+    showToast("Member promoted to admin", "success");
+    window.location.reload();
+  } catch (e) {
+    showToast("Unable to update role", "error");
+  }
+}
+
+window.promoteMember = promoteMember;
+
 async function debugPost(url, body) {
   try {
     const r = await fetch(url, {
@@ -382,9 +455,21 @@ function copyWithFeedback(btn, text) {
 
 function setTimeType(kind) {
   selectedTimeType = kind;
+  updateTimeTypeUI();
 }
 
 window.setTimeType = setTimeType;
+
+function updateTimeTypeUI() {
+  document.querySelectorAll("[data-time-type]").forEach(function (btn) {
+    const type = btn.getAttribute("data-time-type");
+    if (type === selectedTimeType) {
+      btn.classList.add("is-active");
+    } else {
+      btn.classList.remove("is-active");
+    }
+  });
+}
 
 function buildIso(dateStr, timeStr) {
   if (!dateStr || !timeStr) return null;
@@ -392,7 +477,26 @@ function buildIso(dateStr, timeStr) {
   return d.toISOString();
 }
 
+function formatScheduleXDate(value) {
+  if (!value) return null;
+  if (typeof value === "string") {
+    if (value.includes("[")) return Temporal.ZonedDateTime.from(value);
+    if (value.endsWith("Z")) {
+      return Temporal.ZonedDateTime.from(value.replace("Z", "+00:00[UTC]"));
+    }
+    return Temporal.ZonedDateTime.from(`${value}[UTC]`);
+  }
+  if (value instanceof Date) {
+    return Temporal.ZonedDateTime.from(value.toISOString().replace("Z", "+00:00[UTC]"));
+  }
+  return value;
+}
+
 async function submitAddTime(groupId) {
+  if (!window.__DEMO__ && (!groupId || groupId === 0 || groupId === "0")) {
+    showToast("Please log in to add time ranges.", "error");
+    return;
+  }
   const date = document.getElementById("timeDate")?.value;
   const start = document.getElementById("timeStart")?.value;
   const end = document.getElementById("timeEnd")?.value;
@@ -409,6 +513,24 @@ async function submitAddTime(groupId) {
   }
 
   const kind = selectedTimeType === "blocked" ? "block_off" : "available";
+  if (window.__DEMO__) {
+    if (eventsService) {
+      const startDate = startIso ? new Date(startIso) : selectedRange?.start;
+      const endDate = endIso ? new Date(endIso) : selectedRange?.end;
+      if (startDate && endDate) {
+        eventsService.add({
+          id: `demo-special:${Date.now()}`,
+          title: kind === "block_off" ? "Blocked" : "Available",
+          start: formatScheduleXDate(startDate),
+          end: formatScheduleXDate(endDate),
+          calendarId: kind === "block_off" ? "blocked" : "available"
+        });
+        showToast("Demo event added", "success");
+      }
+    }
+    document.getElementById("addTimeDialog")?.close();
+    return;
+  }
   await fetch(`/api/groups/${groupId}/special`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -421,6 +543,10 @@ async function submitAddTime(groupId) {
 window.submitAddTime = submitAddTime;
 
 async function submitProposal(groupId) {
+  if (!window.__DEMO__ && (!groupId || groupId === 0 || groupId === "0")) {
+    showToast("Please log in to propose a meetup.", "error");
+    return;
+  }
   const date = document.getElementById("proposalDate")?.value;
   const start = document.getElementById("proposalStart")?.value;
   const end = document.getElementById("proposalEnd")?.value;
@@ -596,6 +722,9 @@ document.addEventListener("DOMContentLoaded", async function () {
         loadSyncCalendars();
         syncMe();
       }
+      if (targetId === "addTimeDialog") {
+        updateTimeTypeUI();
+      }
       const dialog = document.getElementById(targetId);
       if (dialog && dialog.showModal) dialog.showModal();
     });
@@ -605,6 +734,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     btn.addEventListener("click", function () {
       const dialog = btn.closest("dialog");
       if (dialog && dialog.close) dialog.close();
+    });
+  });
+
+  document.querySelectorAll("dialog").forEach(function (dialog) {
+    dialog.addEventListener("click", function (event) {
+      if (event.target === dialog && dialog.close) {
+        dialog.close();
+      }
     });
   });
 
@@ -618,7 +755,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   if (!el) return;
 
   const groupId = el.getAttribute("data-group-id");
-  const isDemo = el.getAttribute("data-demo") === "1";
+  const isDemo = el.getAttribute("data-demo") === "1" || groupId === "0";
   window.__DEMO__ = window.__DEMO__ || isDemo;
 
   function toZonedDateTime(iso) {
@@ -821,7 +958,16 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (!first) return;
     const hh = String(first.hour).padStart(2, "0");
     const mm = String(first.minute || 0).padStart(2, "0");
-    scrollController.scrollTo(`${hh}:${mm}`);
+    const timeStr = `${hh}:${mm}`;
+    if (!calendarReady) {
+      pendingScrollTime = timeStr;
+      return;
+    }
+    try {
+      scrollController.scrollTo(timeStr);
+    } catch (e) {
+      pendingScrollTime = timeStr;
+    }
   }
 
   const defaultView = viewWeek ? viewWeek.name : views[0].name;
@@ -862,6 +1008,13 @@ document.addEventListener("DOMContentLoaded", async function () {
   }, plugins);
 
   calendarInstance.render(el);
+  calendarReady = true;
+  if (pendingScrollTime && scrollController) {
+    try {
+      scrollController.scrollTo(pendingScrollTime);
+    } catch (e) {}
+    pendingScrollTime = null;
+  }
   debugLog("Calendar rendered", calendarInstance);
   window.__SXCAL__ = calendarInstance;
 

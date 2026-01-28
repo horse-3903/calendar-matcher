@@ -12227,6 +12227,8 @@ var scrollController = null;
 var calendarDebug = false;
 var memberNameById = {};
 var autoSyncTimer = null;
+var calendarReady = false;
+var pendingScrollTime = null;
 function applyTheme(theme) {
   const root = document.documentElement;
   if (!root) return;
@@ -12404,6 +12406,71 @@ async function saveCalendarsAndSync() {
 window.saveCalendarSelection = saveCalendarSelection;
 window.saveCalendarsAndSync = saveCalendarsAndSync;
 window.loadSyncCalendars = loadSyncCalendars;
+async function exportGroupCalendar(groupId) {
+  if (window.__DEMO__) {
+    showToast("Demo mode \u2022 Export disabled", "error");
+    return;
+  }
+  if (!groupId) return;
+  try {
+    const r5 = await fetch(`/api/groups/${groupId}/export/google`, { method: "POST" });
+    if (!r5.ok) {
+      const text = await r5.text();
+      console.error("Export failed:", r5.status, text);
+      showToast("Export failed. Check permissions.", "error");
+      return;
+    }
+    const j5 = await r5.json();
+    if (j5 && j5.ok) {
+      showToast(`Exported ${j5.events_created || 0} events`, "success");
+    } else {
+      showToast("Export failed. Try again.", "error");
+    }
+  } catch (e5) {
+    console.error("Export failed:", e5);
+    showToast("Export failed. Try again.", "error");
+  }
+}
+window.exportGroupCalendar = exportGroupCalendar;
+async function regenerateJoinCode(groupId) {
+  if (!groupId) return;
+  try {
+    const r5 = await fetch(`/groups/${groupId}/join-code/regenerate`, { method: "POST" });
+    if (!r5.ok) {
+      showToast("Unable to regenerate join code", "error");
+      return;
+    }
+    const j5 = await r5.json();
+    if (j5 && j5.join_code) {
+      const input = document.getElementById("groupJoinCode");
+      if (input) input.value = j5.join_code;
+      showToast("Join code regenerated", "success");
+    }
+  } catch (e5) {
+    showToast("Unable to regenerate join code", "error");
+  }
+}
+window.regenerateJoinCode = regenerateJoinCode;
+async function promoteMember(groupId, userId) {
+  if (!groupId || !userId) return;
+  if (!confirm("Make this member an admin?")) return;
+  try {
+    const r5 = await fetch(`/api/groups/${groupId}/members/${userId}/role`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: "admin" })
+    });
+    if (!r5.ok) {
+      showToast("Unable to update role", "error");
+      return;
+    }
+    showToast("Member promoted to admin", "success");
+    window.location.reload();
+  } catch (e5) {
+    showToast("Unable to update role", "error");
+  }
+}
+window.promoteMember = promoteMember;
 async function debugPost(url, body) {
   try {
     const r5 = await fetch(url, {
@@ -12574,14 +12641,43 @@ function copyWithFeedback(btn, text) {
 }
 function setTimeType(kind) {
   selectedTimeType = kind;
+  updateTimeTypeUI();
 }
 window.setTimeType = setTimeType;
+function updateTimeTypeUI() {
+  document.querySelectorAll("[data-time-type]").forEach(function(btn) {
+    const type = btn.getAttribute("data-time-type");
+    if (type === selectedTimeType) {
+      btn.classList.add("is-active");
+    } else {
+      btn.classList.remove("is-active");
+    }
+  });
+}
 function buildIso(dateStr, timeStr) {
   if (!dateStr || !timeStr) return null;
   const d6 = /* @__PURE__ */ new Date(`${dateStr}T${timeStr}`);
   return d6.toISOString();
 }
+function formatScheduleXDate(value) {
+  if (!value) return null;
+  if (typeof value === "string") {
+    if (value.includes("[")) return Temporal.ZonedDateTime.from(value);
+    if (value.endsWith("Z")) {
+      return Temporal.ZonedDateTime.from(value.replace("Z", "+00:00[UTC]"));
+    }
+    return Temporal.ZonedDateTime.from(`${value}[UTC]`);
+  }
+  if (value instanceof Date) {
+    return Temporal.ZonedDateTime.from(value.toISOString().replace("Z", "+00:00[UTC]"));
+  }
+  return value;
+}
 async function submitAddTime(groupId) {
+  if (!window.__DEMO__ && (!groupId || groupId === 0 || groupId === "0")) {
+    showToast("Please log in to add time ranges.", "error");
+    return;
+  }
   const date = document.getElementById("timeDate")?.value;
   const start = document.getElementById("timeStart")?.value;
   const end = document.getElementById("timeEnd")?.value;
@@ -12596,6 +12692,24 @@ async function submitAddTime(groupId) {
     endIso = selectedRange.endStr;
   }
   const kind = selectedTimeType === "blocked" ? "block_off" : "available";
+  if (window.__DEMO__) {
+    if (eventsService) {
+      const startDate = startIso ? new Date(startIso) : selectedRange?.start;
+      const endDate = endIso ? new Date(endIso) : selectedRange?.end;
+      if (startDate && endDate) {
+        eventsService.add({
+          id: `demo-special:${Date.now()}`,
+          title: kind === "block_off" ? "Blocked" : "Available",
+          start: formatScheduleXDate(startDate),
+          end: formatScheduleXDate(endDate),
+          calendarId: kind === "block_off" ? "blocked" : "available"
+        });
+        showToast("Demo event added", "success");
+      }
+    }
+    document.getElementById("addTimeDialog")?.close();
+    return;
+  }
   await fetch(`/api/groups/${groupId}/special`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -12606,6 +12720,10 @@ async function submitAddTime(groupId) {
 }
 window.submitAddTime = submitAddTime;
 async function submitProposal(groupId) {
+  if (!window.__DEMO__ && (!groupId || groupId === 0 || groupId === "0")) {
+    showToast("Please log in to propose a meetup.", "error");
+    return;
+  }
   const date = document.getElementById("proposalDate")?.value;
   const start = document.getElementById("proposalStart")?.value;
   const end = document.getElementById("proposalEnd")?.value;
@@ -12736,6 +12854,9 @@ document.addEventListener("DOMContentLoaded", async function() {
         loadSyncCalendars();
         syncMe();
       }
+      if (targetId === "addTimeDialog") {
+        updateTimeTypeUI();
+      }
       const dialog = document.getElementById(targetId);
       if (dialog && dialog.showModal) dialog.showModal();
     });
@@ -12746,6 +12867,13 @@ document.addEventListener("DOMContentLoaded", async function() {
       if (dialog && dialog.close) dialog.close();
     });
   });
+  document.querySelectorAll("dialog").forEach(function(dialog) {
+    dialog.addEventListener("click", function(event) {
+      if (event.target === dialog && dialog.close) {
+        dialog.close();
+      }
+    });
+  });
   document.querySelectorAll("[data-copy-btn]").forEach(function(btn) {
     btn.addEventListener("click", function() {
       copyWithFeedback(btn, btn.getAttribute("data-copy-value") || "");
@@ -12754,7 +12882,7 @@ document.addEventListener("DOMContentLoaded", async function() {
   const el = document.getElementById("calendar");
   if (!el) return;
   const groupId = el.getAttribute("data-group-id");
-  const isDemo = el.getAttribute("data-demo") === "1";
+  const isDemo = el.getAttribute("data-demo") === "1" || groupId === "0";
   window.__DEMO__ = window.__DEMO__ || isDemo;
   function toZonedDateTime(iso) {
     if (!iso) return null;
@@ -12943,7 +13071,16 @@ document.addEventListener("DOMContentLoaded", async function() {
     if (!first) return;
     const hh = String(first.hour).padStart(2, "0");
     const mm = String(first.minute || 0).padStart(2, "0");
-    scrollController.scrollTo(`${hh}:${mm}`);
+    const timeStr = `${hh}:${mm}`;
+    if (!calendarReady) {
+      pendingScrollTime = timeStr;
+      return;
+    }
+    try {
+      scrollController.scrollTo(timeStr);
+    } catch (e5) {
+      pendingScrollTime = timeStr;
+    }
   }
   const defaultView = viewWeek2 ? viewWeek2.name : views[0].name;
   calendarInstance = createCalendar({
@@ -12981,6 +13118,14 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
   }, plugins);
   calendarInstance.render(el);
+  calendarReady = true;
+  if (pendingScrollTime && scrollController) {
+    try {
+      scrollController.scrollTo(pendingScrollTime);
+    } catch (e5) {
+    }
+    pendingScrollTime = null;
+  }
   debugLog("Calendar rendered", calendarInstance);
   window.__SXCAL__ = calendarInstance;
   const themeIsDark = document.documentElement.classList.contains("dark");

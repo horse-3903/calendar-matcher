@@ -4,6 +4,9 @@ import requests
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 FREEBUSY_URL = "https://www.googleapis.com/calendar/v3/freeBusy"
 CALENDAR_LIST_URL = "https://www.googleapis.com/calendar/v3/users/me/calendarList"
+CALENDAR_CREATE_URL = "https://www.googleapis.com/calendar/v3/calendars"
+CALENDAR_EVENTS_URL = "https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/events"
+CALENDAR_ACL_URL = "https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/acl"
 
 def is_expired(user):
     if user.token_expiry is None:
@@ -108,3 +111,41 @@ def list_calendars(access_token: str):
         if not page_token:
             break
     return items
+
+def create_calendar(access_token: str, summary: str, timezone: str = "UTC"):
+    payload = {
+        "summary": summary,
+        "timeZone": timezone or "UTC",
+    }
+    resp = requests.post(
+        CALENDAR_CREATE_URL,
+        headers={"Authorization": f"Bearer {access_token}"},
+        json=payload,
+        timeout=20,
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+def insert_calendar_event(access_token: str, calendar_id: str, event_body: dict):
+    resp = requests.post(
+        CALENDAR_EVENTS_URL.format(calendar_id=calendar_id),
+        headers={"Authorization": f"Bearer {access_token}"},
+        json=event_body,
+        timeout=20,
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+def add_calendar_acl(access_token: str, calendar_id: str, email: str, role: str = "reader"):
+    payload = {
+        "role": role,
+        "scope": {"type": "user", "value": email},
+    }
+    resp = requests.post(
+        CALENDAR_ACL_URL.format(calendar_id=calendar_id),
+        headers={"Authorization": f"Bearer {access_token}"},
+        json=payload,
+        timeout=20,
+    )
+    resp.raise_for_status()
+    return resp.json()

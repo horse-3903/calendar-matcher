@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from sqlalchemy import text
 from dotenv import load_dotenv
 
@@ -26,6 +26,18 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(api_bp)
+
+    @app.errorhandler(403)
+    def forbidden(_):
+        return render_template("errors/403.html"), 403
+
+    @app.errorhandler(404)
+    def not_found(_):
+        return render_template("errors/404.html"), 404
+
+    @app.errorhandler(500)
+    def server_error(_):
+        return render_template("errors/500.html"), 500
 
     with app.app_context():
         db.create_all()

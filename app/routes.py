@@ -12,7 +12,7 @@ from app.extensions import db
 from app.models import Group, Membership, BusyInterval, SpecialEvent, MeetupProposal, InviteLink, User
 from app.services.invites import make_join_code, make_invite_token, verify_invite_token, expiry_from_days
 from app.services.colors import generate_distinct_colors
-from app.services.google_calendar import is_expired, refresh_access_token, freebusy_query, list_calendar_ids, list_calendars
+from app.services.google_calendar import is_expired, refresh_access_token, freebusy_query, list_calendar_ids, list_calendars, create_calendar, insert_calendar_event, add_calendar_acl
 
 main_bp = Blueprint("main", __name__)
 api_bp = Blueprint("api", __name__, url_prefix="/api")
@@ -72,12 +72,16 @@ def _get_debug_user():
     return user
 
 def _require_debug_access():
-    if current_app.debug:
+    app_mode = (current_app.config.get("APP_MODE") or "dev").lower()
+    if app_mode == "dev":
         return current_user if current_user.is_authenticated else _get_debug_user()
     owner = current_app.config.get("DEBUG_OWNER_EMAIL") or ""
     if not current_user.is_authenticated:
         abort(403)
-    if not owner or current_user.email != owner:
+    if app_mode == "prod":
+        if not owner or current_user.email != owner:
+            abort(403)
+    else:
         abort(403)
     return current_user
 
@@ -201,10 +205,58 @@ def create_invite_link(group_id):
     share_url = f"{current_app.config['APP_BASE_URL']}/invite/{token}"
     return jsonify({"share_url": share_url, "expires_at": expires_at.isoformat()})
 
+@main_bp.post("/groups/<int:group_id>/settings")
+@login_required
+def update_group_settings(group_id):
+    membership = require_membership(group_id)
+    g = Group.query.get_or_404(group_id)
+    name = request.form.get("name", "").strip()
+    timezone_value = request.form.get("timezone", "").strip()
+    join_code = request.form.get("join_code", "").strip().upper()
+    if name:
+        g.name = name
+    if timezone_value:
+        current_user.timezone = timezone_value
+    if join_code:
+        if membership.role != "admin":
+            abort(403)
+        existing = Group.query.filter(Group.join_code == join_code, Group.id != g.id).first()
+        if existing:
+            abort(400, "Join code already in use")
+        g.join_code = join_code
+    db.session.commit()
+    return redirect(url_for("main.dashboard", group_id=group_id))
+
+@main_bp.post("/groups/<int:group_id>/join-code/regenerate")
+@login_required
+def regenerate_join_code(group_id):
+    membership = require_membership(group_id)
+    if membership.role != "admin":
+        abort(403)
+    g = Group.query.get_or_404(group_id)
+    g.join_code = make_join_code()
+    db.session.commit()
+    return jsonify({"ok": True, "join_code": g.join_code})
+
+@api_bp.post("/groups/<int:group_id>/members/<int:user_id>/role")
+@login_required
+def update_member_role(group_id, user_id):
+    membership = require_membership(group_id)
+    if membership.role != "admin":
+        abort(403)
+    target = Membership.query.filter_by(group_id=group_id, user_id=user_id).first_or_404()
+    data = request.get_json(force=True) or {}
+    role = data.get("role")
+    if role not in {"admin", "member"}:
+        abort(400, "role must be admin or member")
+    target.role = role
+    db.session.commit()
+    return jsonify({"ok": True, "role": role})
+
 @main_bp.get("/groups/<int:group_id>")
 @login_required
 def dashboard(group_id):
-    require_membership(group_id)
+    membership = require_membership(group_id)
     g = Group.query.get_or_404(group_id)
     members = (
         db.session.query(User, Membership)
@@ -212,7 +264,7 @@ def dashboard(group_id):
         .filter(Membership.group_id == group_id)
         .all()
     )
-    return render_template("dashboard.html", group=g, members=members)
+    return render_template("dashboard.html", group=g, members=members, is_admin=membership.role == "admin")
 
 # ---------- Account settings ----------
 
@@ -582,6 +634,87 @@ def debug_clear_all():
     user.calendar_ids_json = None
     db.session.commit()
     return jsonify({"ok": True})
+
+# ---------- Export group calendar ----------
+
+@api_bp.post("/groups/<int:group_id>/export/google")
+@login_required
+def export_group_calendar(group_id):
+    require_membership(group_id)
+    user = current_user
+    if is_expired(user):
+        refresh_access_token(current_app.config, user)
+        db.session.commit()
+
+    group = Group.query.get_or_404(group_id)
+    rows = (
+        db.session.query(User, Membership)
+        .join(Membership, Membership.user_id == User.id)
+        .filter(Membership.group_id == group_id)
+        .all()
+    )
+    member_ids = [u.id for u, _ in rows]
+    member_name = {u.id: (u.display_name or u.name or u.email) for u, _ in rows}
+    member_emails = [u.email for u, _ in rows if u.email]
+
+    tz = user.timezone or "UTC"
+    cal = create_calendar(user.access_token, f"Calendar Matcher — {group.name}", timezone=tz)
+    calendar_id = cal.get("id")
+    if not calendar_id:
+        abort(500, "Failed to create calendar")
+
+    # Invite members
+    for email in member_emails:
+        try:
+            add_calendar_acl(user.access_token, calendar_id, email, role="reader")
+        except Exception:
+            continue
+
+    # Collect events
+    busy = BusyInterval.query.filter(BusyInterval.user_id.in_(member_ids)).all()
+    specials = SpecialEvent.query.filter_by(group_id=group_id).all()
+    proposals = MeetupProposal.query.filter_by(group_id=group_id).all()
+
+    def iso(dt):
+        return dt.astimezone(timezone.utc).isoformat()
+
+    created = 0
+    for b in busy:
+        title = f"Busy - {member_name.get(b.user_id, 'Member')}"
+        body = {
+            "summary": title,
+            "start": {"dateTime": iso(b.start)},
+            "end": {"dateTime": iso(b.end)},
+        }
+        insert_calendar_event(user.access_token, calendar_id, body)
+        created += 1
+
+    for s in specials:
+        title = "Available" if s.kind == "available" else "Blocked"
+        body = {
+            "summary": title,
+            "start": {"dateTime": iso(s.start)},
+            "end": {"dateTime": iso(s.end)},
+        }
+        if s.kind == "available":
+            body["transparency"] = "transparent"
+        insert_calendar_event(user.access_token, calendar_id, body)
+        created += 1
+
+    for p in proposals:
+        body = {
+            "summary": "Proposed Meetup",
+            "start": {"dateTime": iso(p.start)},
+            "end": {"dateTime": iso(p.end)},
+        }
+        if p.location:
+            body["location"] = p.location
+        if p.description:
+            body["description"] = p.description
+        insert_calendar_event(user.access_token, calendar_id, body)
+        created += 1
+
+    return jsonify({"ok": True, "calendar_id": calendar_id, "events_created": created})
 
 @api_bp.get("/calendars")
 @login_required
