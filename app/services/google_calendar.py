@@ -5,8 +5,10 @@ GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 FREEBUSY_URL = "https://www.googleapis.com/calendar/v3/freeBusy"
 CALENDAR_LIST_URL = "https://www.googleapis.com/calendar/v3/users/me/calendarList"
 CALENDAR_CREATE_URL = "https://www.googleapis.com/calendar/v3/calendars"
+CALENDAR_DETAIL_URL = "https://www.googleapis.com/calendar/v3/calendars/{calendar_id}"
 CALENDAR_EVENTS_URL = "https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/events"
 CALENDAR_ACL_URL = "https://www.googleapis.com/calendar/v3/calendars/{calendar_id}/acl"
+CALENDAR_COLORS_URL = "https://www.googleapis.com/calendar/v3/colors"
 
 def is_expired(user):
     if user.token_expiry is None:
@@ -127,6 +129,23 @@ def create_calendar(access_token: str, summary: str, timezone: str = "UTC"):
     resp.raise_for_status()
     return resp.json()
 
+def update_calendar(access_token: str, calendar_id: str, summary: str | None = None, timezone: str | None = None):
+    payload = {}
+    if summary:
+        payload["summary"] = summary
+    if timezone:
+        payload["timeZone"] = timezone
+    if not payload:
+        return {"id": calendar_id}
+    resp = requests.patch(
+        CALENDAR_DETAIL_URL.format(calendar_id=calendar_id),
+        headers={"Authorization": f"Bearer {access_token}"},
+        json=payload,
+        timeout=20,
+    )
+    resp.raise_for_status()
+    return resp.json()
+
 def insert_calendar_event(access_token: str, calendar_id: str, event_body: dict):
     resp = requests.post(
         CALENDAR_EVENTS_URL.format(calendar_id=calendar_id),
@@ -136,6 +155,52 @@ def insert_calendar_event(access_token: str, calendar_id: str, event_body: dict)
     )
     resp.raise_for_status()
     return resp.json()
+
+def list_calendar_colors(access_token: str):
+    resp = requests.get(
+        CALENDAR_COLORS_URL,
+        headers={"Authorization": f"Bearer {access_token}"},
+        timeout=20,
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+def list_calendar_events(access_token: str, calendar_id: str, time_min: str | None = None, time_max: str | None = None, private_prop: str | None = None):
+    params = {"singleEvents": True, "orderBy": "startTime"}
+    if time_min:
+        params["timeMin"] = time_min
+    if time_max:
+        params["timeMax"] = time_max
+    if private_prop:
+        params["privateExtendedProperty"] = private_prop
+    events = []
+    page_token = None
+    while True:
+        if page_token:
+            params["pageToken"] = page_token
+        resp = requests.get(
+            CALENDAR_EVENTS_URL.format(calendar_id=calendar_id),
+            headers={"Authorization": f"Bearer {access_token}"},
+            params=params,
+            timeout=20,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        events.extend(data.get("items", []))
+        page_token = data.get("nextPageToken")
+        if not page_token:
+            break
+    return events
+
+def delete_calendar_event(access_token: str, calendar_id: str, event_id: str):
+    resp = requests.delete(
+        CALENDAR_EVENTS_URL.format(calendar_id=calendar_id) + f"/{event_id}",
+        headers={"Authorization": f"Bearer {access_token}"},
+        timeout=20,
+    )
+    if resp.status_code not in (200, 204):
+        resp.raise_for_status()
+    return True
 
 def add_calendar_acl(access_token: str, calendar_id: str, email: str, role: str = "reader"):
     payload = {

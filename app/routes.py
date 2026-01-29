@@ -13,7 +13,20 @@ from app.extensions import db
 from app.models import Group, Membership, BusyInterval, SpecialEvent, MeetupProposal, InviteLink, User
 from app.services.invites import make_join_code, make_invite_token, verify_invite_token, expiry_from_days
 from app.services.colors import generate_distinct_colors
-from app.services.google_calendar import is_expired, refresh_access_token, freebusy_query, list_calendar_ids, list_calendars, create_calendar, insert_calendar_event, add_calendar_acl
+from app.services.google_calendar import (
+    is_expired,
+    refresh_access_token,
+    freebusy_query,
+    list_calendar_ids,
+    list_calendars,
+    list_calendar_colors,
+    list_calendar_events,
+    create_calendar,
+    update_calendar,
+    insert_calendar_event,
+    delete_calendar_event,
+    add_calendar_acl,
+)
 
 main_bp = Blueprint("main", __name__)
 api_bp = Blueprint("api", __name__, url_prefix="/api")
@@ -111,7 +124,7 @@ def _ensure_demo_group_membership():
         return
     demo_group = Group.query.filter_by(join_code="DEMO42").first()
     if not demo_group:
-        demo_group = Group(name="Demo Group", join_code="DEMO42", created_by=current_user.id)
+        demo_group = Group(name="Demo Group", join_code="DEMO42", created_by=current_user.id, timezone=current_user.timezone)
         db.session.add(demo_group)
         db.session.flush()
     existing = Membership.query.filter_by(group_id=demo_group.id, user_id=current_user.id).first()
@@ -156,7 +169,7 @@ def create_group():
     name = request.form.get("name", "").strip() or "Untitled Group"
     join_code = make_join_code()
 
-    g = Group(name=name, join_code=join_code, created_by=current_user.id)
+    g = Group(name=name, join_code=join_code, created_by=current_user.id, timezone=current_user.timezone)
     db.session.add(g)
     db.session.flush()
 
@@ -261,6 +274,7 @@ def update_group_settings(group_id):
         g.name = name
     if timezone_value:
         current_user.timezone = timezone_value
+        g.timezone = timezone_value
     if join_code:
         if membership.role != "admin":
             abort(403)
@@ -308,7 +322,7 @@ def dashboard(group_id):
         .filter(Membership.group_id == group_id)
         .all()
     )
-    display_timezone = _to_gmt_offset(current_user.timezone) or current_user.timezone or "UTC"
+    display_timezone = _to_gmt_offset(g.timezone or current_user.timezone) or g.timezone or current_user.timezone or "UTC"
     return render_template("dashboard.html", group=g, members=members, is_admin=membership.role == "admin", display_timezone=display_timezone, title=f"Phase: Group {g.name}")
 
 # ---------- Account settings ----------
@@ -682,14 +696,132 @@ def debug_clear_all():
 
 # ---------- Export group calendar ----------
 
-@api_bp.post("/groups/<int:group_id>/export/google")
+def _hex_to_rgb(value: str):
+    value = value.lstrip("#")
+    if len(value) == 3:
+        value = "".join([c * 2 for c in value])
+    return tuple(int(value[i:i + 2], 16) for i in (0, 2, 4))
+
+def _closest_google_color_id(color_hex: str, palette: list[dict]) -> str | None:
+    if not color_hex or not palette:
+        return None
+    try:
+        r1, g1, b1 = _hex_to_rgb(color_hex)
+    except Exception:
+        return None
+    best_id = None
+    best_dist = None
+    for item in palette:
+        bg = item.get("background")
+        if not bg:
+            continue
+        try:
+            r2, g2, b2 = _hex_to_rgb(bg)
+        except Exception:
+            continue
+        dist = (r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2
+        if best_dist is None or dist < best_dist:
+            best_dist = dist
+            best_id = item.get("id")
+    return best_id
+
+@api_bp.get("/groups/<int:group_id>/export/google/options")
 @login_required
-def export_group_calendar(group_id):
-    require_membership(group_id)
+def export_group_calendar_options(group_id):
+    membership = require_membership(group_id)
     user = current_user
+    if not user.access_token:
+        return jsonify({"ok": False, "auth": False}), 401
     if is_expired(user):
         refresh_access_token(current_app.config, user)
         db.session.commit()
+
+    group = Group.query.get_or_404(group_id)
+    rows = (
+        db.session.query(User, Membership)
+        .join(Membership, Membership.user_id == User.id)
+        .filter(Membership.group_id == group_id)
+        .all()
+    )
+
+    try:
+        colors_payload = list_calendar_colors(user.access_token)
+    except Exception:
+        colors_payload = {}
+    event_colors = []
+    for color_id, color_data in (colors_payload.get("event") or {}).items():
+        event_colors.append({
+            "id": color_id,
+            "background": color_data.get("background"),
+            "foreground": color_data.get("foreground"),
+        })
+    if not event_colors:
+        event_colors = [
+            {"id": "1", "background": "#a4bdfc", "foreground": "#1d1d1d"},
+            {"id": "2", "background": "#7ae7bf", "foreground": "#1d1d1d"},
+            {"id": "3", "background": "#dbadff", "foreground": "#1d1d1d"},
+            {"id": "4", "background": "#ff887c", "foreground": "#1d1d1d"},
+            {"id": "5", "background": "#fbd75b", "foreground": "#1d1d1d"},
+            {"id": "6", "background": "#ffb878", "foreground": "#1d1d1d"},
+            {"id": "7", "background": "#46d6db", "foreground": "#1d1d1d"},
+            {"id": "8", "background": "#e1e1e1", "foreground": "#1d1d1d"},
+            {"id": "9", "background": "#5484ed", "foreground": "#ffffff"},
+            {"id": "10", "background": "#51b749", "foreground": "#ffffff"},
+            {"id": "11", "background": "#dc2127", "foreground": "#ffffff"},
+        ]
+
+    default_timezone = group.timezone or _to_gmt_offset(user.timezone) or user.timezone or "UTC"
+    default_name = group.synced_calendar_name or f"Phase - {group.name}"
+
+    members = []
+    for u, m in rows:
+        selected = m.google_color_id or _closest_google_color_id(m.color_hex, event_colors)
+        members.append({
+            "user_id": u.id,
+            "name": u.display_name or u.name or u.email or "Member",
+            "email": u.email,
+            "color_id": selected,
+            "color_hex": m.color_hex,
+        })
+
+    return jsonify({
+        "ok": True,
+        "auth": True,
+        "is_admin": membership.role == "admin",
+        "synced": bool(group.synced_calendar_id),
+        "calendar": {
+            "id": group.synced_calendar_id,
+            "name": group.synced_calendar_name,
+            "timezone": group.synced_calendar_tz,
+        },
+        "defaults": {
+            "name": default_name,
+            "timezone": default_timezone,
+        },
+        "colors": event_colors,
+        "members": members,
+    })
+
+@api_bp.post("/groups/<int:group_id>/export/google")
+@login_required
+def export_group_calendar(group_id):
+    membership = require_membership(group_id)
+    if membership.role != "admin":
+        abort(403)
+    user = current_user
+    if not user.access_token:
+        abort(401, "Google account not connected")
+    if is_expired(user):
+        refresh_access_token(current_app.config, user)
+        db.session.commit()
+
+    data = request.get_json(force=True) or {}
+    action = data.get("action") or "update"
+    calendar_name = (data.get("name") or "").strip()
+    calendar_tz = (data.get("timezone") or "").strip()
+    invite_members = bool(data.get("invite_members", True))
+    overwrite_existing = bool(data.get("overwrite", True))
+    member_colors = data.get("member_colors") or {}
 
     group = Group.query.get_or_404(group_id)
     rows = (
@@ -702,23 +834,70 @@ def export_group_calendar(group_id):
     member_name = {u.id: (u.display_name or u.name or u.email) for u, _ in rows}
     member_emails = [u.email for u, _ in rows if u.email]
 
-    tz = user.timezone or "UTC"
-    cal = create_calendar(user.access_token, f"Phase — {group.name}", timezone=tz)
-    calendar_id = cal.get("id")
-    if not calendar_id:
-        abort(500, "Failed to create calendar")
+    if not calendar_name:
+        calendar_name = f"Phase - {group.name}"
+    if not calendar_tz:
+        calendar_tz = group.timezone or _to_gmt_offset(user.timezone) or user.timezone or "UTC"
 
-    # Invite members
-    for email in member_emails:
+    calendar_id = group.synced_calendar_id
+    created_calendar = False
+    if action == "create" or not calendar_id:
+        cal = create_calendar(user.access_token, calendar_name, timezone=calendar_tz)
+        calendar_id = cal.get("id")
+        if not calendar_id:
+            abort(500, "Failed to create calendar")
+        created_calendar = True
+    else:
         try:
-            add_calendar_acl(user.access_token, calendar_id, email, role="reader")
+            update_calendar(user.access_token, calendar_id, summary=calendar_name, timezone=calendar_tz)
         except Exception:
-            continue
+            cal = create_calendar(user.access_token, calendar_name, timezone=calendar_tz)
+            calendar_id = cal.get("id")
+            if not calendar_id:
+                abort(500, "Failed to create calendar")
+            created_calendar = True
 
-    # Collect events
+    group.synced_calendar_id = calendar_id
+    group.synced_calendar_name = calendar_name
+    group.synced_calendar_tz = calendar_tz
+
+    for u, m in rows:
+        selected = member_colors.get(str(u.id)) or member_colors.get(u.id)
+        if selected:
+            m.google_color_id = str(selected)
+
+    db.session.commit()
+
+    if invite_members:
+        for email in member_emails:
+            try:
+                add_calendar_acl(user.access_token, calendar_id, email, role="reader")
+            except Exception:
+                continue
+
+    if overwrite_existing:
+        time_min = (datetime.now(timezone.utc) - timedelta(days=365)).isoformat()
+        time_max = (datetime.now(timezone.utc) + timedelta(days=365)).isoformat()
+        try:
+            existing = list_calendar_events(
+                user.access_token,
+                calendar_id,
+                time_min=time_min,
+                time_max=time_max,
+                private_prop=f"phase_group_id={group_id}",
+            )
+            for ev in existing:
+                ev_id = ev.get("id")
+                if ev_id:
+                    delete_calendar_event(user.access_token, calendar_id, ev_id)
+        except Exception:
+            pass
+
     busy = BusyInterval.query.filter(BusyInterval.user_id.in_(member_ids)).all()
     specials = SpecialEvent.query.filter_by(group_id=group_id).all()
     proposals = MeetupProposal.query.filter_by(group_id=group_id).all()
+
+    member_color_id = {m.user_id: (m.google_color_id or None) for _, m in rows}
 
     def iso(dt):
         return dt.astimezone(timezone.utc).isoformat()
@@ -730,7 +909,11 @@ def export_group_calendar(group_id):
             "summary": title,
             "start": {"dateTime": iso(b.start)},
             "end": {"dateTime": iso(b.end)},
+            "extendedProperties": {"private": {"phase_group_id": str(group_id), "phase_kind": "busy"}},
         }
+        color_id = member_color_id.get(b.user_id)
+        if color_id:
+            body["colorId"] = str(color_id)
         insert_calendar_event(user.access_token, calendar_id, body)
         created += 1
 
@@ -740,6 +923,7 @@ def export_group_calendar(group_id):
             "summary": title,
             "start": {"dateTime": iso(s.start)},
             "end": {"dateTime": iso(s.end)},
+            "extendedProperties": {"private": {"phase_group_id": str(group_id), "phase_kind": "special"}},
         }
         if s.kind == "available":
             body["transparency"] = "transparent"
@@ -751,6 +935,7 @@ def export_group_calendar(group_id):
             "summary": "Proposed Meetup",
             "start": {"dateTime": iso(p.start)},
             "end": {"dateTime": iso(p.end)},
+            "extendedProperties": {"private": {"phase_group_id": str(group_id), "phase_kind": "proposal"}},
         }
         if p.location:
             body["location"] = p.location
@@ -759,7 +944,13 @@ def export_group_calendar(group_id):
         insert_calendar_event(user.access_token, calendar_id, body)
         created += 1
 
-    return jsonify({"ok": True, "calendar_id": calendar_id, "events_created": created})
+    return jsonify({
+        "ok": True,
+        "calendar_id": calendar_id,
+        "calendar_name": calendar_name,
+        "events_created": created,
+        "created": created_calendar,
+    })
 
 @api_bp.get("/calendars")
 @login_required

@@ -50,7 +50,7 @@
                 </svg>
                 Propose Meetup
               </button>
-              <button type="button" class="gap-2 px-4 py-2 rounded-full border border-purple-200 dark:border-purple-500/30 text-purple-700 dark:text-purple-200 text-sm font-semibold inline-flex items-center hover:bg-purple-50 dark:hover:bg-purple-500/10 transition-colors" onclick="exportGroupCalendar({{ group.id }})">
+              <button type="button" class="gap-2 px-4 py-2 rounded-full border border-purple-200 dark:border-purple-500/30 text-purple-700 dark:text-purple-200 text-sm font-semibold inline-flex items-center hover:bg-purple-50 dark:hover:bg-purple-500/10 transition-colors" onclick="openExportDialog({{ group.id }})">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
                   <path d="M12 3v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                   <path d="M8 9l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -314,6 +314,57 @@
       <button class="dialog-btn primary" type="submit">Save changes</button>
       <button type="button" class="dialog-btn ghost" data-dialog-close>Close</button>
     </form>
+  </div>
+</dialog>
+
+<dialog id="exportCalendarDialog" class="dialog">
+  <div class="dialog-card dialog-card-wide">
+    <div class="dialog-header">
+      <h3>Export to Google Calendar</h3>
+      <p>Create or update your group’s synced calendar.</p>
+    </div>
+    <div class="dialog-body">
+      <div id="exportCalendarStatus" class="dialog-hint"></div>
+
+      <label class="dialog-label" for="exportCalendarName">Calendar name</label>
+      <input id="exportCalendarName" class="dialog-input" placeholder="Phase - Your group"/>
+
+      <label class="dialog-label" for="exportCalendarTimezone">Timezone</label>
+      <select id="exportCalendarTimezone" class="dialog-input">
+        {% set tz_value = display_timezone or "UTC" %}
+        {% for tz in [
+          "UTC",
+          "GMT-12:00","GMT-11:00","GMT-10:00","GMT-09:00","GMT-08:00","GMT-07:00","GMT-06:00","GMT-05:00",
+          "GMT-04:00","GMT-03:00","GMT-02:00","GMT-01:00",
+          "GMT+00:00","GMT+01:00","GMT+02:00","GMT+03:00","GMT+04:00","GMT+05:00","GMT+06:00","GMT+07:00",
+          "GMT+08:00","GMT+09:00","GMT+10:00","GMT+11:00","GMT+12:00","GMT+13:00","GMT+14:00"
+        ] %}
+          <option value="{{ tz }}" {% if tz_value == tz %}selected{% endif %}>{{ tz }}</option>
+        {% endfor %}
+      </select>
+
+      <div class="export-section">
+        <div class="dialog-label">Member colors</div>
+        <div id="exportMemberColors" class="export-member-list"></div>
+      </div>
+
+      <div class="calendar-select-list">
+        <label class="calendar-select-item">
+          <input id="exportInviteMembers" type="checkbox" checked/>
+          <span class="calendar-select-name">Invite members to the calendar</span>
+        </label>
+        <label class="calendar-select-item">
+          <input id="exportOverwrite" type="checkbox" checked/>
+          <span class="calendar-select-name">Replace existing Phase events</span>
+        </label>
+      </div>
+
+      <div class="export-actions">
+        <button id="exportCreateBtn" type="button" class="dialog-btn primary">Create synced calendar</button>
+        <button id="exportUpdateBtn" type="button" class="dialog-btn ghost">Update synced calendar</button>
+      </div>
+      <button type="button" class="dialog-btn ghost" data-dialog-close>Cancel</button>
+    </div>
   </div>
 </dialog>
 

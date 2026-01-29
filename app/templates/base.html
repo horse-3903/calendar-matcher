@@ -51,13 +51,13 @@
 
       <div class="hidden md:flex items-center {{ 'gap-4' if is_group_page else 'gap-4' }} text-sm">
         {% if current_user.is_authenticated %}
-          <a href="/" class="px-3 py-2 font-semibold {% if is_dashboard_active %}text-purple-600{% else %}text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white{% endif %}">Dashboard</a>
+        <a href="/" class="px-3 py-2 font-semibold {% if is_dashboard_active %}text-purple-400{% else %}text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white{% endif %}">Dashboard</a>
           <a href="/settings" class="px-3 py-2 font-semibold {% if is_settings_active %}text-purple-600{% else %}text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white{% endif %}">Settings</a>
           {% if config.DEBUG %}
-            <a href="/demo" class="px-3 py-2 font-semibold {% if is_demo_active %}text-purple-600{% else %}text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white{% endif %}">Demo</a>
+        <a href="/demo" class="px-3 py-2 font-semibold {% if is_demo_active %}text-purple-400{% else %}text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white{% endif %}">Demo</a>
           {% endif %}
           {% if show_dev_console %}
-            <a href="/debug" class="px-3 py-2 font-semibold {% if is_debug_active %}text-purple-600{% else %}text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white{% endif %}">Dev Console</a>
+        <a href="/debug" class="px-3 py-2 font-semibold {% if is_debug_active %}text-purple-400{% else %}text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white{% endif %}">Dev Console</a>
           {% endif %}
           <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
             {% if current_user.profile_pic_url %}
@@ -103,13 +103,13 @@
     <div id="mobileMenu" class="md:hidden hidden bg-white dark:bg-slate-950 border-b border-gray-200 dark:border-slate-800">
       <div class="container mx-auto px-6 py-4 flex flex-col gap-4">
         {% if current_user.is_authenticated %}
-          <a href="/" class="text-sm font-medium {% if is_dashboard_active %}text-purple-600{% else %}text-gray-900 dark:text-white{% endif %}">Dashboard</a>
+        <a href="/" class="text-sm font-medium {% if is_dashboard_active %}text-purple-400{% else %}text-gray-900 dark:text-white{% endif %}">Dashboard</a>
           <a href="/settings" class="text-sm font-medium {% if is_settings_active %}text-purple-600{% else %}text-gray-900 dark:text-white{% endif %}">Settings</a>
           {% if config.DEBUG %}
-            <a href="/demo" class="text-sm font-medium {% if is_demo_active %}text-purple-600{% else %}text-gray-900 dark:text-white{% endif %}">Demo</a>
+        <a href="/demo" class="text-sm font-medium {% if is_demo_active %}text-purple-400{% else %}text-gray-900 dark:text-white{% endif %}">Demo</a>
           {% endif %}
           {% if show_dev_console %}
-            <a href="/debug" class="text-sm font-medium {% if is_debug_active %}text-purple-600{% else %}text-gray-900 dark:text-white{% endif %}">Dev Console</a>
+        <a href="/debug" class="text-sm font-medium {% if is_debug_active %}text-purple-400{% else %}text-gray-900 dark:text-white{% endif %}">Dev Console</a>
           {% endif %}
           <a class="text-sm font-medium text-gray-600 dark:text-slate-300" href="/auth/logout">Sign Out</a>
         {% else %}

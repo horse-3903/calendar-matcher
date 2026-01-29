@@ -80,7 +80,7 @@
                 <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center mb-4">
                   <span class="text-white font-semibold">{{ loop.index }}</span>
                 </div>
-                <div class="text-sm font-medium text-purple-600 dark:text-purple-300 mb-2">
+                <div class="text-sm font-medium text-purple-400 dark:text-purple-300 mb-2">
                   Step {{ loop.index }}
                 </div>
                 <h3 class="text-lg font-semibold mb-2 text-slate-900 dark:text-white">{{ step[0] }}</h3>
@@ -161,7 +161,7 @@
               <div>
                 <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Start by syncing your calendar</h3>
                 <p class="text-sm text-slate-600 dark:text-slate-300">
-                  We only use FreeBusy data. No titles or details are accessed.
+                  We only see when you’re busy or free — never your event titles or details.
                 </p>
               </div>
               <button data-dialog-open="syncDialog" class="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold">
@@ -180,7 +180,7 @@
             <p class="text-sm text-slate-600 dark:text-slate-300">
               Start a new group to coordinate schedules with your team.
             </p>
-            <div class="mt-auto pt-4 flex items-center text-purple-600 text-sm font-medium">
+            <div class="mt-auto pt-4 flex items-center text-purple-400 text-sm font-medium">
               Get started
               <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none">
                 <path d="M5 12h14M13 5l6 7-6 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -196,7 +196,7 @@
             <p class="text-sm text-slate-600 dark:text-slate-300">
               Enter an invite code to join an existing group.
             </p>
-            <div class="mt-auto pt-4 flex items-center text-purple-600 text-sm font-medium">
+            <div class="mt-auto pt-4 flex items-center text-purple-400 text-sm font-medium">
               Enter code
               <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none">
                 <path d="M5 12h14M13 5l6 7-6 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -215,7 +215,7 @@
             <p class="text-sm text-slate-600 dark:text-slate-300">
               Connect Google Calendar to auto-share your availability.
             </p>
-            <div class="mt-auto pt-4 flex items-center text-purple-600 text-sm font-medium">
+            <div class="mt-auto pt-4 flex items-center text-purple-400 text-sm font-medium">
               Connect
               <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none">
                 <path d="M5 12h14M13 5l6 7-6 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -233,7 +233,7 @@
                   <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6 hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer h-full flex flex-col">
                     <div class="flex items-start justify-between mb-3">
                       <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                        <span class="text-purple-600 font-semibold">{{ g.name[:1].upper() }}</span>
+                        <span class="text-purple-400 font-semibold">{{ g.name[:1].upper() }}</span>
                       </div>
                       <span class="px-2 py-1 rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-200 text-xs font-medium">
                         {{ g.member_count }} members
@@ -255,7 +255,7 @@
                 <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6 hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer h-full w-full flex flex-col">
                   <div class="flex items-start justify-between mb-3">
                     <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                      <span class="text-purple-600 font-semibold">D</span>
+                      <span class="text-purple-400 font-semibold">D</span>
                     </div>
                       <span class="px-2 py-1 rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-200 text-xs font-medium">
                       5 members

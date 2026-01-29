@@ -178,6 +178,82 @@ a[role="button"] {
   width: min(820px, 94vw);
 }
 
+.dialog-hint {
+  font-size: 0.9rem;
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.export-section {
+  margin-top: 0.75rem;
+}
+
+.export-member-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.export-member-row {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.export-member-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: 0.15rem;
+}
+
+.export-color-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.1rem;
+}
+
+.export-color-chip {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.4);
+  transition: transform 0.15s ease, border 0.15s ease;
+}
+
+.export-color-chip.is-selected {
+  border-color: #a855f7;
+  transform: scale(1.05);
+}
+
+.export-options {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+
+.export-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: rgba(226, 232, 240, 0.85);
+}
+
+.export-option input {
+  accent-color: #a855f7;
+}
+
+.export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
 .dialog-header h3 {
   font-size: 1.1rem;
   font-weight: 700;

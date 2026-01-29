@@ -44,6 +44,11 @@ class Group(db.Model):
     created_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow, nullable=False)
 
+    timezone = db.Column(db.String(64), nullable=True)
+    synced_calendar_id = db.Column(db.String(255), nullable=True)
+    synced_calendar_name = db.Column(db.String(255), nullable=True)
+    synced_calendar_tz = db.Column(db.String(64), nullable=True)
+
 class Membership(db.Model):
     __tablename__ = "memberships"
     id = db.Column(db.Integer, primary_key=True)
@@ -53,6 +58,7 @@ class Membership(db.Model):
 
     # color assigned per group member
     color_hex = db.Column(db.String(12), nullable=False, default="#3b82f6")
+    google_color_id = db.Column(db.String(8), nullable=True)
 
     role = db.Column(db.String(20), nullable=False, default="member")  # member/admin
     joined_at = db.Column(db.DateTime(timezone=True), default=utcnow, nullable=False)

@@ -236,14 +236,155 @@ window.saveCalendarSelection = saveCalendarSelection;
 window.saveCalendarsAndSync = saveCalendarsAndSync;
 window.loadSyncCalendars = loadSyncCalendars;
 
-async function exportGroupCalendar(groupId) {
+let __exportPalette = [];
+let __exportMembers = [];
+
+function openExportDialog(groupId) {
   if (window.__DEMO__) {
     showToast("Demo mode • Export disabled", "error");
     return;
   }
-  if (!groupId) return;
+  const dialog = document.getElementById("exportCalendarDialog");
+  if (!dialog) return;
+  dialog.dataset.groupId = groupId || "";
+  const status = document.getElementById("exportCalendarStatus");
+  if (status) status.textContent = "Loading export settings...";
+  const list = document.getElementById("exportMemberColors");
+  if (list) list.innerHTML = "";
+  const createBtn = document.getElementById("exportCreateBtn");
+  const updateBtn = document.getElementById("exportUpdateBtn");
+  if (createBtn) createBtn.disabled = true;
+  if (updateBtn) updateBtn.disabled = true;
+  dialog.showModal();
+  loadExportOptions(groupId);
+}
+
+async function loadExportOptions(groupId) {
+  const status = document.getElementById("exportCalendarStatus");
   try {
-    const r = await fetch(`/api/groups/${groupId}/export/google`, { method: "POST" });
+    const r = await fetch(`/api/groups/${groupId}/export/google/options`);
+    if (!r.ok) {
+      if (status) status.textContent = "Connect Google Calendar to export.";
+      return;
+    }
+    const data = await r.json();
+    if (!data || !data.ok) {
+      if (status) status.textContent = "Unable to load export settings.";
+      return;
+    }
+    __exportPalette = data.colors || [];
+    __exportMembers = data.members || [];
+    const nameInput = document.getElementById("exportCalendarName");
+    if (nameInput) nameInput.value = data.calendar?.name || data.defaults?.name || "";
+    const tzSelect = document.getElementById("exportCalendarTimezone");
+    if (tzSelect && data.calendar?.timezone) {
+      tzSelect.value = data.calendar.timezone;
+    } else if (tzSelect && data.defaults?.timezone) {
+      tzSelect.value = data.defaults.timezone;
+    }
+    const createBtn = document.getElementById("exportCreateBtn");
+    const updateBtn = document.getElementById("exportUpdateBtn");
+    const isAdmin = !!data.is_admin;
+    const hasSynced = !!data.synced;
+    if (createBtn) {
+      createBtn.disabled = !isAdmin;
+      createBtn.textContent = hasSynced ? "Create new synced calendar" : "Create synced calendar";
+      createBtn.onclick = () => submitExportCalendar("create");
+    }
+    if (updateBtn) {
+      updateBtn.disabled = !isAdmin || !hasSynced;
+      updateBtn.onclick = () => submitExportCalendar("update");
+    }
+    if (status) {
+      if (!isAdmin) {
+        status.textContent = "Only admins can export calendars for this group.";
+      } else if (hasSynced) {
+        status.textContent = "This group already has a synced calendar. Update it or create a new one.";
+      } else {
+        status.textContent = "No synced calendar yet. Create one to share the group schedule.";
+      }
+    }
+    renderExportMemberColors();
+  } catch (e) {
+    console.error("Export options failed:", e);
+    if (status) status.textContent = "Unable to load export settings.";
+  }
+}
+
+function renderExportMemberColors() {
+  const list = document.getElementById("exportMemberColors");
+  if (!list) return;
+  list.innerHTML = "";
+  if (!__exportMembers.length) {
+    list.innerHTML = "<p class=\"text-sm text-slate-400\">No members found.</p>";
+    return;
+  }
+  __exportMembers.forEach((member) => {
+    const row = document.createElement("div");
+    row.className = "export-member-row";
+    row.dataset.userId = member.user_id;
+    row.dataset.selectedColor = member.color_id || "";
+
+    const name = document.createElement("div");
+    name.className = "export-member-name";
+    name.textContent = member.name || "Member";
+
+    const palette = document.createElement("div");
+    palette.className = "export-color-palette";
+    __exportPalette.forEach((color) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "export-color-chip";
+      btn.style.background = color.background || "#999";
+      btn.style.color = color.foreground || "#111";
+      btn.dataset.colorId = color.id;
+      if (String(color.id) === String(member.color_id)) {
+        btn.classList.add("is-selected");
+      }
+      btn.title = `Color ${color.id}`;
+      btn.onclick = () => {
+        row.dataset.selectedColor = color.id;
+        palette.querySelectorAll(".export-color-chip").forEach((chip) => chip.classList.remove("is-selected"));
+        btn.classList.add("is-selected");
+      };
+      palette.appendChild(btn);
+    });
+
+    row.appendChild(name);
+    row.appendChild(palette);
+    list.appendChild(row);
+  });
+}
+
+async function submitExportCalendar(action) {
+  const dialog = document.getElementById("exportCalendarDialog");
+  const groupId = dialog?.dataset.groupId;
+  if (!groupId) return;
+  const nameInput = document.getElementById("exportCalendarName");
+  const tzSelect = document.getElementById("exportCalendarTimezone");
+  const inviteMembers = document.getElementById("exportInviteMembers");
+  const overwrite = document.getElementById("exportOverwrite");
+  const payload = {
+    action,
+    name: nameInput?.value || "",
+    timezone: tzSelect?.value || "",
+    invite_members: inviteMembers ? inviteMembers.checked : true,
+    overwrite: overwrite ? overwrite.checked : true,
+    member_colors: {},
+  };
+  document.querySelectorAll("#exportMemberColors .export-member-row").forEach((row) => {
+    const userId = row.dataset.userId;
+    const colorId = row.dataset.selectedColor;
+    if (userId && colorId) {
+      payload.member_colors[userId] = colorId;
+    }
+  });
+  try {
+    const r = await fetch(`/api/groups/${groupId}/export/google`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
     if (!r.ok) {
       const text = await r.text();
       console.error("Export failed:", r.status, text);
@@ -252,7 +393,8 @@ async function exportGroupCalendar(groupId) {
     }
     const j = await r.json();
     if (j && j.ok) {
-      showToast("Exported group calendar", "success");
+      showToast(j.created ? "Synced calendar created" : "Synced calendar updated", "success");
+      dialog?.close();
     } else {
       showToast("Export failed. Try again.", "error");
     }
@@ -262,7 +404,8 @@ async function exportGroupCalendar(groupId) {
   }
 }
 
-window.exportGroupCalendar = exportGroupCalendar;
+window.openExportDialog = openExportDialog;
+window.exportGroupCalendar = openExportDialog;
 
 async function leaveGroup(groupId) {
   if (!groupId) return;

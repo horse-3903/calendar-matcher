@@ -68,7 +68,14 @@ def callback():
     if picture and not user.profile_pic_url:
         user.profile_pic_url = picture
 
-    if not user.timezone and user.access_token:
+    # Store tokens
+    user.access_token = token.get("access_token")
+    user.refresh_token = token.get("refresh_token") or user.refresh_token
+    expires_in = int(token.get("expires_in", 3600))
+    user.token_expiry = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
+
+    # Set timezone from the user's primary Google Calendar
+    if user.access_token and not user.timezone:
         try:
             calendars = list_calendars(user.access_token)
             primary = next((c for c in calendars if c.get("primary")), None)
@@ -89,12 +96,6 @@ def callback():
                     user.timezone = tz
         except Exception:
             pass
-
-    # Store tokens
-    user.access_token = token.get("access_token")
-    user.refresh_token = token.get("refresh_token") or user.refresh_token
-    expires_in = int(token.get("expires_in", 3600))
-    user.token_expiry = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
 
     db.session.commit()
     login_user(user)
