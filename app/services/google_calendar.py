@@ -106,6 +106,7 @@ def list_calendars(access_token: str):
                 "primary": bool(item.get("primary")),
                 "accessRole": item.get("accessRole"),
                 "selected": bool(item.get("selected")),
+                "timeZone": item.get("timeZone"),
             })
         page_token = data.get("nextPageToken")
         if not page_token:

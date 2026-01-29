@@ -6,6 +6,7 @@ import secrets
 from types import SimpleNamespace
 from flask_login import login_required, current_user
 from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
 from sqlalchemy import func
 
 from app.extensions import db
@@ -35,6 +36,25 @@ def _parse_calendar_selection(user):
         return None
     filtered = [cid for cid in data if isinstance(cid, str) and cid.strip()]
     return filtered or None
+
+def _to_gmt_offset(tz_name: str | None):
+    if not tz_name:
+        return None
+    upper = tz_name.upper()
+    if upper in {"UTC", "GMT"}:
+        return "UTC"
+    try:
+        now = datetime.now(ZoneInfo(tz_name))
+        offset = now.utcoffset()
+        if offset is None:
+            return None
+        total_minutes = int(offset.total_seconds() // 60)
+        sign = "+" if total_minutes >= 0 else "-"
+        hh = abs(total_minutes) // 60
+        mm = abs(total_minutes) % 60
+        return f"GMT{sign}{hh:02d}:{mm:02d}"
+    except Exception:
+        return None
 
 def _get_user_groups(user_id: int):
     rows = (
@@ -106,9 +126,11 @@ def _ensure_demo_group_membership():
 @main_bp.get("/")
 def index():
     groups = []
+    has_synced = False
     if current_user.is_authenticated:
         groups = _get_user_groups(current_user.id)
-    return render_template("index.html", groups=groups)
+        has_synced = BusyInterval.query.filter_by(user_id=current_user.id).first() is not None
+    return render_template("index.html", groups=groups, has_synced=has_synced)
 
 @main_bp.get("/demo")
 def demo():
@@ -135,12 +157,23 @@ def create_group():
     db.session.add(g)
     db.session.flush()
 
+    if not current_user.timezone and current_user.access_token:
+        try:
+            calendars = list_calendars(current_user.access_token)
+            primary = next((c for c in calendars if c.get("primary")), None)
+            tz = primary.get("timeZone") if primary else None
+            gmt = _to_gmt_offset(tz) or tz
+            if gmt:
+                current_user.timezone = gmt
+        except Exception:
+            pass
+
     # Assign first color to creator
     creator_color = generate_distinct_colors(1)[0]
     db.session.add(Membership(user_id=current_user.id, group_id=g.id, role="admin", color_hex=creator_color))
 
     db.session.commit()
-    return redirect(url_for("main.dashboard", group_id=g.id))
+    return redirect(url_for("main.dashboard", group_id=g.id, toast="group_joined", name=g.name))
 
 @main_bp.post("/groups/join")
 @login_required
@@ -162,7 +195,15 @@ def join_group():
 
     db.session.add(Membership(user_id=current_user.id, group_id=g.id, role="member", color_hex=new_color))
     db.session.commit()
-    return redirect(url_for("main.dashboard", group_id=g.id))
+    return redirect(url_for("main.dashboard", group_id=g.id, toast="group_created", name=g.name))
+
+@main_bp.post("/groups/<int:group_id>/leave")
+@login_required
+def leave_group(group_id):
+    require_membership(group_id)
+    Membership.query.filter_by(group_id=group_id, user_id=current_user.id).delete()
+    db.session.commit()
+    return jsonify({"ok": True})
 
 @main_bp.get("/invite/<token>")
 @login_required
@@ -225,7 +266,7 @@ def update_group_settings(group_id):
             abort(400, "Join code already in use")
         g.join_code = join_code
     db.session.commit()
-    return redirect(url_for("main.dashboard", group_id=group_id))
+    return redirect(url_for("main.dashboard", group_id=group_id, toast="group_settings_saved"))
 
 @main_bp.post("/groups/<int:group_id>/join-code/regenerate")
 @login_required
@@ -264,7 +305,8 @@ def dashboard(group_id):
         .filter(Membership.group_id == group_id)
         .all()
     )
-    return render_template("dashboard.html", group=g, members=members, is_admin=membership.role == "admin")
+    display_timezone = _to_gmt_offset(current_user.timezone) or current_user.timezone or "UTC"
+    return render_template("dashboard.html", group=g, members=members, is_admin=membership.role == "admin", display_timezone=display_timezone)
 
 # ---------- Account settings ----------
 
@@ -311,7 +353,7 @@ def update_settings():
         user.profile_pic_url = f"/static/uploads/{filename}"
 
     db.session.commit()
-    return redirect(url_for("main.settings"))
+    return redirect(url_for("main.settings", toast="settings_saved"))
 
 # ---------- Calendar Data APIs ----------
 

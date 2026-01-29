@@ -12298,12 +12298,13 @@ async function syncMe() {
   }
 }
 window.syncMe = syncMe;
-function setAutoSync(minutes) {
+function setAutoSync(minutes, options = {}) {
   if (autoSyncTimer) {
     clearInterval(autoSyncTimer);
     autoSyncTimer = null;
   }
   const mins = Number(minutes || 0);
+  const silent = options.silent === true;
   try {
     localStorage.setItem("autoSyncMinutes", String(mins));
   } catch (e5) {
@@ -12312,15 +12313,15 @@ function setAutoSync(minutes) {
     autoSyncTimer = setInterval(() => {
       syncMe();
     }, mins * 60 * 1e3);
-    showToast(`Auto-sync set to every ${mins} minutes`, "success");
+    if (!silent) showToast(`Auto-sync set to every ${mins} minutes`, "success");
   } else {
-    showToast("Auto-sync disabled", "success");
+    if (!silent) showToast("Auto-sync disabled", "success");
   }
 }
 function setAutoSyncFromDialog() {
   const select = document.getElementById("syncInterval");
   if (!select) return;
-  setAutoSync(select.value);
+  setAutoSync(select.value, { silent: false });
 }
 window.setAutoSyncFromDialog = setAutoSyncFromDialog;
 function getSelectedCalendarIds() {
@@ -12432,6 +12433,21 @@ async function exportGroupCalendar(groupId) {
   }
 }
 window.exportGroupCalendar = exportGroupCalendar;
+async function leaveGroup(groupId) {
+  if (!groupId) return;
+  if (!confirm("Leave this group?")) return;
+  try {
+    const r5 = await fetch(`/groups/${groupId}/leave`, { method: "POST" });
+    if (!r5.ok) {
+      showToast("Unable to leave group", "error");
+      return;
+    }
+    window.location.reload();
+  } catch (e5) {
+    showToast("Unable to leave group", "error");
+  }
+}
+window.leaveGroup = leaveGroup;
 async function regenerateJoinCode(groupId) {
   if (!groupId) return;
   try {
@@ -12830,7 +12846,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
     if (!Number.isNaN(stored)) {
       syncIntervalSelect.value = String(stored);
-      if (stored > 0) setAutoSync(stored);
+      if (stored > 0) setAutoSync(stored, { silent: true });
     }
   }
   const mobileToggle = document.getElementById("mobileMenuToggle");
@@ -12873,6 +12889,17 @@ document.addEventListener("DOMContentLoaded", async function() {
         dialog.close();
       }
     });
+  });
+  document.addEventListener("click", function(event) {
+    const btn = event.target.closest("button");
+    if (!btn) return;
+    if (btn.hasAttribute("data-no-toast")) return;
+    if (btn.hasAttribute("data-dialog-close")) return;
+    if (btn.classList.contains("segmented-btn")) return;
+    const btnId = btn.id || "";
+    if (["themeToggle", "themeToggleMobile", "mobileMenuToggle"].includes(btnId)) return;
+    const message = btn.getAttribute("data-toast") || "Action complete";
+    showToast(message, "success");
   });
   document.querySelectorAll("[data-copy-btn]").forEach(function(btn) {
     btn.addEventListener("click", function() {
@@ -13055,7 +13082,8 @@ document.addEventListener("DOMContentLoaded", async function() {
   const viewDay2 = createViewDay ? createViewDay() : null;
   const viewMonth = createViewMonthGrid ? createViewMonthGrid() : null;
   const viewList2 = createViewList ? createViewList() : null;
-  const views = [viewWeek2, viewDay2, viewMonth, viewList2].filter(Boolean);
+  const isMobile = window.matchMedia && window.matchMedia("(max-width: 640px)").matches;
+  const views = (isMobile ? [viewDay2, viewList2] : [viewWeek2, viewDay2, viewMonth, viewList2]).filter(Boolean);
   if (!views.length) {
     showToast("Calendar views failed to load.", "error");
     return;
@@ -13082,7 +13110,7 @@ document.addEventListener("DOMContentLoaded", async function() {
       pendingScrollTime = timeStr;
     }
   }
-  const defaultView = viewWeek2 ? viewWeek2.name : views[0].name;
+  const defaultView = (isMobile ? viewDay2 : viewWeek2) ? isMobile ? viewDay2.name : viewWeek2.name : views[0].name;
   calendarInstance = createCalendar({
     selectedDate: Temporal.Now.plainDateISO(),
     defaultView,

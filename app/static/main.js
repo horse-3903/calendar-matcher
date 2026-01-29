@@ -88,12 +88,13 @@ async function syncMe() {
 // Expose handlers used by inline HTML attributes when bundled as a module.
 window.syncMe = syncMe;
 
-function setAutoSync(minutes) {
+function setAutoSync(minutes, options = {}) {
   if (autoSyncTimer) {
     clearInterval(autoSyncTimer);
     autoSyncTimer = null;
   }
   const mins = Number(minutes || 0);
+  const silent = options.silent === true;
   try {
     localStorage.setItem("autoSyncMinutes", String(mins));
   } catch (e) {}
@@ -101,16 +102,17 @@ function setAutoSync(minutes) {
     autoSyncTimer = setInterval(() => {
       syncMe();
     }, mins * 60 * 1000);
-    showToast(`Auto-sync set to every ${mins} minutes`, "success");
+    if (!silent) showToast(`Auto-sync set to every ${mins} minutes`, "success");
   } else {
-    showToast("Auto-sync disabled", "success");
+    if (!silent) showToast("Auto-sync disabled", "success");
   }
 }
 
 function setAutoSyncFromDialog() {
   const select = document.getElementById("syncInterval");
   if (!select) return;
-  setAutoSync(select.value);
+  setAutoSync(select.value, { silent: false });
+  showToast("Updated sync settings", "success");
 }
 
 window.setAutoSyncFromDialog = setAutoSyncFromDialog;
@@ -188,7 +190,7 @@ async function saveCalendarSelection() {
       showToast("Unable to save calendars", "error");
       return;
     }
-    showToast("Calendar selection saved", "success");
+    showToast("Saved calendars", "success");
   } catch (e) {
     showToast("Unable to save calendars", "error");
   }
@@ -219,7 +221,7 @@ async function exportGroupCalendar(groupId) {
     }
     const j = await r.json();
     if (j && j.ok) {
-      showToast(`Exported ${j.events_created || 0} events`, "success");
+      showToast("Exported group calendar", "success");
     } else {
       showToast("Export failed. Try again.", "error");
     }
@@ -230,6 +232,23 @@ async function exportGroupCalendar(groupId) {
 }
 
 window.exportGroupCalendar = exportGroupCalendar;
+
+async function leaveGroup(groupId) {
+  if (!groupId) return;
+  if (!confirm("Leave this group?")) return;
+  try {
+    const r = await fetch(`/groups/${groupId}/leave`, { method: "POST" });
+    if (!r.ok) {
+      showToast("Unable to leave group", "error");
+      return;
+    }
+    window.location.reload();
+  } catch (e) {
+    showToast("Unable to leave group", "error");
+  }
+}
+
+window.leaveGroup = leaveGroup;
 
 async function regenerateJoinCode(groupId) {
   if (!groupId) return;
@@ -414,6 +433,9 @@ async function copyInviteLink(groupId, btn) {
       }, 2000);
     }
   }
+  if (copied) {
+    showToast("Copied invite code", "success");
+  }
 }
 
 window.copyInviteLink = copyInviteLink;
@@ -451,6 +473,7 @@ function copyWithFeedback(btn, text) {
       checkIcon.classList.add("hidden");
     }, 2000);
   }
+  showToast("Copied invite code", "success");
 }
 
 function setTimeType(kind) {
@@ -537,6 +560,7 @@ async function submitAddTime(groupId) {
     body: JSON.stringify({ kind, start: startIso, end: endIso })
   });
   document.getElementById("addTimeDialog")?.close();
+  showToast("Added time range", "success");
   if (window.refreshCalendarEvents) await window.refreshCalendarEvents();
 }
 
@@ -574,7 +598,7 @@ async function submitProposal(groupId) {
     const names = j.conflicts.map(function (c) { return c.name || c.email || "member"; });
     showToast(`Conflicts with: ${names.join(", ")}`, "error");
   } else if (j && j.ok) {
-    showToast("Proposal sent", "success");
+    showToast("Meetup proposed", "success");
   }
   document.getElementById("proposalDialog")?.close();
   if (window.refreshCalendarEvents) await window.refreshCalendarEvents();
@@ -594,7 +618,7 @@ async function addSpecial(kind) {
       end: formatScheduleXDate(end),
       calendarId: kind === "block_off" ? "blocked" : "available"
     });
-    showToast("Demo event added", "success");
+    showToast("Added time range", "success");
     return;
   }
   if (!selectedRange) {
@@ -696,7 +720,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
     if (!Number.isNaN(stored)) {
       syncIntervalSelect.value = String(stored);
-      if (stored > 0) setAutoSync(stored);
+      if (stored > 0) setAutoSync(stored, { silent: true });
     }
   }
 
@@ -720,7 +744,6 @@ document.addEventListener("DOMContentLoaded", async function () {
       if (!targetId) return;
       if (targetId === "syncDialog") {
         loadSyncCalendars();
-        syncMe();
       }
       if (targetId === "addTimeDialog") {
         updateTimeTypeUI();
@@ -745,11 +768,33 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
   });
 
+  document.addEventListener("click", function (event) {
+    const btn = event.target.closest("button");
+    if (!btn) return;
+    const message = btn.getAttribute("data-toast");
+    if (message) showToast(message, "success");
+  });
+
   document.querySelectorAll("[data-copy-btn]").forEach(function (btn) {
     btn.addEventListener("click", function () {
       copyWithFeedback(btn, btn.getAttribute("data-copy-value") || "");
     });
   });
+
+  const params = new URLSearchParams(window.location.search);
+  const toast = params.get("toast");
+  const name = params.get("name");
+  if (toast) {
+    if (toast === "settings_saved") showToast("Settings saved", "success");
+    if (toast === "group_settings_saved") showToast("Group settings saved", "success");
+    if (toast === "group_created") showToast(`Created group "${name || ""}"`.trim(), "success");
+    if (toast === "group_joined") showToast(`Joined group "${name || ""}"`.trim(), "success");
+    params.delete("toast");
+    params.delete("name");
+    const newQuery = params.toString();
+    const newUrl = `${window.location.pathname}${newQuery ? "?" + newQuery : ""}`;
+    window.history.replaceState({}, "", newUrl);
+  }
 
   const el = document.getElementById("calendar");
   if (!el) return;
@@ -941,7 +986,8 @@ document.addEventListener("DOMContentLoaded", async function () {
   const viewDay = createViewDay ? createViewDay() : null;
   const viewMonth = createViewMonthGrid ? createViewMonthGrid() : null;
   const viewList = createViewList ? createViewList() : null;
-  const views = [viewWeek, viewDay, viewMonth, viewList].filter(Boolean);
+  const isMobile = window.matchMedia && window.matchMedia("(max-width: 640px)").matches;
+  const views = (isMobile ? [viewDay, viewList] : [viewWeek, viewDay, viewMonth, viewList]).filter(Boolean);
   if (!views.length) {
     showToast("Calendar views failed to load.", "error");
     return;
@@ -970,7 +1016,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
   }
 
-  const defaultView = viewWeek ? viewWeek.name : views[0].name;
+  const defaultView = (isMobile ? viewDay : viewWeek) ? (isMobile ? viewDay.name : viewWeek.name) : views[0].name;
 
   calendarInstance = createCalendar({
     selectedDate: Temporal.Now.plainDateISO(),

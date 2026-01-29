@@ -5,9 +5,11 @@ from authlib.integrations.flask_client import OAuth
 from authlib.integrations.base_client.errors import MismatchingStateError
 from flask_login import login_user, logout_user
 from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
 
 from app.extensions import db
 from app.models import User
+from app.services.google_calendar import list_calendars
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 oauth = OAuth()
@@ -65,6 +67,28 @@ def callback():
         user.username = unique_username()
     if picture and not user.profile_pic_url:
         user.profile_pic_url = picture
+
+    if not user.timezone and user.access_token:
+        try:
+            calendars = list_calendars(user.access_token)
+            primary = next((c for c in calendars if c.get("primary")), None)
+            tz = primary.get("timeZone") if primary else None
+            if tz:
+                try:
+                    now = datetime.now(ZoneInfo(tz))
+                    offset = now.utcoffset()
+                    if offset is not None:
+                        total_minutes = int(offset.total_seconds() // 60)
+                        sign = "+" if total_minutes >= 0 else "-"
+                        hh = abs(total_minutes) // 60
+                        mm = abs(total_minutes) % 60
+                        user.timezone = f"GMT{sign}{hh:02d}:{mm:02d}"
+                    else:
+                        user.timezone = tz
+                except Exception:
+                    user.timezone = tz
+        except Exception:
+            pass
 
     # Store tokens
     user.access_token = token.get("access_token")

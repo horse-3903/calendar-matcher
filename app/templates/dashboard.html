@@ -75,7 +75,7 @@
             </div>
             <div class="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2.5">
               <p class="text-xs uppercase text-gray-500 dark:text-slate-400">Timezone</p>
-              <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ current_user.timezone or "GMT+00:00" }}</p>
+              <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ display_timezone }}</p>
             </div>
             <div class="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2.5">
               <p class="text-xs uppercase text-gray-500 dark:text-slate-400">Join Code</p>
@@ -85,15 +85,22 @@
         </div>
 
         <div class="grid gap-4 lg:grid-cols-[1.1fr_0.75fr_1.45fr]">
-          <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-4">
-            <div class="flex items-center gap-2 mb-3">
-              <svg class="w-4 h-4 text-purple-600" viewBox="0 0 24 24" fill="none">
-                <path d="M10 13a5 5 0 0 1 7 0l2 2a5 5 0 0 1-7 7l-1-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <path d="M14 11a5 5 0 0 0-7 0L5 13a5 5 0 0 0 7 7l1-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-              <span class="text-sm font-medium text-gray-900 dark:text-white">Invite Link</span>
+          <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-purple-600/10 text-purple-600 dark:text-purple-300 flex items-center justify-center">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <path d="M10 13a5 5 0 0 1 7 0l2 2a5 5 0 0 1-7 7l-1-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M14 11a5 5 0 0 0-7 0L5 13a5 5 0 0 0 7 7l1-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </span>
+                <div>
+                  <p class="text-sm font-semibold text-gray-900 dark:text-white">Invite Link</p>
+                  <p class="text-xs text-gray-500 dark:text-slate-400">Generate a shareable link for teammates.</p>
+                </div>
+              </div>
             </div>
-            <div class="flex gap-2 mb-3">
+            <div class="flex items-center gap-2 mb-4">
               <input id="inviteLink" value="" placeholder="Create an invite link" readOnly class="text-xs font-mono bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 w-full text-gray-600 dark:text-slate-300"/>
               <button class="px-3 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white" onclick="copyInviteLink({{ group.id }}, this)">
                 <svg class="w-4 h-4 copy-icon text-white" viewBox="0 0 24 24" fill="none">
@@ -105,15 +112,17 @@
                 </svg>
               </button>
             </div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs text-gray-500 dark:text-slate-400">Expires in:</span>
-              <select id="inviteDays" class="w-24 h-8 text-xs bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-md px-2 text-gray-700 dark:text-slate-200">
-                <option value="1">1 day</option>
-                <option value="3">3 days</option>
-                <option value="7" selected>7 days</option>
-                <option value="30">30 days</option>
-              </select>
-              <button class="px-3 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white" onclick="createInvite({{ group.id }})">Create</button>
+            <div class="flex flex-wrap items-center gap-3">
+              <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
+                <span>Expires in:</span>
+                <select id="inviteDays" class="h-9 text-xs bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg px-3 text-gray-700 dark:text-slate-200">
+                  <option value="1">1 day</option>
+                  <option value="3">3 days</option>
+                  <option value="7" selected>7 days</option>
+                  <option value="30">30 days</option>
+                </select>
+              </div>
+              <button class="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold" onclick="createInvite({{ group.id }})">Create</button>
             </div>
           </div>
 
@@ -183,7 +192,7 @@
               <p class="text-sm text-gray-500 dark:text-slate-400">View availability across your group.</p>
             </div>
           </div>
-          <div class="overflow-x-auto">
+          <div class="calendar-scroll">
             <div class="min-w-0">
               <div id="calendar" data-group-id="{{ group.id }}" data-demo="{{ '1' if demo_mode else '' }}" data-timezone="{{ current_user.timezone or '' }}"></div>
             </div>
@@ -257,7 +266,7 @@
 </dialog>
 
 <dialog id="groupSettingsDialog" class="dialog">
-  <div class="dialog-card">
+  <div class="dialog-card dialog-card-wide">
     <div class="dialog-header">
       <h3>Group Settings</h3>
       <p>Update group details and calendar preferences.</p>
@@ -267,7 +276,18 @@
       <input id="groupName" name="name" class="dialog-input" value="{{ group.name }}"/>
 
       <label class="dialog-label" for="groupTimezone">Timezone</label>
-      <input id="groupTimezone" name="timezone" class="dialog-input" value="{{ current_user.timezone or 'UTC' }}"/>
+      <select id="groupTimezone" name="timezone" class="dialog-input">
+        {% set tz_value = display_timezone or "UTC" %}
+        {% for tz in [
+          "UTC",
+          "GMT-12:00","GMT-11:00","GMT-10:00","GMT-09:00","GMT-08:00","GMT-07:00","GMT-06:00","GMT-05:00",
+          "GMT-04:00","GMT-03:00","GMT-02:00","GMT-01:00",
+          "GMT+00:00","GMT+01:00","GMT+02:00","GMT+03:00","GMT+04:00","GMT+05:00","GMT+06:00","GMT+07:00",
+          "GMT+08:00","GMT+09:00","GMT+10:00","GMT+11:00","GMT+12:00","GMT+13:00","GMT+14:00"
+        ] %}
+          <option value="{{ tz }}" {% if tz_value == tz %}selected{% endif %}>{{ tz }}</option>
+        {% endfor %}
+      </select>
 
       <label class="dialog-label" for="groupJoinCode">Join code</label>
       <div class="flex gap-2">
