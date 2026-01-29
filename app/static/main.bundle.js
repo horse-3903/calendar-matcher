@@ -12897,6 +12897,13 @@ async function submitAddTime(groupId) {
         showToast("Demo event added", "success");
       }
     }
+    const timeDateField2 = document.getElementById("timeDate");
+    const timeStartField2 = document.getElementById("timeStart");
+    const timeEndField2 = document.getElementById("timeEnd");
+    if (timeDateField2) timeDateField2.value = "";
+    if (timeStartField2) timeStartField2.value = "";
+    if (timeEndField2) timeEndField2.value = "";
+    selectedRange = null;
     document.getElementById("addTimeDialog")?.close();
     return;
   }
@@ -12905,11 +12912,62 @@ async function submitAddTime(groupId) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ kind, start: startIso, end: endIso })
   });
+  const timeDateField = document.getElementById("timeDate");
+  const timeStartField = document.getElementById("timeStart");
+  const timeEndField = document.getElementById("timeEnd");
+  if (timeDateField) timeDateField.value = "";
+  if (timeStartField) timeStartField.value = "";
+  if (timeEndField) timeEndField.value = "";
+  selectedRange = null;
   document.getElementById("addTimeDialog")?.close();
   showToast("Added time range", "success");
   if (window.refreshCalendarEvents) await window.refreshCalendarEvents();
 }
 window.submitAddTime = submitAddTime;
+function openRangeTypeDialog() {
+  const dialog = document.getElementById("rangeTypeDialog");
+  if (dialog) dialog.showModal();
+}
+function fillDateTimeInputs(startDate, endDate, dateInputId, startInputId, endInputId) {
+  if (!startDate || !endDate) return;
+  const dateInput = document.getElementById(dateInputId);
+  const startInput = document.getElementById(startInputId);
+  const endInput = document.getElementById(endInputId);
+  const yyyy = startDate.getFullYear();
+  const mm = String(startDate.getMonth() + 1).padStart(2, "0");
+  const dd = String(startDate.getDate()).padStart(2, "0");
+  const sh = String(startDate.getHours()).padStart(2, "0");
+  const sm = String(startDate.getMinutes()).padStart(2, "0");
+  const eh = String(endDate.getHours()).padStart(2, "0");
+  const em = String(endDate.getMinutes()).padStart(2, "0");
+  if (dateInput) dateInput.value = `${yyyy}-${mm}-${dd}`;
+  if (startInput) startInput.value = `${sh}:${sm}`;
+  if (endInput) endInput.value = `${eh}:${em}`;
+}
+function chooseRangeType(type) {
+  const dialog = document.getElementById("rangeTypeDialog");
+  if (dialog) dialog.close();
+  if (!selectedRange || !selectedRange.start || !selectedRange.end) {
+    return;
+  }
+  const startDate = selectedRange.start instanceof Date ? selectedRange.start : new Date(selectedRange.start);
+  const endDate = selectedRange.end instanceof Date ? selectedRange.end : new Date(selectedRange.end);
+  if (type === "proposal") {
+    fillDateTimeInputs(startDate, endDate, "proposalDate", "proposalStart", "proposalEnd");
+    const proposalDialog = document.getElementById("proposalDialog");
+    if (proposalDialog) proposalDialog.showModal();
+    return;
+  }
+  if (type === "available" || type === "blocked") {
+    if (typeof setTimeType === "function") {
+      setTimeType(type);
+    }
+    fillDateTimeInputs(startDate, endDate, "timeDate", "timeStart", "timeEnd");
+    const addDialog = document.getElementById("addTimeDialog");
+    if (addDialog) addDialog.showModal();
+  }
+}
+window.chooseRangeType = chooseRangeType;
 async function submitProposal(groupId) {
   if (!window.__DEMO__ && (!groupId || groupId === 0 || groupId === "0")) {
     showToast("Please log in to propose a meetup.", "error");
@@ -12944,6 +13002,17 @@ async function submitProposal(groupId) {
   } else if (j5 && j5.ok) {
     showToast("Meetup proposed", "success");
   }
+  const proposalDateField = document.getElementById("proposalDate");
+  const proposalStartField = document.getElementById("proposalStart");
+  const proposalEndField = document.getElementById("proposalEnd");
+  if (proposalDateField) proposalDateField.value = "";
+  if (proposalStartField) proposalStartField.value = "";
+  if (proposalEndField) proposalEndField.value = "";
+  const locField = document.getElementById("meetLoc");
+  if (locField) locField.value = "";
+  const descField = document.getElementById("meetDesc");
+  if (descField) descField.value = "";
+  selectedRange = null;
   document.getElementById("proposalDialog")?.close();
   if (window.refreshCalendarEvents) await window.refreshCalendarEvents();
 }
@@ -13161,6 +13230,11 @@ document.addEventListener("DOMContentLoaded", async function() {
     const normalEvents = [];
     const backgroundEvents = [];
     debugLog("Raw API events", apiEvents);
+    const normalizeId = (rawId, fallback) => {
+      const base = String(rawId || fallback || "");
+      if (!base) return `evt_${Math.random().toString(36).slice(2, 10)}`;
+      return base.replace(/[^a-zA-Z0-9_-]/g, "_");
+    };
     apiEvents.forEach((ev) => {
       const start = toZonedDateTime(ev.start);
       const end = toZonedDateTime(ev.end);
@@ -13170,7 +13244,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         const userId = ev.extendedProps?.user_id;
         const name2 = memberNameById[userId] || `Member ${userId || ""}`.trim();
         normalEvents.push({
-          id: ev.id,
+          id: normalizeId(ev.id, `busy_${userId}_${start.epochMilliseconds}`),
           title: `Busy - ${name2}`,
           start,
           end,
@@ -13180,7 +13254,7 @@ document.addEventListener("DOMContentLoaded", async function() {
       }
       if (type === "special") {
         normalEvents.push({
-          id: ev.id,
+          id: normalizeId(ev.id, `special_${start.epochMilliseconds}`),
           title: ev.title || "Special",
           start,
           end,
@@ -13190,7 +13264,7 @@ document.addEventListener("DOMContentLoaded", async function() {
       }
       if (type === "proposal") {
         normalEvents.push({
-          id: ev.id,
+          id: normalizeId(ev.id, `proposal_${start.epochMilliseconds}`),
           title: ev.title || "Meetup Proposal",
           start,
           end,
@@ -13199,7 +13273,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         return;
       }
       normalEvents.push({
-        id: ev.id,
+        id: normalizeId(ev.id, `event_${start.epochMilliseconds}`),
         title: ev.title || "Event",
         start,
         end,
@@ -13233,9 +13307,24 @@ document.addEventListener("DOMContentLoaded", async function() {
   const calendars = await loadCalendars();
   function resolveTimezone(raw) {
     if (!raw) return Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const cleaned = raw.replace("GMT", "").replace("UTC", "").trim();
-    if (cleaned === "+08:00" || cleaned === "+8" || cleaned === "+08") return "Asia/Singapore";
-    return raw;
+    const trimmed = raw.trim();
+    if (trimmed === "UTC" || trimmed === "GMT") return "UTC";
+    const offsetMatch = trimmed.match(/^(?:UTC|GMT)\s*([+-]\d{1,2})(?::?(\d{2}))?$/i);
+    if (offsetMatch) {
+      const sign = offsetMatch[1].startsWith("-") ? "-" : "+";
+      const hh = offsetMatch[1].replace("+", "").replace("-", "").padStart(2, "0");
+      const mm = (offsetMatch[2] || "00").padStart(2, "0");
+      return `${sign}${hh}:${mm}`;
+    }
+    if (/^[+-]\d{1,2}(:?\d{2})?$/.test(trimmed)) {
+      const normalized = trimmed.replace(/^([+-]\d{1,2})(\d{2})$/, "$1:$2");
+      const parts = normalized.split(":");
+      const hh = parts[0].replace("+", "").replace("-", "").padStart(2, "0");
+      const sign = parts[0].startsWith("-") ? "-" : "+";
+      const mm = (parts[1] || "00").padStart(2, "0");
+      return `${sign}${hh}:${mm}`;
+    }
+    return trimmed;
   }
   const calendarTimezone = resolveTimezone(el?.dataset?.timezone || "");
   function demoZdt(offsetDays, hour, minute) {
@@ -13329,6 +13418,21 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
         scrollToFirstEvent(data.normalEvents);
         return data.normalEvents;
+      },
+      onSelectDateTimeRange: function(range) {
+        if (!range) return;
+        const start = range.start;
+        const end = range.end;
+        if (!start || !end) return;
+        const startInstant = start.toInstant().toString();
+        const endInstant = end.toInstant().toString();
+        selectedRange = {
+          start: new Date(startInstant),
+          end: new Date(endInstant),
+          startStr: startInstant,
+          endStr: endInstant
+        };
+        openRangeTypeDialog();
       },
       onClickDateTime: function(dateTime) {
         if (!dateTime) return;

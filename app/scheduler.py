@@ -3,16 +3,16 @@ from datetime import datetime, timezone, timedelta
 
 from app.extensions import db
 from app.models import User, BusyInterval
-from app.services.google_calendar import is_expired, refresh_access_token, freebusy_query, list_calendar_ids
+from app.services.google_calendar import is_expired, refresh_access_token, freebusy_query_chunked, list_calendar_ids
 
 def start_scheduler(app):
     scheduler = BackgroundScheduler(daemon=True)
 
     def job():
         with app.app_context():
-            # sync a 30-day window per user
+            # sync a ~6-month window per user
             time_min = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
-            time_max = (datetime.now(timezone.utc) + timedelta(days=30)).replace(microsecond=0).isoformat()
+            time_max = (datetime.now(timezone.utc) + timedelta(days=180)).replace(microsecond=0).isoformat()
 
             users = User.query.all()
             for user in users:
@@ -33,7 +33,7 @@ def start_scheduler(app):
                         except Exception:
                             selected_ids = None
                     calendar_ids = selected_ids or (list_calendar_ids(user.access_token) or ["primary"])
-                    fb = freebusy_query(user.access_token, time_min, time_max, calendar_ids=calendar_ids)
+                    fb = freebusy_query_chunked(user.access_token, time_min, time_max, calendar_ids=calendar_ids, chunk_days=90)
 
                     BusyInterval.query.filter_by(user_id=user.id).delete()
                     calendars = fb.get("calendars", {})

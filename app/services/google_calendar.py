@@ -44,6 +44,9 @@ def refresh_access_token(config, user):
 def freebusy_query(access_token: str, time_min_iso: str, time_max_iso: str, calendar_ids=None):
     if calendar_ids is None:
         calendar_ids = ["primary"]
+    calendar_ids = [cid for cid in calendar_ids if isinstance(cid, str) and cid.strip()]
+    if not calendar_ids:
+        calendar_ids = ["primary"]
 
     payload = {
         "timeMin": time_min_iso,
@@ -126,8 +129,37 @@ def create_calendar(access_token: str, summary: str, timezone: str = "UTC"):
         json=payload,
         timeout=20,
     )
-    resp.raise_for_status()
+    if resp.status_code >= 400:
+        detail = ""
+        try:
+            detail = resp.text
+        except Exception:
+            detail = ""
+        raise requests.HTTPError(f"{resp.status_code} {resp.reason} {detail}", response=resp)
     return resp.json()
+
+def freebusy_query_chunked(access_token: str, time_min_iso: str, time_max_iso: str, calendar_ids=None, chunk_days: int = 90):
+    """Query FreeBusy in smaller chunks and merge results."""
+    def parse_iso(value: str):
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+    start = parse_iso(time_min_iso)
+    end = parse_iso(time_max_iso)
+    if start >= end:
+        return {"calendars": {}}
+
+    merged = {}
+    cursor = start
+    while cursor < end:
+        chunk_end = min(cursor + __import__("datetime").timedelta(days=chunk_days), end)
+        fb = freebusy_query(access_token, cursor.isoformat(), chunk_end.isoformat(), calendar_ids=calendar_ids)
+        calendars = fb.get("calendars", {})
+        for cid, data in calendars.items():
+            merged.setdefault(cid, {"busy": []})
+            merged[cid]["busy"].extend(data.get("busy", []))
+        cursor = chunk_end
+
+    return {"calendars": merged}
 
 def update_calendar(access_token: str, calendar_id: str, summary: str | None = None, timezone: str | None = None):
     payload = {}
@@ -143,7 +175,13 @@ def update_calendar(access_token: str, calendar_id: str, summary: str | None = N
         json=payload,
         timeout=20,
     )
-    resp.raise_for_status()
+    if resp.status_code >= 400:
+        detail = ""
+        try:
+            detail = resp.text
+        except Exception:
+            detail = ""
+        raise requests.HTTPError(f"{resp.status_code} {resp.reason} {detail}", response=resp)
     return resp.json()
 
 def insert_calendar_event(access_token: str, calendar_id: str, event_body: dict):

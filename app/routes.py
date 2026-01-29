@@ -13,10 +13,11 @@ from app.extensions import db
 from app.models import Group, Membership, BusyInterval, SpecialEvent, MeetupProposal, InviteLink, User
 from app.services.invites import make_join_code, make_invite_token, verify_invite_token, expiry_from_days
 from app.services.colors import generate_distinct_colors
+import requests
 from app.services.google_calendar import (
     is_expired,
     refresh_access_token,
-    freebusy_query,
+    freebusy_query_chunked,
     list_calendar_ids,
     list_calendars,
     list_calendar_colors,
@@ -77,12 +78,22 @@ def _get_user_groups(user_id: int):
         .group_by(Group.id)
         .all()
     )
+    group_ids = [g.id for g, _ in rows]
+    member_counts = {}
+    if group_ids:
+        counts = (
+            db.session.query(Membership.group_id, func.count(Membership.id))
+            .filter(Membership.group_id.in_(group_ids))
+            .group_by(Membership.group_id)
+            .all()
+        )
+        member_counts = {gid: int(cnt or 0) for gid, cnt in counts}
     return [{
         "id": g.id,
         "name": g.name,
         "join_code": g.join_code,
-        "member_count": int(count or 0),
-    } for g, count in rows]
+        "member_count": member_counts.get(g.id, 0),
+    } for g, _ in rows]
 
 def _get_debug_user():
     user = User.query.filter_by(google_sub="debug_local").first()
@@ -556,9 +567,9 @@ def add_proposal(group_id):
 @api_bp.post("/sync/me")
 @login_required
 def sync_me():
-    # sync next 30 days for current user
+    # sync next ~6 months for current user
     time_min = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
-    time_max = (datetime.now(timezone.utc) + timedelta(days=30)).replace(microsecond=0).isoformat()
+    time_max = (datetime.now(timezone.utc) + timedelta(days=180)).replace(microsecond=0).isoformat()
 
     user = current_user
     if is_expired(user):
@@ -567,7 +578,23 @@ def sync_me():
 
     selected_ids = _parse_calendar_selection(user)
     calendar_ids = selected_ids or (list_calendar_ids(user.access_token) or ["primary"])
-    fb = freebusy_query(user.access_token, time_min, time_max, calendar_ids=calendar_ids)
+    payload_preview = {
+        "timeMin": time_min,
+        "timeMax": time_max,
+        "items": [{"id": cid} for cid in calendar_ids],
+    }
+    try:
+        fb = freebusy_query_chunked(user.access_token, time_min, time_max, calendar_ids=calendar_ids, chunk_days=90)
+    except Exception as e:
+        detail = ""
+        if isinstance(e, requests.HTTPError) and getattr(e, "response", None) is not None:
+            try:
+                detail = e.response.text
+            except Exception:
+                detail = ""
+        if current_app.debug:
+            current_app.logger.exception("FreeBusy error payload=%s", payload_preview)
+        return jsonify({"ok": False, "error": str(e), "detail": detail, "payload": payload_preview}), 400
 
     # replace cache window for simplicity (production: smarter upsert)
     BusyInterval.query.filter_by(user_id=user.id).delete()

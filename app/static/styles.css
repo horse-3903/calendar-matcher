@@ -254,6 +254,25 @@ a[role="button"] {
   margin-top: 0.75rem;
 }
 
+.member-pill-btn {
+  border: 1px solid rgba(168, 85, 247, 0.6);
+  color: #d8b4fe;
+  background: transparent;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: none;
+  transition: all 0.15s ease;
+}
+
+.member-pill-btn:hover {
+  border-color: rgba(168, 85, 247, 0.9);
+  background: rgba(168, 85, 247, 0.12);
+  color: #f5d0fe;
+}
+
+
 .dialog-header h3 {
   font-size: 1.1rem;
   font-weight: 700;
