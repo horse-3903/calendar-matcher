@@ -1,6 +1,6 @@
-﻿# Calendar Matcher
+﻿# Phase
 
-Calendar Matcher is a group scheduling app that connects to Google Calendar, shows shared availability, and helps teams find meeting times without sharing event details.
+Phase is a group scheduling app that connects to Google Calendar, shows shared availability, and helps teams find meeting times without sharing event details.
 
 ## Table of contents
 - Overview

@@ -171,11 +171,11 @@ a[role="button"] {
   border-radius: 16px;
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
   padding: 24px;
-  width: min(440px, 92vw);
+  width: min(520px, 92vw);
 }
 
 .dialog-card-wide {
-  width: min(720px, 94vw);
+  width: min(820px, 94vw);
 }
 
 .dialog-header h3 {

@@ -130,22 +130,25 @@ def index():
     if current_user.is_authenticated:
         groups = _get_user_groups(current_user.id)
         has_synced = BusyInterval.query.filter_by(user_id=current_user.id).first() is not None
-    return render_template("index.html", groups=groups, has_synced=has_synced)
+    title = "Phase: The collaborative calendar"
+    if current_user.is_authenticated:
+        title = "Phase: Dashboard"
+    return render_template("index.html", groups=groups, has_synced=has_synced, title=title)
 
 @main_bp.get("/demo")
 def demo():
-    return render_template("index.html", demo_mode=True, groups=[])
+    return render_template("index.html", demo_mode=True, groups=[], title="Phase: The collaborative calendar")
 
 @main_bp.get("/debug")
 def debug_menu():
     user = _require_debug_access()
     groups = _get_user_groups(user.id)
-    return render_template("debug.html", groups=groups)
+    return render_template("debug.html", groups=groups, title="Phase: Dev Console")
 
 @main_bp.get("/demo/group")
 def demo_group():
     demo_group = SimpleNamespace(id=0, name="Demo Group", join_code="DEMO42")
-    return render_template("dashboard.html", group=demo_group, members=[], demo_mode=True)
+    return render_template("dashboard.html", group=demo_group, members=[], demo_mode=True, title="Phase: Group Demo Group")
 
 @main_bp.post("/groups/create")
 @login_required
@@ -306,7 +309,7 @@ def dashboard(group_id):
         .all()
     )
     display_timezone = _to_gmt_offset(current_user.timezone) or current_user.timezone or "UTC"
-    return render_template("dashboard.html", group=g, members=members, is_admin=membership.role == "admin", display_timezone=display_timezone)
+    return render_template("dashboard.html", group=g, members=members, is_admin=membership.role == "admin", display_timezone=display_timezone, title=f"Phase: Group {g.name}")
 
 # ---------- Account settings ----------
 
@@ -326,7 +329,7 @@ def settings():
     if not current_user.username:
         current_user.username = _random_username()
         db.session.commit()
-    return render_template("settings.html", user=current_user, error=error)
+    return render_template("settings.html", user=current_user, error=error, title="Phase: Settings")
 
 @main_bp.post("/settings")
 @login_required
@@ -700,7 +703,7 @@ def export_group_calendar(group_id):
     member_emails = [u.email for u, _ in rows if u.email]
 
     tz = user.timezone or "UTC"
-    cal = create_calendar(user.access_token, f"Calendar Matcher — {group.name}", timezone=tz)
+    cal = create_calendar(user.access_token, f"Phase — {group.name}", timezone=tz)
     calendar_id = cal.get("id")
     if not calendar_id:
         abort(500, "Failed to create calendar")

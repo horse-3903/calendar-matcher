@@ -53,6 +53,37 @@ function copyText(text) {
   navigator.clipboard.writeText(text);
 }
 
+let dialogResolve = null;
+function showAppDialog(message) {
+  const dialog = document.getElementById("appDialog");
+  const text = document.getElementById("appDialogMessage");
+  const okBtn = document.getElementById("appDialogOk");
+  const cancelBtn = document.getElementById("appDialogCancel");
+  if (!dialog || !text || !okBtn) return;
+  text.textContent = message || "";
+  okBtn.textContent = "OK";
+  dialog.dataset.mode = "alert";
+  if (cancelBtn) cancelBtn.classList.add("hidden");
+  dialogResolve = null;
+  if (dialog.showModal) dialog.showModal();
+}
+
+function showAppConfirm(message) {
+  return new Promise((resolve) => {
+    const dialog = document.getElementById("appDialog");
+    const text = document.getElementById("appDialogMessage");
+    const okBtn = document.getElementById("appDialogOk");
+    const cancelBtn = document.getElementById("appDialogCancel");
+    if (!dialog || !text || !okBtn || !cancelBtn) return resolve(false);
+    text.textContent = message || "";
+    okBtn.textContent = "Confirm";
+    dialog.dataset.mode = "confirm";
+    cancelBtn.classList.remove("hidden");
+    dialogResolve = resolve;
+    if (dialog.showModal) dialog.showModal();
+  });
+}
+
 async function syncMe() {
   if (window.__DEMO__) {
     showToast("Demo mode • Sync simulated", "success");
@@ -235,7 +266,8 @@ window.exportGroupCalendar = exportGroupCalendar;
 
 async function leaveGroup(groupId) {
   if (!groupId) return;
-  if (!confirm("Leave this group?")) return;
+  const ok = await showAppConfirm("Leave this group?");
+  if (!ok) return;
   try {
     const r = await fetch(`/groups/${groupId}/leave`, { method: "POST" });
     if (!r.ok) {
@@ -273,7 +305,8 @@ window.regenerateJoinCode = regenerateJoinCode;
 
 async function promoteMember(groupId, userId) {
   if (!groupId || !userId) return;
-  if (!confirm("Make this member an admin?")) return;
+  const ok = await showAppConfirm("Make this member an admin?");
+  if (!ok) return;
   try {
     const r = await fetch(`/api/groups/${groupId}/members/${userId}/role`, {
       method: "POST",
@@ -346,10 +379,11 @@ window.debugLeaveGroup = function () {
   if (!confirm("Leave this group?")) return;
   debugPost("/api/debug/leave/group", { group_id: groupId });
 };
-window.debugDeleteGroup = function () {
+window.debugDeleteGroup = async function () {
   const groupId = getDebugGroupId();
   if (!groupId) return;
-  if (!confirm("Delete this group? This cannot be undone.")) return;
+  const ok = await showAppConfirm("Delete this group? This cannot be undone.");
+  if (!ok) return;
   debugPost("/api/debug/delete/group", { group_id: groupId });
 };
 window.debugOpenGroup = function () {
@@ -360,8 +394,9 @@ window.debugOpenGroup = function () {
 window.debugEnsureDemo = function () {
   debugPost("/api/debug/ensure-demo");
 };
-window.debugClearAll = function () {
-  if (!confirm("Clear all your cached/special/proposal data?")) return;
+window.debugClearAll = async function () {
+  const ok = await showAppConfirm("Clear all your cached/special/proposal data?");
+  if (!ok) return;
   debugPost("/api/debug/clear/all");
 };
 window.debugClearAutoSync = function () {
@@ -528,7 +563,7 @@ async function submitAddTime(groupId) {
 
   if (!startIso || !endIso) {
     if (!selectedRange) {
-      alert("Select a time range on the calendar or fill the form.");
+      showAppDialog("Select a time range on the calendar or fill the form.");
       return;
     }
     startIso = selectedRange.startStr;
@@ -579,7 +614,7 @@ async function submitProposal(groupId) {
 
   if (!startIso || !endIso) {
     if (!selectedRange) {
-      alert("Select a time range on the calendar or fill the form.");
+      showAppDialog("Select a time range on the calendar or fill the form.");
       return;
     }
     startIso = selectedRange.startStr;
@@ -622,7 +657,7 @@ async function addSpecial(kind) {
     return;
   }
   if (!selectedRange) {
-    alert("Select a time range on the calendar first.");
+    showAppDialog("Select a time range on the calendar first.");
     return;
   }
   const r = await fetch(`/api/groups/${window.__GROUP_ID__}/special`, {
@@ -653,7 +688,7 @@ async function proposeMeetup() {
     return;
   }
   if (!selectedRange) {
-    alert("Select a time range on the calendar first.");
+    showAppDialog("Select a time range on the calendar first.");
     return;
   }
   const location = document.getElementById("meetLoc").value;
@@ -767,6 +802,22 @@ document.addEventListener("DOMContentLoaded", async function () {
       }
     });
   });
+
+  const appDialog = document.getElementById("appDialog");
+  const appDialogCancel = document.getElementById("appDialogCancel");
+  const appDialogOk = document.getElementById("appDialogOk");
+  if (appDialog && appDialogCancel && appDialogOk) {
+    appDialogCancel.addEventListener("click", function () {
+      if (dialogResolve) dialogResolve(false);
+      dialogResolve = null;
+      appDialog.close();
+    });
+    appDialogOk.addEventListener("click", function () {
+      if (dialogResolve) dialogResolve(true);
+      dialogResolve = null;
+      appDialog.close();
+    });
+  }
 
   document.addEventListener("click", function (event) {
     const btn = event.target.closest("button");

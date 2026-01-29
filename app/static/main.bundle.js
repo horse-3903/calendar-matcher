@@ -12266,6 +12266,35 @@ function setTheme(theme) {
   }
 }
 window.setTheme = setTheme;
+var dialogResolve = null;
+function showAppDialog(message) {
+  const dialog = document.getElementById("appDialog");
+  const text = document.getElementById("appDialogMessage");
+  const okBtn = document.getElementById("appDialogOk");
+  const cancelBtn = document.getElementById("appDialogCancel");
+  if (!dialog || !text || !okBtn) return;
+  text.textContent = message || "";
+  okBtn.textContent = "OK";
+  dialog.dataset.mode = "alert";
+  if (cancelBtn) cancelBtn.classList.add("hidden");
+  dialogResolve = null;
+  if (dialog.showModal) dialog.showModal();
+}
+function showAppConfirm(message) {
+  return new Promise((resolve) => {
+    const dialog = document.getElementById("appDialog");
+    const text = document.getElementById("appDialogMessage");
+    const okBtn = document.getElementById("appDialogOk");
+    const cancelBtn = document.getElementById("appDialogCancel");
+    if (!dialog || !text || !okBtn || !cancelBtn) return resolve(false);
+    text.textContent = message || "";
+    okBtn.textContent = "Confirm";
+    dialog.dataset.mode = "confirm";
+    cancelBtn.classList.remove("hidden");
+    dialogResolve = resolve;
+    if (dialog.showModal) dialog.showModal();
+  });
+}
 async function syncMe() {
   if (window.__DEMO__) {
     showToast("Demo mode \u2022 Sync simulated", "success");
@@ -12322,6 +12351,7 @@ function setAutoSyncFromDialog() {
   const select = document.getElementById("syncInterval");
   if (!select) return;
   setAutoSync(select.value, { silent: false });
+  showToast("Updated sync settings", "success");
 }
 window.setAutoSyncFromDialog = setAutoSyncFromDialog;
 function getSelectedCalendarIds() {
@@ -12395,7 +12425,7 @@ async function saveCalendarSelection() {
       showToast("Unable to save calendars", "error");
       return;
     }
-    showToast("Calendar selection saved", "success");
+    showToast("Saved calendars", "success");
   } catch (e5) {
     showToast("Unable to save calendars", "error");
   }
@@ -12423,7 +12453,7 @@ async function exportGroupCalendar(groupId) {
     }
     const j5 = await r5.json();
     if (j5 && j5.ok) {
-      showToast(`Exported ${j5.events_created || 0} events`, "success");
+      showToast("Exported group calendar", "success");
     } else {
       showToast("Export failed. Try again.", "error");
     }
@@ -12435,7 +12465,8 @@ async function exportGroupCalendar(groupId) {
 window.exportGroupCalendar = exportGroupCalendar;
 async function leaveGroup(groupId) {
   if (!groupId) return;
-  if (!confirm("Leave this group?")) return;
+  const ok = await showAppConfirm("Leave this group?");
+  if (!ok) return;
   try {
     const r5 = await fetch(`/groups/${groupId}/leave`, { method: "POST" });
     if (!r5.ok) {
@@ -12469,7 +12500,8 @@ async function regenerateJoinCode(groupId) {
 window.regenerateJoinCode = regenerateJoinCode;
 async function promoteMember(groupId, userId) {
   if (!groupId || !userId) return;
-  if (!confirm("Make this member an admin?")) return;
+  const ok = await showAppConfirm("Make this member an admin?");
+  if (!ok) return;
   try {
     const r5 = await fetch(`/api/groups/${groupId}/members/${userId}/role`, {
       method: "POST",
@@ -12538,10 +12570,11 @@ window.debugLeaveGroup = function() {
   if (!confirm("Leave this group?")) return;
   debugPost("/api/debug/leave/group", { group_id: groupId });
 };
-window.debugDeleteGroup = function() {
+window.debugDeleteGroup = async function() {
   const groupId = getDebugGroupId();
   if (!groupId) return;
-  if (!confirm("Delete this group? This cannot be undone.")) return;
+  const ok = await showAppConfirm("Delete this group? This cannot be undone.");
+  if (!ok) return;
   debugPost("/api/debug/delete/group", { group_id: groupId });
 };
 window.debugOpenGroup = function() {
@@ -12552,8 +12585,9 @@ window.debugOpenGroup = function() {
 window.debugEnsureDemo = function() {
   debugPost("/api/debug/ensure-demo");
 };
-window.debugClearAll = function() {
-  if (!confirm("Clear all your cached/special/proposal data?")) return;
+window.debugClearAll = async function() {
+  const ok = await showAppConfirm("Clear all your cached/special/proposal data?");
+  if (!ok) return;
   debugPost("/api/debug/clear/all");
 };
 window.debugClearAutoSync = function() {
@@ -12624,6 +12658,9 @@ async function copyInviteLink(groupId, btn) {
       }, 2e3);
     }
   }
+  if (copied) {
+    showToast("Copied invite code", "success");
+  }
 }
 window.copyInviteLink = copyInviteLink;
 function showToast(message, tone) {
@@ -12654,6 +12691,7 @@ function copyWithFeedback(btn, text) {
       checkIcon.classList.add("hidden");
     }, 2e3);
   }
+  showToast("Copied invite code", "success");
 }
 function setTimeType(kind) {
   selectedTimeType = kind;
@@ -12701,7 +12739,7 @@ async function submitAddTime(groupId) {
   let endIso = buildIso(date, end);
   if (!startIso || !endIso) {
     if (!selectedRange) {
-      alert("Select a time range on the calendar or fill the form.");
+      showAppDialog("Select a time range on the calendar or fill the form.");
       return;
     }
     startIso = selectedRange.startStr;
@@ -12732,6 +12770,7 @@ async function submitAddTime(groupId) {
     body: JSON.stringify({ kind, start: startIso, end: endIso })
   });
   document.getElementById("addTimeDialog")?.close();
+  showToast("Added time range", "success");
   if (window.refreshCalendarEvents) await window.refreshCalendarEvents();
 }
 window.submitAddTime = submitAddTime;
@@ -12747,7 +12786,7 @@ async function submitProposal(groupId) {
   let endIso = buildIso(date, end);
   if (!startIso || !endIso) {
     if (!selectedRange) {
-      alert("Select a time range on the calendar or fill the form.");
+      showAppDialog("Select a time range on the calendar or fill the form.");
       return;
     }
     startIso = selectedRange.startStr;
@@ -12767,7 +12806,7 @@ async function submitProposal(groupId) {
     });
     showToast(`Conflicts with: ${names.join(", ")}`, "error");
   } else if (j5 && j5.ok) {
-    showToast("Proposal sent", "success");
+    showToast("Meetup proposed", "success");
   }
   document.getElementById("proposalDialog")?.close();
   if (window.refreshCalendarEvents) await window.refreshCalendarEvents();
@@ -12785,11 +12824,11 @@ async function addSpecial(kind) {
       end: formatScheduleXDate(end),
       calendarId: kind === "block_off" ? "blocked" : "available"
     });
-    showToast("Demo event added", "success");
+    showToast("Added time range", "success");
     return;
   }
   if (!selectedRange) {
-    alert("Select a time range on the calendar first.");
+    showAppDialog("Select a time range on the calendar first.");
     return;
   }
   const r5 = await fetch(`/api/groups/${window.__GROUP_ID__}/special`, {
@@ -12868,7 +12907,6 @@ document.addEventListener("DOMContentLoaded", async function() {
       if (!targetId) return;
       if (targetId === "syncDialog") {
         loadSyncCalendars();
-        syncMe();
       }
       if (targetId === "addTimeDialog") {
         updateTimeTypeUI();
@@ -12890,22 +12928,46 @@ document.addEventListener("DOMContentLoaded", async function() {
       }
     });
   });
+  const appDialog = document.getElementById("appDialog");
+  const appDialogCancel = document.getElementById("appDialogCancel");
+  const appDialogOk = document.getElementById("appDialogOk");
+  if (appDialog && appDialogCancel && appDialogOk) {
+    appDialogCancel.addEventListener("click", function() {
+      if (dialogResolve) dialogResolve(false);
+      dialogResolve = null;
+      appDialog.close();
+    });
+    appDialogOk.addEventListener("click", function() {
+      if (dialogResolve) dialogResolve(true);
+      dialogResolve = null;
+      appDialog.close();
+    });
+  }
   document.addEventListener("click", function(event) {
     const btn = event.target.closest("button");
     if (!btn) return;
-    if (btn.hasAttribute("data-no-toast")) return;
-    if (btn.hasAttribute("data-dialog-close")) return;
-    if (btn.classList.contains("segmented-btn")) return;
-    const btnId = btn.id || "";
-    if (["themeToggle", "themeToggleMobile", "mobileMenuToggle"].includes(btnId)) return;
-    const message = btn.getAttribute("data-toast") || "Action complete";
-    showToast(message, "success");
+    const message = btn.getAttribute("data-toast");
+    if (message) showToast(message, "success");
   });
   document.querySelectorAll("[data-copy-btn]").forEach(function(btn) {
     btn.addEventListener("click", function() {
       copyWithFeedback(btn, btn.getAttribute("data-copy-value") || "");
     });
   });
+  const params = new URLSearchParams(window.location.search);
+  const toast = params.get("toast");
+  const name = params.get("name");
+  if (toast) {
+    if (toast === "settings_saved") showToast("Settings saved", "success");
+    if (toast === "group_settings_saved") showToast("Group settings saved", "success");
+    if (toast === "group_created") showToast(`Created group "${name || ""}"`.trim(), "success");
+    if (toast === "group_joined") showToast(`Joined group "${name || ""}"`.trim(), "success");
+    params.delete("toast");
+    params.delete("name");
+    const newQuery = params.toString();
+    const newUrl = `${window.location.pathname}${newQuery ? "?" + newQuery : ""}`;
+    window.history.replaceState({}, "", newUrl);
+  }
   const el = document.getElementById("calendar");
   if (!el) return;
   const groupId = el.getAttribute("data-group-id");
@@ -12970,10 +13032,10 @@ document.addEventListener("DOMContentLoaded", async function() {
       const type = ev.extendedProps?.type;
       if (type === "busy") {
         const userId = ev.extendedProps?.user_id;
-        const name = memberNameById[userId] || `Member ${userId || ""}`.trim();
+        const name2 = memberNameById[userId] || `Member ${userId || ""}`.trim();
         normalEvents.push({
           id: ev.id,
-          title: `Busy - ${name}`,
+          title: `Busy - ${name2}`,
           start,
           end,
           calendarId: userId ? `member${userId}` : "available"
