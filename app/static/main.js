@@ -1,21 +1,19 @@
-import "temporal-polyfill/global";
-import { createCalendar, createViewWeek, createViewDay, createViewMonthGrid, createViewList } from "@schedule-x/calendar";
-import { createCalendarControlsPlugin } from "@schedule-x/calendar-controls";
-import { createEventsServicePlugin } from "@schedule-x/events-service";
-import { createScrollControllerPlugin } from "@schedule-x/scroll-controller";
+import { Calendar } from "@fullcalendar/core";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import listPlugin from "@fullcalendar/list";
+import interactionPlugin from "@fullcalendar/interaction";
 
 let selectedRange = null;
 let selectedTimeType = "available";
 let calendarInstance = null;
-let calendarControls = null;
-let eventsService = null;
 let calendarRange = null;
-let scrollController = null;
 let calendarDebug = false;
 let memberNameById = {};
 let autoSyncTimer = null;
 let calendarReady = false;
 let pendingScrollTime = null;
+let calendarColors = {};
 
 function applyTheme(theme) {
   const root = document.documentElement;
@@ -41,8 +39,13 @@ function setTheme(theme) {
     localStorage.setItem("theme", theme);
   } catch (e) {}
   applyTheme(theme);
-  if (window.__SXCAL__ && window.__SXCAL__.setTheme) {
-    window.__SXCAL__.setTheme(theme);
+  if (calendarInstance) {
+    if (theme === "dark") {
+      calendarInstance.el.classList.add("fc-theme-dark");
+    } else {
+      calendarInstance.el.classList.remove("fc-theme-dark");
+    }
+    calendarInstance.updateSize();
   }
 }
 
@@ -100,9 +103,8 @@ async function syncMe() {
     const j = await r.json();
     if (j && j.ok) {
       showToast(`Synced calendar • ${j.busy_blocks} busy blocks`, "success");
-      if (eventsService) {
-        eventsService.set([]);
-        eventsService.setBackgroundEvents([]);
+      if (calendarInstance) {
+        calendarInstance.removeAllEvents();
       }
       if (window.refreshCalendarEvents) {
         await window.refreshCalendarEvents();
@@ -678,19 +680,12 @@ function buildIso(dateStr, timeStr) {
   return d.toISOString();
 }
 
-function formatScheduleXDate(value) {
+function formatCalendarDate(value) {
   if (!value) return null;
-  if (typeof value === "string") {
-    if (value.includes("[")) return Temporal.ZonedDateTime.from(value);
-    if (value.endsWith("Z")) {
-      return Temporal.ZonedDateTime.from(value.replace("Z", "+00:00[UTC]"));
-    }
-    return Temporal.ZonedDateTime.from(`${value}[UTC]`);
-  }
-  if (value instanceof Date) {
-    return Temporal.ZonedDateTime.from(value.toISOString().replace("Z", "+00:00[UTC]"));
-  }
-  return value;
+  if (value instanceof Date) return value;
+  if (typeof value === "string") return new Date(value);
+  if (value.toString) return new Date(value.toString());
+  return new Date(value);
 }
 
 async function submitAddTime(groupId) {
@@ -715,19 +710,21 @@ async function submitAddTime(groupId) {
 
   const kind = selectedTimeType === "blocked" ? "block_off" : "available";
   if (window.__DEMO__) {
-    if (eventsService) {
-      const startDate = startIso ? new Date(startIso) : selectedRange?.start;
-      const endDate = endIso ? new Date(endIso) : selectedRange?.end;
-      if (startDate && endDate) {
-        eventsService.add({
-          id: `demo-special:${Date.now()}`,
-          title: kind === "block_off" ? "Blocked" : "Available",
-          start: formatScheduleXDate(startDate),
-          end: formatScheduleXDate(endDate),
-          calendarId: kind === "block_off" ? "blocked" : "available"
-        });
-        showToast("Demo event added", "success");
-      }
+    const startDate = startIso ? new Date(startIso) : selectedRange?.start;
+    const endDate = endIso ? new Date(endIso) : selectedRange?.end;
+    if (calendarInstance && startDate && endDate) {
+      const color = kind === "block_off" ? (calendarColors.blocked || { main: "#ef4444", text: "#fee2e2" }) : (calendarColors.available || { main: "#0d9488", text: "#ccfbf1" });
+      calendarInstance.addEvent({
+        id: `demo-special-${Date.now()}`,
+        title: kind === "block_off" ? "Blocked" : "Available",
+        start: formatCalendarDate(startDate),
+        end: formatCalendarDate(endDate),
+        backgroundColor: color.main,
+        borderColor: color.main,
+        textColor: color.text,
+        extendedProps: { type: "special", kind }
+      });
+      showToast("Demo event added", "success");
     }
     const timeDateField = document.getElementById("timeDate");
     const timeStartField = document.getElementById("timeStart");
@@ -812,15 +809,19 @@ window.submitProposal = submitProposal;
 
 async function addSpecial(kind) {
   if (window.__DEMO__) {
-    if (!eventsService) return;
+    if (!calendarInstance) return;
     const start = selectedRange ? selectedRange.start : new Date();
     const end = selectedRange ? selectedRange.end : new Date(Date.now() + 60 * 60 * 1000);
-    eventsService.add({
-      id: `special:demo:${Date.now()}`,
+    const color = kind === "block_off" ? (calendarColors.blocked || { main: "#ef4444", text: "#fee2e2" }) : (calendarColors.available || { main: "#0d9488", text: "#ccfbf1" });
+    calendarInstance.addEvent({
+      id: `special-demo-${Date.now()}`,
       title: kind === "block_off" ? "Blocked" : "Available",
-      start: formatScheduleXDate(start),
-      end: formatScheduleXDate(end),
-      calendarId: kind === "block_off" ? "blocked" : "available"
+      start: formatCalendarDate(start),
+      end: formatCalendarDate(end),
+      backgroundColor: color.main,
+      borderColor: color.main,
+      textColor: color.text,
+      extendedProps: { type: "special", kind }
     });
     showToast("Added time range", "success");
     return;
@@ -907,8 +908,13 @@ document.addEventListener("DOMContentLoaded", async function () {
       localStorage.setItem("theme", next);
     } catch (e) {}
     applyTheme(next);
-    if (window.__SXCAL__ && window.__SXCAL__.setTheme) {
-      window.__SXCAL__.setTheme(next);
+    if (calendarInstance) {
+      if (next === "dark") {
+        calendarInstance.el.classList.add("fc-theme-dark");
+      } else {
+        calendarInstance.el.classList.remove("fc-theme-dark");
+      }
+      calendarInstance.updateSize();
     }
   };
   if (toggle) toggle.addEventListener("click", handleToggle);
@@ -1025,53 +1031,46 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   function toZonedDateTime(iso) {
     if (!iso) return null;
-    if (iso.includes("[")) return Temporal.ZonedDateTime.from(iso);
-    if (iso.endsWith("Z")) {
-      return Temporal.ZonedDateTime.from(iso.replace("Z", "+00:00[UTC]"));
-    }
-    return Temporal.ZonedDateTime.from(`${iso}[UTC]`);
+    return iso;
   }
 
-  function temporalToIso(temporalDateTime) {
-    if (!temporalDateTime) return null;
-    if (temporalDateTime.toInstant) {
-      return temporalDateTime.toInstant().toString();
-    }
-    if (temporalDateTime.toString) {
-      return temporalDateTime.toString();
-    }
-    return String(temporalDateTime);
+  function temporalToIso(dateLike) {
+    if (!dateLike) return null;
+    if (dateLike instanceof Date) return dateLike.toISOString();
+    if (typeof dateLike === "string") return dateLike;
+    if (dateLike.toISOString) return dateLike.toISOString();
+    return String(dateLike);
   }
 
   async function loadCalendars() {
     if (isDemo) {
       debugLog("Loading demo calendars");
-      return {
-        available: { colorName: "available", lightColors: { main: "#0d9488", container: "#ccfbf1", onContainer: "#115e59" }, darkColors: { main: "#2dd4bf", container: "#0b1220", onContainer: "#ccfbf1" } },
-        blocked: { colorName: "blocked", lightColors: { main: "#ef4444", container: "#fee2e2", onContainer: "#7f1d1d" }, darkColors: { main: "#f87171", container: "#0b1220", onContainer: "#fee2e2" } },
-        proposal: { colorName: "proposal", lightColors: { main: "#f97316", container: "#ffedd5", onContainer: "#7c2d12" }, darkColors: { main: "#fb923c", container: "#0b1220", onContainer: "#ffedd5" } }
+      calendarColors = {
+        available: { main: "#0d9488", text: "#ccfbf1" },
+        blocked: { main: "#ef4444", text: "#fee2e2" },
+        proposal: { main: "#f97316", text: "#ffedd5" }
       };
+      return calendarColors;
     }
     const r = await fetch(`/api/groups/${groupId}/members`);
     const members = await r.json();
     memberNameById = {};
-    const calendars = {
-      available: { colorName: "available", lightColors: { main: "#0d9488", container: "#ccfbf1", onContainer: "#115e59" }, darkColors: { main: "#2dd4bf", container: "#0b1220", onContainer: "#ccfbf1" } },
-      blocked: { colorName: "blocked", lightColors: { main: "#ef4444", container: "#fee2e2", onContainer: "#7f1d1d" }, darkColors: { main: "#f87171", container: "#0b1220", onContainer: "#fee2e2" } },
-      proposal: { colorName: "proposal", lightColors: { main: "#f97316", container: "#ffedd5", onContainer: "#7c2d12" }, darkColors: { main: "#fb923c", container: "#0b1220", onContainer: "#ffedd5" } }
+    calendarColors = {
+      available: { main: "#0d9488", text: "#ccfbf1" },
+      blocked: { main: "#ef4444", text: "#fee2e2" },
+      proposal: { main: "#f97316", text: "#ffedd5" }
     };
     members.forEach((m) => {
       const key = `member${m.user_id}`;
       const color = m.color || "#64748b";
       memberNameById[m.user_id] = m.name || m.email || `Member ${m.user_id}`;
-      calendars[key] = {
-        colorName: key.toLowerCase(),
-        lightColors: { main: color, container: "#eef2ff", onContainer: "#1f2937" },
-        darkColors: { main: color, container: "#0b1220", onContainer: "#e2e8f0" }
+      calendarColors[key] = {
+        main: color,
+        text: "#e2e8f0"
       };
     });
-    debugLog("Loaded calendars", calendars);
-    return calendars;
+    debugLog("Loaded calendars", calendarColors);
+    return calendarColors;
   }
 
   function mapApiEvents(apiEvents) {
@@ -1083,6 +1082,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       if (!base) return `evt_${Math.random().toString(36).slice(2, 10)}`;
       return base.replace(/[^a-zA-Z0-9_-]/g, "_");
     };
+    const getColor = (key) => calendarColors[key] || { main: "#64748b", text: "#e2e8f0" };
     apiEvents.forEach((ev) => {
       const start = toZonedDateTime(ev.start);
       const end = toZonedDateTime(ev.end);
@@ -1091,41 +1091,57 @@ document.addEventListener("DOMContentLoaded", async function () {
       if (type === "busy") {
         const userId = ev.extendedProps?.user_id;
         const name = memberNameById[userId] || `Member ${userId || ""}`.trim();
+        const color = getColor(userId ? `member${userId}` : "available");
         normalEvents.push({
-          id: normalizeId(ev.id, `busy_${userId}_${start.epochMilliseconds}`),
+          id: normalizeId(ev.id, `busy_${userId}_${Date.parse(start) || Date.now()}`),
           title: `Busy - ${name}`,
           start,
           end,
-          calendarId: userId ? `member${userId}` : "available"
+          backgroundColor: color.main,
+          borderColor: color.main,
+          textColor: color.text,
+          extendedProps: { type: "busy" }
         });
         return;
       }
       if (type === "special") {
+        const kind = ev.extendedProps?.kind === "block_off" ? "blocked" : "available";
+        const color = getColor(kind);
         normalEvents.push({
-          id: normalizeId(ev.id, `special_${start.epochMilliseconds}`),
+          id: normalizeId(ev.id, `special_${Date.parse(start) || Date.now()}`),
           title: ev.title || "Special",
           start,
           end,
-          calendarId: ev.extendedProps?.kind === "block_off" ? "blocked" : "available"
+          backgroundColor: color.main,
+          borderColor: color.main,
+          textColor: color.text,
+          extendedProps: { type: "special", kind: ev.extendedProps?.kind }
         });
         return;
       }
       if (type === "proposal") {
+        const color = getColor("proposal");
         normalEvents.push({
-          id: normalizeId(ev.id, `proposal_${start.epochMilliseconds}`),
+          id: normalizeId(ev.id, `proposal_${Date.parse(start) || Date.now()}`),
           title: ev.title || "Meetup Proposal",
           start,
           end,
-          calendarId: "proposal"
+          backgroundColor: color.main,
+          borderColor: color.main,
+          textColor: color.text,
+          extendedProps: { type: "proposal" }
         });
         return;
       }
+      const color = getColor("available");
       normalEvents.push({
-        id: normalizeId(ev.id, `event_${start.epochMilliseconds}`),
+        id: normalizeId(ev.id, `event_${Date.parse(start) || Date.now()}`),
         title: ev.title || "Event",
         start,
         end,
-        calendarId: "available"
+        backgroundColor: color.main,
+        borderColor: color.main,
+        textColor: color.text
       });
     });
     debugLog("Mapped events", { normal: normalEvents.length, background: backgroundEvents.length, normalEvents, backgroundEvents });
@@ -1144,22 +1160,15 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   window.refreshCalendarEvents = async function () {
-    if (!calendarRange) return;
-    const data = await fetchEventsForRange(calendarRange.start, calendarRange.end);
-    if (eventsService) {
-      eventsService.set(data.normalEvents);
-      eventsService.setBackgroundEvents(data.backgroundEvents);
+    if (calendarInstance) {
+      calendarInstance.refetchEvents();
     }
   };
 
-  eventsService = createEventsServicePlugin();
-  calendarControls = createCalendarControlsPlugin();
-  scrollController = createScrollControllerPlugin({ initialScroll: "08:00" });
-
-  const calendars = await loadCalendars();
+  await loadCalendars();
 
   function resolveTimezone(raw) {
-    if (!raw) return Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (!raw) return "local";
     const trimmed = raw.trim();
     if (trimmed === "UTC" || trimmed === "GMT") return "UTC";
     const offsetMatch = trimmed.match(/^(?:UTC|GMT)\s*([+-]\d{1,2})(?::?(\d{2}))?$/i);
@@ -1167,7 +1176,9 @@ document.addEventListener("DOMContentLoaded", async function () {
       const sign = offsetMatch[1].startsWith("-") ? "-" : "+";
       const hh = offsetMatch[1].replace("+", "").replace("-", "").padStart(2, "0");
       const mm = (offsetMatch[2] || "00").padStart(2, "0");
-      return `${sign}${hh}:${mm}`;
+      if (mm !== "00") return "UTC";
+      const etcSign = sign === "+" ? "-" : "+";
+      return `Etc/GMT${etcSign}${parseInt(hh, 10)}`;
     }
     if (/^[+-]\d{1,2}(:?\d{2})?$/.test(trimmed)) {
       const normalized = trimmed.replace(/^([+-]\d{1,2})(\d{2})$/, "$1:$2");
@@ -1175,7 +1186,9 @@ document.addEventListener("DOMContentLoaded", async function () {
       const hh = parts[0].replace("+", "").replace("-", "").padStart(2, "0");
       const sign = parts[0].startsWith("-") ? "-" : "+";
       const mm = (parts[1] || "00").padStart(2, "0");
-      return `${sign}${hh}:${mm}`;
+      if (mm !== "00") return "UTC";
+      const etcSign = sign === "+" ? "-" : "+";
+      return `Etc/GMT${etcSign}${parseInt(hh, 10)}`;
     }
     return trimmed;
   }
@@ -1183,19 +1196,15 @@ document.addEventListener("DOMContentLoaded", async function () {
   const calendarTimezone = resolveTimezone(el?.dataset?.timezone || "");
 
   function demoZdt(offsetDays, hour, minute) {
-    const now = Temporal.Now.zonedDateTimeISO(calendarTimezone);
-    const base = Temporal.ZonedDateTime.from({
-      timeZone: now.timeZoneId,
-      year: now.year,
-      month: now.month,
-      day: now.day,
-      hour,
-      minute,
-      second: 0,
-      millisecond: 0
-    });
-    return base.add({ days: offsetDays });
+    const base = new Date();
+    base.setHours(hour, minute, 0, 0);
+    base.setDate(base.getDate() + offsetDays);
+    return base;
   }
+
+  const demoAvailable = calendarColors.available || { main: "#0d9488", text: "#ccfbf1" };
+  const demoBlocked = calendarColors.blocked || { main: "#ef4444", text: "#fee2e2" };
+  const demoProposal = calendarColors.proposal || { main: "#f97316", text: "#ffedd5" };
 
   const demoEvents = [
     {
@@ -1203,113 +1212,120 @@ document.addEventListener("DOMContentLoaded", async function () {
       title: "Available - You",
       start: demoZdt(0, 13, 30),
       end: demoZdt(0, 16, 0),
-      calendarId: "available"
+      backgroundColor: demoAvailable.main,
+      borderColor: demoAvailable.main,
+      textColor: demoAvailable.text
     },
     {
       id: "demo-blocked",
       title: "Blocked - Sarah",
       start: demoZdt(0, 18, 0),
       end: demoZdt(0, 20, 0),
-      calendarId: "blocked"
+      backgroundColor: demoBlocked.main,
+      borderColor: demoBlocked.main,
+      textColor: demoBlocked.text
     },
     {
       id: "demo-proposal",
       title: "Proposed: Team Lunch",
       start: demoZdt(1, 12, 0),
       end: demoZdt(1, 13, 30),
-      calendarId: "proposal"
+      backgroundColor: demoProposal.main,
+      borderColor: demoProposal.main,
+      textColor: demoProposal.text
     }
   ];
   debugLog("Demo events", demoEvents);
 
-  const viewWeek = createViewWeek ? createViewWeek() : null;
-  const viewDay = createViewDay ? createViewDay() : null;
-  const viewMonth = createViewMonthGrid ? createViewMonthGrid() : null;
-  const viewList = createViewList ? createViewList() : null;
   const isMobile = window.matchMedia && window.matchMedia("(max-width: 640px)").matches;
-  const views = (isMobile ? [viewDay, viewList] : [viewWeek, viewDay, viewMonth, viewList]).filter(Boolean);
-  if (!views.length) {
-    showToast("Calendar views failed to load.", "error");
-    return;
-  }
-  const plugins = [];
-  if (calendarControls) plugins.push(calendarControls);
-  if (eventsService) plugins.push(eventsService);
-  if (scrollController) plugins.push(scrollController);
+  const defaultView = isMobile ? "timeGridDay" : "timeGridWeek";
+  const viewButtons = isMobile ? "timeGridDay,listWeek" : "timeGridWeek,timeGridDay,dayGridMonth,listWeek";
 
   function scrollToFirstEvent(events) {
-    if (!scrollController || !events || !events.length) return;
-    const sorted = events.slice().sort((a, b) => Temporal.ZonedDateTime.compare(a.start, b.start));
-    const first = sorted[0]?.start;
-    if (!first) return;
-    const hh = String(first.hour).padStart(2, "0");
-    const mm = String(first.minute || 0).padStart(2, "0");
-    const timeStr = `${hh}:${mm}`;
+    if (!calendarInstance || !events || !events.length) return;
+    const sorted = events.slice().sort((a, b) => new Date(a.start) - new Date(b.start));
+    const first = sorted[0];
+    if (!first || !first.start) return;
+    const dt = new Date(first.start);
+    const hh = String(dt.getHours()).padStart(2, "0");
+    const mm = String(dt.getMinutes()).padStart(2, "0");
+    const timeStr = `${hh}:${mm}:00`;
     if (!calendarReady) {
       pendingScrollTime = timeStr;
       return;
     }
     try {
-      scrollController.scrollTo(timeStr);
+      calendarInstance.scrollToTime(timeStr);
     } catch (e) {
       pendingScrollTime = timeStr;
     }
   }
 
-  const defaultView = (isMobile ? viewDay : viewWeek) ? (isMobile ? viewDay.name : viewWeek.name) : views[0].name;
-
-  calendarInstance = createCalendar({
-    selectedDate: Temporal.Now.plainDateISO(),
-    defaultView,
-    views,
-    calendars,
-    events: isDemo ? demoEvents : [],
-    callbacks: {
-      fetchEvents: async function (range) {
-        calendarRange = range;
-        debugLog("Range update", range);
-        if (isDemo) {
-          scrollToFirstEvent(demoEvents);
-          return demoEvents;
-        }
-        const data = await fetchEventsForRange(range.start, range.end);
-        if (eventsService) {
-          eventsService.setBackgroundEvents([]);
-        }
-        scrollToFirstEvent(data.normalEvents);
-        return data.normalEvents;
-      },
-      onClickDateTime: function (dateTime) {
-        if (!dateTime) return;
-        const startInstant = dateTime.toInstant().toString();
-        const endInstant = dateTime.add({ hours: 1 }).toInstant().toString();
-        selectedRange = {
-          start: new Date(startInstant),
-          end: new Date(endInstant),
-          startStr: startInstant,
-          endStr: endInstant
-        };
+  calendarInstance = new Calendar(el, {
+    plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
+    initialView: defaultView,
+    headerToolbar: {
+      left: "prev,next today",
+      center: "title",
+      right: viewButtons
+    },
+    height: "auto",
+    nowIndicator: true,
+    editable: false,
+    selectable: false,
+    timeZone: calendarTimezone || "local",
+    events: async function (info, successCallback, failureCallback) {
+      calendarRange = info;
+      debugLog("Range update", info);
+      if (isDemo) {
+        scrollToFirstEvent(demoEvents);
+        successCallback(demoEvents);
+        return;
       }
+      try {
+        const data = await fetchEventsForRange(info.start, info.end);
+        scrollToFirstEvent(data.normalEvents);
+        successCallback(data.normalEvents);
+      } catch (e) {
+        failureCallback(e);
+      }
+    },
+    dateClick: function (info) {
+      if (!info || !info.date) return;
+      const startDate = info.date;
+      const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+      selectedRange = {
+        start: startDate,
+        end: endDate,
+        startStr: startDate.toISOString(),
+        endStr: endDate.toISOString()
+      };
+    },
+    eventContent: function (arg) {
+      const title = arg.event.title || "";
+      const timeText = arg.timeText ? `<div class="fc-event-time">${arg.timeText}</div>` : "";
+      return { html: `<div class="fc-event-main"><div class="fc-event-title">${title}</div>${timeText}</div>` };
     }
-  }, plugins);
+  });
 
-  calendarInstance.render(el);
+  calendarInstance.render();
   calendarReady = true;
-  if (pendingScrollTime && scrollController) {
+  if (pendingScrollTime && calendarInstance) {
     try {
-      scrollController.scrollTo(pendingScrollTime);
+      calendarInstance.scrollToTime(pendingScrollTime);
     } catch (e) {}
     pendingScrollTime = null;
   }
   debugLog("Calendar rendered", calendarInstance);
-  window.__SXCAL__ = calendarInstance;
-
   const themeIsDark = document.documentElement.classList.contains("dark");
-  if (calendarInstance.setTheme) {
-    calendarInstance.setTheme(themeIsDark ? "dark" : "light");
-  }
-  if (calendarControls && calendarTimezone) {
-    calendarControls.setTimezone(calendarTimezone);
+  if (calendarInstance) {
+    calendarInstance.setOption("themeSystem", "standard");
+    if (themeIsDark) {
+      calendarInstance.el.classList.add("fc-theme-dark");
+    } else {
+      calendarInstance.el.classList.remove("fc-theme-dark");
+    }
+    calendarInstance.updateSize();
   }
 
   // Timezone selector removed

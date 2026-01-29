@@ -1,13 +1,16 @@
-import { build } from "esbuild";
+import esbuild from "esbuild";
 
-await build({
+esbuild.build({
   entryPoints: ["app/static/main.js"],
   bundle: true,
-  format: "esm",
-  platform: "browser",
-  target: ["es2020"],
+  minify: false,
+  sourcemap: false,
   outfile: "app/static/main.bundle.js",
-  sourcemap: true,
+  format: "iife",
+  target: ["es2018"]
+}).then(() => {
+  console.log("Wrote app/static/main.bundle.js");
+}).catch((err) => {
+  console.error(err);
+  process.exit(1);
 });
-
-console.log("Wrote app/static/main.bundle.js");

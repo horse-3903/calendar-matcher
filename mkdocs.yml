@@ -1,0 +1,33 @@
+site_name: Phase Docs
+site_description: Documentation for Phase (Calendar Matcher)
+site_url: ""
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+markdown_extensions:
+  - admonition
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+nav:
+  - Overview: docs/index.md
+  - Setup:
+      - Local Development: docs/setup/local.md
+      - Google OAuth: docs/setup/oauth.md
+      - Database: docs/setup/database.md
+      - Build & Run: docs/setup/build.md
+  - Features:
+      - Groups & Roles: docs/features/groups.md
+      - Calendar Sync: docs/features/sync.md
+      - Availability & Proposals: docs/features/availability.md
+      - Export to Google: docs/features/export.md
+  - API:
+      - Overview: docs/api/overview.md
+  - Testing: docs/testing/checklist.md
+  - Troubleshooting: docs/troubleshooting.md

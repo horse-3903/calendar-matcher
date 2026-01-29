@@ -695,7 +695,7 @@ input[type="time"]::-webkit-datetime-edit {
     -webkit-overflow-scrolling: touch;
   }
 
-  .sx__calendar {
+  .fc {
     min-width: 900px;
   }
 
@@ -713,41 +713,34 @@ input[type="time"]::-webkit-datetime-edit {
     min-height: 520px;
   }
 
-  .sx__calendar .sx__header-title,
-  .sx__calendar .sx__header-title-text,
-  .sx__calendar .sx__toolbar-title {
+  .fc .fc-toolbar-title {
     font-size: 0.95rem;
   }
 
-  .sx__calendar .sx__event {
+  .fc .fc-event {
     padding: 5px 6px;
   }
 }
 
-.sx__calendar {
+.fc {
   border-radius: 14px;
   overflow: hidden;
 }
 
-.dark .sx__calendar {
+.dark .fc {
   background: #0f172a;
 }
 
-.sx__calendar button {
+.fc button {
   font-family: inherit;
 }
 
-/* Show full Schedule-X header title */
-.sx__calendar .sx__calendar-header,
-.sx__calendar .sx__header,
-.sx__calendar .sx__toolbar,
-.sx__calendar .sx__topbar {
+/* FullCalendar header spacing */
+.fc .fc-toolbar {
   padding: 12px 16px;
 }
 
-.sx__calendar .sx__header-title,
-.sx__calendar .sx__header-title-text,
-.sx__calendar .sx__toolbar-title {
+.fc .fc-toolbar-title {
   font-size: 1.05rem;
   line-height: 1.25;
   white-space: normal;
@@ -755,25 +748,21 @@ input[type="time"]::-webkit-datetime-edit {
   text-overflow: clip;
 }
 
-.sx__calendar .sx__header-title-text {
-  max-width: none;
-}
-
-.sx__calendar .sx__event {
+.fc .fc-event {
   border-radius: 10px;
   padding: 6px 8px;
   overflow: hidden;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
 }
 
-.sx__calendar .sx__event-content {
+.fc .fc-event-main {
   display: flex;
   flex-direction: column;
   gap: 4px;
   line-height: 1.2;
 }
 
-.sx__calendar .sx__event-title {
+.fc .fc-event-title {
   font-weight: 600;
   font-size: 0.9rem;
   white-space: nowrap;
@@ -781,7 +770,7 @@ input[type="time"]::-webkit-datetime-edit {
   text-overflow: ellipsis;
 }
 
-.sx__calendar .sx__event-time {
+.fc .fc-event-time {
   font-size: 0.78rem;
   opacity: 0.9;
   white-space: nowrap;
@@ -789,38 +778,38 @@ input[type="time"]::-webkit-datetime-edit {
   text-overflow: ellipsis;
 }
 
-.sx__calendar .sx__event-time svg {
+.fc .fc-event-time svg {
   display: none;
 }
 
-.sx__calendar ::-webkit-scrollbar {
+.fc ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
-.sx__calendar ::-webkit-scrollbar-track {
+.fc ::-webkit-scrollbar-track {
   background: rgba(148, 163, 184, 0.2);
   border-radius: 999px;
 }
 
-.sx__calendar ::-webkit-scrollbar-thumb {
+.fc ::-webkit-scrollbar-thumb {
   background: rgba(100, 116, 139, 0.5);
   border-radius: 999px;
 }
 
-.sx__calendar ::-webkit-scrollbar-thumb:hover {
+.fc ::-webkit-scrollbar-thumb:hover {
   background: rgba(100, 116, 139, 0.7);
 }
 
-.dark .sx__calendar ::-webkit-scrollbar-track {
+.dark .fc ::-webkit-scrollbar-track {
   background: rgba(15, 23, 42, 0.8);
 }
 
-.dark .sx__calendar ::-webkit-scrollbar-thumb {
+.dark .fc ::-webkit-scrollbar-thumb {
   background: rgba(148, 163, 184, 0.45);
 }
 
-.dark .sx__calendar ::-webkit-scrollbar-thumb:hover {
+.dark .fc ::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.7);
 }
 
