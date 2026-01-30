@@ -568,7 +568,8 @@ def add_proposal(group_id):
 @login_required
 def sync_me():
     # sync next ~6 months for current user
-    time_min = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    weekday = datetime.now(timezone.utc).weekday()
+    time_min = (datetime.now(timezone.utc) - timedelta(days=weekday)).replace(microsecond=0).isoformat()
     time_max = (datetime.now(timezone.utc) + timedelta(days=180)).replace(microsecond=0).isoformat()
 
     user = current_user
