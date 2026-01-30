@@ -1,314 +1,301 @@
-# Phase — Calendar Matcher
+﻿# Phase
 
-Phase helps groups coordinate availability without exposing private event details. It pulls **FreeBusy** data from Google Calendar, lets members add **Available / Blocked / Proposed** time ranges, and provides a shared calendar view with member-specific colors. You can also export the group view into a synced Google Calendar.
+Phase is a group scheduling app that connects to Google Calendar, shows shared availability, and helps teams find meeting times without sharing event details.
 
----
-
-## Table of Contents
-
+## Table of contents
 - Overview
-- Key Features
-- Quick Start (Local)
-- Environment Configuration
-- Google OAuth Setup
-- Database (Postgres / SQLite)
-- Running & Building
-- Documentation
-- Using the App
-- Group Roles & Permissions
-- Calendar Sync & Privacy
-- Export to Google Calendar
-- Debug / Dev Console
-- API Overview (High-Level)
+- Features
+- Quick start
+- Detailed setup
+- Google OAuth setup
+- Database and migrations
+- Running the app
+- Frontend build
+- Syncing behavior
+- Using the app (beginner guide)
+- Demo mode
+- API reference
 - Troubleshooting
-- Deployment Notes (Render)
-- Security Notes
-
----
+- Project structure
+- Scripts
+- Environment variables
 
 ## Overview
+- Built with Flask + SQLAlchemy on the backend.
+- Uses Google OAuth 2.0 for sign-in and Google Calendar read-only access.
+- Renders HTML with Jinja templates and uses Schedule-X for the calendar UI.
+- Uses a background scheduler to refresh calendar data every 15 minutes.
 
-Phase is a Flask app with SQLAlchemy and a modern frontend. It uses Google’s **FreeBusy** endpoint (not Events) to avoid reading event titles or details. The UI is optimized for dark/light themes and includes a shared group calendar.
+## Features
+Authentication and accounts
+- Login with Google OAuth 2.0.
+- Profile settings: username, display name, bio, location, timezone, profile photo.
+- Theme toggle (light/dark) persisted in localStorage.
 
----
+Groups
+- Create groups with unique join codes.
+- Join groups using a join code or invite link.
+- Shareable invite links with expiry.
+- Auto-assign distinct member colors within a group.
 
-## Key Features
+Calendar and availability
+- Calendar view powered by Schedule-X (week/day/month/list views).
+- Displays member busy time from Google Calendar without event titles/details.
+- Custom color coding per member.
+- Special events:
+  - Available: mark yourself available even if busy.
+  - Block-off: mark time blocked even if no events exist.
+- Meetup proposals with conflict warnings.
+- Calendar theme matches app theme (light/dark).
+- Optional auto-scroll to first event in the current range.
 
-- **Google OAuth login** (Calendar read access for FreeBusy)
-- **FreeBusy-only** sync — no event titles/details fetched
-- **Group creation & joining** via join code or invite link
-- **Group dashboard** with shared calendar
-- **Special events**: available or blocked time ranges
-- **Meetup proposals** with conflict warnings
-- **Auto-sync** intervals (optional)
-- **Export group calendar** to Google Calendar (create/update)
-- **Per-member colors** with Google calendar color mapping
-- **Admin roles** with member promotion
-- **Dev Console** (only in dev mode, or owner in prod)
+Syncing
+- Manual sync via UI.
+- Auto-sync interval selection (client side).
+- Server-side background sync every 15 minutes.
+- Choose which Google calendars to include in sync.
 
----
+Demo
+- Demo dashboard and demo group experience (enabled in debug).
+- Pre-filled demo events and UI state.
 
-## Quick Start (Local)
+## Quick start
+1) Install Python and Node.js
+- Python 3.10+ recommended
+- Node.js 18+ recommended
 
-### 1) Install Python dependencies
+2) Create and activate a Python environment
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+```
+
+3) Install backend dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2) Install Node dependencies
+4) Install frontend dependencies
 ```bash
 npm install
 ```
 
-### 3) Configure environment
-Create `.env` based on `.env.example` (or set env vars in your shell).
+5) Configure environment variables
+Create a `.env` file in the project root (see Environment variables section).
 
-### 4) Run
-```bash
-python run.py
-```
-
-App runs at: `http://127.0.0.1:5000`
-
----
-
-## Environment Configuration
-
-Minimum:
-- `SECRET_KEY`
-- `GOOGLE_CLIENT_ID`
-- `GOOGLE_CLIENT_SECRET`
-- `DATABASE_URL`
-
-Additional:
-- `APP_MODE` → `dev` | `test` | `prod`
-- `DEBUG_OWNER_EMAIL` → only used in prod for Dev Console access
-
-Example:
-```
-APP_MODE=dev
-SECRET_KEY=dev_secret_change_me
-DATABASE_URL=postgresql://user:pass@localhost:5432/phase
-GOOGLE_CLIENT_ID=...
-GOOGLE_CLIENT_SECRET=...
-```
-
----
-
-## Google OAuth Setup
-
-1) Create a Google Cloud project  
-2) Enable **Google Calendar API**  
-3) Configure OAuth consent screen  
-4) Add OAuth Client ID (Web Application)  
-5) Authorized redirect URI:  
-   ```
-   http://127.0.0.1:5000/auth/callback
-   ```
-6) Add Client ID/Secret to `.env`
-
-Scopes used:
-- `openid`, `email`, `profile`
-- `https://www.googleapis.com/auth/calendar.readonly`
-- `https://www.googleapis.com/auth/calendar` (needed for export)
-
----
-
-## Database (Postgres / SQLite)
-
-Phase uses SQLAlchemy with `db.create_all()` (no migrations by default).
-
-### Local Postgres via Docker
-```bash
-docker-compose up -d
-```
-Set:
-```
-DATABASE_URL=postgresql://phase_user:phase_pass@localhost:5432/phase
-```
-
-### Existing DB updates (Render)
-If a Postgres DB already exists, add new columns manually:
-```sql
-ALTER TABLE groups
-  ADD COLUMN IF NOT EXISTS timezone VARCHAR(64),
-  ADD COLUMN IF NOT EXISTS synced_calendar_id VARCHAR(255),
-  ADD COLUMN IF NOT EXISTS synced_calendar_name VARCHAR(255),
-  ADD COLUMN IF NOT EXISTS synced_calendar_tz VARCHAR(64);
-
-ALTER TABLE memberships
-  ADD COLUMN IF NOT EXISTS google_color_id VARCHAR(8);
-```
-
----
-
-## Running & Building
-
-### Dev server
-```bash
-python run.py
-```
-
-### Frontend build
+6) Build frontend assets
 ```bash
 npm run build
 ```
 
+7) Run the app
+```bash
+python run.py
+```
+
+Visit `http://127.0.0.1:5000`.
+
+## Detailed setup
+
+### 1) Python environment
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 2) Node environment
+```bash
+npm install
+```
+
+### 3) Environment variables
+Create `.env` in the project root. Example:
+```env
+FLASK_ENV=development
+FLASK_DEBUG=1
+SECRET_KEY=replace-me
+APP_BASE_URL=http://127.0.0.1:5000
+GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-client-secret
+DATABASE_URL=sqlite:///app.db
+```
+
+### 4) OAuth setup (Google)
+1. Go to Google Cloud Console.
+2. Create a project.
+3. Enable Google Calendar API.
+4. Configure OAuth consent screen.
+5. Create OAuth Client ID (Web Application).
+6. Add Authorized redirect URIs:
+   - `http://127.0.0.1:5000/auth/callback`
+7. Copy Client ID and Client Secret into `.env`.
+
+### 5) Database
+The app uses SQLite by default. Tables are created automatically on startup.
+- To reset DB: delete `instance/app.db` (if using default sqlite path) and restart.
+
+### 6) Build frontend assets
+```bash
+npm run build
+```
 This builds:
 - `app/static/main.bundle.js`
-- `app/static/fullcalendar.css`
-- `app/static/tailwind.css`
+- `app/static/schedule-x.css`
+- `app/static/styles.css` (Tailwind build)
 
----
+### 7) Run
+```bash
+python run.py
+```
 
-## Documentation
+## Frontend build
+- JavaScript bundle: `scripts/build-main.mjs` -> `app/static/main.bundle.js`
+- Schedule-X theme CSS: `scripts/build-calendar.mjs` -> `app/static/schedule-x.css`
+- Tailwind CSS build: configured in `tailwind.config.js`
 
-Full docs live in `docs/` and are configured with `mkdocs.yml`.
+Common commands:
+```bash
+npm run build:js
+npm run build:calendar
+npm run build:css
+npm run build:assets
+npm run build
+```
 
----
+## Syncing behavior
+- Manual sync: Sync Calendar card on the dashboard.
+- Auto-sync (client): choose interval in Sync dialog; stored in localStorage.
+- Server scheduler: runs every 15 minutes for all users with tokens.
+- Calendar selection: choose which calendars to include before syncing.
 
-## Using the App
+## Using the app (beginner guide)
 
-### 1) Login
-Sign in with Google to connect your calendar.
+### First time
+1) Open the app and click Login with Google.
+2) Grant read-only calendar access.
+3) You will land on your dashboard.
 
-### 2) Create or Join a Group
-- **Create**: generates a unique join code.
-- **Join**: use join code or invite link.
+### Create a group
+1) Click “Create a Group”.
+2) Name the group and create.
+3) Share the join code or invite link with others.
 
-### 3) Sync Calendar
-Opens the sync dialog where you can:
-- Select which calendars to include
-- Sync now
-- Enable auto-sync interval
+### Join a group
+1) Click “Join a Group”.
+2) Enter a join code.
 
-### 4) Add Time Ranges
-Use **Add Time Range**:
-- Available
-- Blocked
+### Sync your calendar
+1) Click “Sync Calendar”.
+2) Choose which calendars to include.
+3) Click “Sync now”.
+4) Optional: choose an auto-sync interval.
 
-### 5) Propose Meetup
-Suggest a time with optional location/description. Conflicts are shown if other members are busy.
+### View shared availability
+- Go to a group page.
+- The calendar shows member busy blocks as “Busy - <Name>”.
+- No event details are shown.
 
-### 6) Export to Google
-From group dashboard:
-- Create synced calendar (first time)
-- Update synced calendar (subsequent)
-- Customize name, timezone, member colors
-- Invite members to the calendar
+### Add availability or block-off
+1) Select a time range on the calendar.
+2) Click “Add Available Time” or “Block Off Time”.
+3) Submit.
 
----
+### Propose a meetup
+1) Select a time range on the calendar.
+2) Click “Propose Meetup”.
+3) Add location/description.
+4) If conflicts exist, the app warns which members are busy.
 
-## Group Roles & Permissions
+## Demo mode
+- When `FLASK_DEBUG=1`, users automatically see a Demo Group and Demo page.
+- Demo events are generated locally and do not sync with Google.
 
-Roles:
-- **Admin**
-- **Member**
+## API reference (internal)
 
-Admins can:
-- Change group settings (name, timezone, join code)
-- Promote members to admin
-- Export/Update synced calendars
+### Auth
+- `GET /auth/login` -> Google OAuth flow
+- `GET /auth/callback` -> OAuth callback
 
-Members can:
-- View calendar
-- Add available/blocked time
-- Propose meetups
+### Groups
+- `POST /groups/create`
+- `POST /groups/join`
+- `GET /groups/<id>`
+- `POST /groups/<id>/invite/create`
+- `GET /invite/<token>`
 
----
+### Calendar data
+- `GET /api/groups/<id>/members`
+- `GET /api/groups/<id>/events?start=...&end=...`
+- `POST /api/groups/<id>/special`
+- `POST /api/groups/<id>/proposal`
 
-## Calendar Sync & Privacy
-
-Phase uses **FreeBusy** only:
-- ✅ Time ranges are synced
-- ❌ Event titles/details are never accessed
-
-Sync window:
-- Current time → **6 months ahead**
-- The FreeBusy API is chunked (90-day slices) to avoid timeRangeTooLong errors.
-
----
-
-## Export to Google Calendar
-
-Exporting creates or updates a separate Google Calendar with:
-- Busy blocks labeled per member
-- Available/Blocked special events
-- Proposed meetups
-
-Export options:
-- Calendar name (default: `Phase - <Group Name>`)
-- Timezone (default: group timezone)
-- Per‑member color selection
-- Invite members to the calendar
-- Overwrite existing Phase events
-
----
-
-## Debug / Dev Console
-
-Available only in:
-- `APP_MODE=dev`
-- `APP_MODE=prod` **only** if logged in as `DEBUG_OWNER_EMAIL`
-
-Functions:
-- Clear busy cache
-- Clear proposals
-- Clear invite links
-- Force sync
-
----
-
-## API Overview (High‑Level)
-
-Key endpoints:
-- `POST /api/sync/me` → FreeBusy sync (6 months)
-- `GET /api/calendars` → list calendars
-- `POST /api/calendars/save` → save selection
-- `POST /api/groups/<id>/special` → add available/blocked
-- `POST /api/groups/<id>/proposal` → propose meetup
-- `POST /api/groups/<id>/export/google` → create/update synced calendar
-- `GET /api/groups/<id>/export/google/options` → export settings
-
----
+### Sync
+- `POST /api/sync/me`
+- `GET /api/calendars`
+- `POST /api/calendars/selection`
 
 ## Troubleshooting
 
-**FreeBusy 400 “timeRangeTooLong”**  
-Fixed by chunking. Make sure latest code is deployed.
+### Sync fails or returns 500
+- Make sure `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set.
+- Ensure the OAuth consent screen is configured.
+- Confirm the user has granted calendar read-only access.
 
-**OAuth mismatch_state**  
-Clear cookies / restart Flask.
+### Calendar not rendering
+- Run `npm run build` to regenerate assets.
+- Confirm `app/static/main.bundle.js` exists.
 
-**Sync fails with 401**  
-Refresh token missing; sign in again.
+### No events appear
+- Sync calendar and wait for the scheduler, or click Sync now.
+- Confirm you selected at least one calendar in Sync settings.
 
-**Build errors**  
-Run:
-```bash
-npm install
-npm run build
+### AM/PM or timezone mismatch
+- Set your timezone in Settings.
+
+## Project structure
+```
+app/
+  auth.py
+  config.py
+  extensions.py
+  models.py
+  routes.py
+  scheduler.py
+  services/
+    colors.py
+    google_calendar.py
+    invites.py
+  static/
+    main.js
+    main.bundle.js
+    schedule-x.css
+    styles.css
+  templates/
+    base.html
+    index.html
+    dashboard.html
+    settings.html
+scripts/
+  build-calendar.mjs
+  build-main.mjs
+run.py
+package.json
+requirements.txt
 ```
 
----
+## Scripts
+- `npm run build:js` - bundle `app/static/main.js`
+- `npm run build:calendar` - copy Schedule-X theme CSS
+- `npm run build:css` - build Tailwind CSS
+- `npm run build:assets` - build JS + calendar CSS
+- `npm run build` - build assets + CSS
 
-## Deployment Notes (Render)
-
-1) Create Render Postgres instance  
-2) Set `DATABASE_URL` in Render env vars  
-3) Set OAuth vars + `SECRET_KEY`  
-4) Deploy  
-5) Run the SQL migrations above if DB already exists  
-
----
-
-## Security Notes
-
-- Do not commit `.env`
-- Rotate credentials if shared
-- Use strong `SECRET_KEY`
-- Limit Dev Console access in prod
-
----
-
-If you want a dedicated docs site (Docusaurus, MkDocs, etc.), I can generate it with this content.*** End Patch"}}Output code bug at end? apply_patch should be plain. I must send freeform. Let's redo apply_patch.```
+## Environment variables
+- `FLASK_ENV` - set to `development` or `production`
+- `FLASK_DEBUG` - `1` to enable debug/demo
+- `SECRET_KEY` - Flask session secret
+- `APP_BASE_URL` - base URL for invite links
+- `GOOGLE_CLIENT_ID` - OAuth client ID
+- `GOOGLE_CLIENT_SECRET` - OAuth client secret
+- `DATABASE_URL` - SQLAlchemy database URI (default: sqlite:///app.db)
