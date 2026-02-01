@@ -1,13 +1,15 @@
-You are an expert software engineer and product designer. Read this repository and help improve it. Below is the essential context you need before answering any request.
+# Phase – Agent Guide
 
-# Repository Overview
-Name: Phase
-Purpose: Group scheduling app that connects to Google Calendar (FreeBusy only), shows availability without event details, and helps teams coordinate meeting times.
-Backend: Flask + SQLAlchemy
-Frontend: Jinja templates + Tailwind + custom CSS + Schedule‑X calendar
-Auth: Google OAuth 2.0
+This file replaces `PROMPT.md` and is the single source of truth for repo context and working conventions.
 
-# Key Features
+## Repository Overview
+- Name: Phase
+- Purpose: Group scheduling app that connects to Google Calendar (FreeBusy only), shows availability without event details, and helps teams coordinate meeting times.
+- Backend: Flask + SQLAlchemy
+- Frontend: Jinja templates + Tailwind + custom CSS + Schedule‑X calendar
+- Auth: Google OAuth 2.0
+
+## Key Features
 - Google OAuth login (openid/email/profile + calendar read/write for export).
 - Groups: create, join by code, share invite links, group dashboard.
 - Calendar: Schedule‑X week/day/month/list views; FreeBusy blocks shown without event details.
@@ -17,7 +19,7 @@ Auth: Google OAuth 2.0
 - Export: Create a new Google Calendar and export group events; invite members by email.
 - Demo mode: Demo group/page when debug is on.
 
-# Important Files
+## Important Files
 Backend:
 - app/__init__.py: Flask app setup, DB init, error handlers
 - app/config.py: Config + APP_MODE + DB URL normalization
@@ -25,6 +27,7 @@ Backend:
 - app/routes.py: Main routes, API endpoints, group settings, export, debug APIs
 - app/services/google_calendar.py: FreeBusy, calendar list, create calendar, insert event, ACL
 - app/scheduler.py: 15‑minute FreeBusy sync
+
 Frontend:
 - app/templates/base.html: Layout, header links, theme toggle, dev console link
 - app/templates/index.html: Home + logged‑in dashboard
@@ -34,26 +37,47 @@ Frontend:
 - app/static/main.js: Frontend logic, Schedule‑X setup, toasts, dialogs
 - app/static/styles.css: Custom styles
 
-# Environments / Modes
+Build & assets:
+- scripts/build-main.mjs → app/static/main.bundle.js
+- scripts/build-calendar.mjs → app/static/schedule-x.css
+- tailwind.config.js → app/static/styles.css
+
+## Environments / Modes
 - APP_MODE=dev | test | prod
 - dev: Dev Console enabled for anyone
 - test: Dev Console hidden
 - prod: Dev Console visible only to owner (DEBUG_OWNER_EMAIL)
 
-# Database
+## Database
 - Uses DATABASE_URL only.
 - Supports Postgres (psycopg2‑binary).
 - SQLite is still possible if DATABASE_URL is sqlite://…
 - docker-compose.yml provides local Postgres.
 
-# UX Patterns
+## UX Patterns
 - Uses Tailwind utility classes in templates.
 - Custom dialogs via .dialog/.dialog-card, not native alerts.
 - Toasts are used for specific actions only.
 
-# If unsure
+## Guardrails
 - Do not change Google FreeBusy privacy assumptions.
 - Do not introduce migrations unless requested.
 - Avoid breaking OAuth.
 
-Please answer the user’s request with precise, minimal changes, and keep the UI visually consistent across desktop and mobile.
+## Tooling: Faster File Search
+Preferred tools in this repo:
+- ripgrep: `rg "needle" path`
+- list files: `rg --files` (fast file inventory)
+- Windows fallback: `Get-ChildItem -Recurse -Filter *.py`
+
+Optional convenience scripts (add if you want later):
+Added in this repo:
+- `scripts/find.ps1` for quick repo searches (wraps `rg`)
+- npm scripts in `package.json`:
+  - `"find": "rg"` for quick text search
+  - `"files": "rg --files"` for fast file inventory
+  - `"find:py": "rg --files -g \"*.py\""` for Python files
+  - `"find:js": "rg --files -g \"*.js\" -g \"*.mjs\""` for JS files
+
+## If Unsure
+Please answer user requests with precise, minimal changes, and keep the UI visually consistent across desktop and mobile.

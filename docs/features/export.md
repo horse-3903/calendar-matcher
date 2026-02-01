@@ -12,3 +12,4 @@ Phase can create or update a synced Google Calendar for a group.
 ## Notes
 - Exported events include busy blocks, special events, and proposals.
 - Events are tagged so Phase can update or replace them later.
+- Export requires Google Calendar write access.

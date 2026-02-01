@@ -7,8 +7,8 @@ npm run build
 
 Outputs:
 - `app/static/main.bundle.js`
-- `app/static/fullcalendar.css`
-- `app/static/tailwind.css`
+- `app/static/schedule-x.css`
+- `app/static/styles.css`
 
 ## Run backend
 ```bash

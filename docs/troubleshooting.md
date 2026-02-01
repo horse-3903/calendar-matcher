@@ -15,5 +15,11 @@ npm install
 npm run build
 ```
 
+## Calendar styling missing
+Ensure `app/static/schedule-x.css` exists by running:
+```bash
+npm run build:calendar
+```
+
 ## Postgres missing columns
 Run the schema update SQL in Render (see Database setup).

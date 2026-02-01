@@ -7,6 +7,7 @@ Phase is a group scheduling app that connects to Google Calendar, shows shared a
 - Features
 - Quick start
 - Detailed setup
+- Documentation
 - Google OAuth setup
 - Database and migrations
 - Running the app
@@ -210,6 +211,57 @@ npm run build
 ## Demo mode
 - When `FLASK_DEBUG=1`, users automatically see a Demo Group and Demo page.
 - Demo events are generated locally and do not sync with Google.
+
+## Documentation
+Start here: [`docs/index.md`](docs/index.md)
+
+### Recommended docs framework (MkDocs)
+This repo is already structured as a docs site under `docs/`. To publish a clean, professional documentation site, use MkDocs with the Material theme.
+
+Quick start:
+```bash
+pip install mkdocs-material
+mkdocs new .
+```
+
+Then point `mkdocs.yml` at the existing docs folder:
+```yml
+site_name: Phase
+docs_dir: docs
+site_dir: site
+theme:
+  name: material
+```
+
+Run locally:
+```bash
+mkdocs serve
+```
+
+Publish (GitHub Pages):
+```bash
+mkdocs gh-deploy
+```
+
+### Doc index
+Setup
+- Local dev: [`docs/setup/local.md`](docs/setup/local.md)
+- Database: [`docs/setup/database.md`](docs/setup/database.md)
+- OAuth: [`docs/setup/oauth.md`](docs/setup/oauth.md)
+- Build: [`docs/setup/build.md`](docs/setup/build.md)
+
+Features
+- Groups: [`docs/features/groups.md`](docs/features/groups.md)
+- Availability: [`docs/features/availability.md`](docs/features/availability.md)
+- Calendar sync: [`docs/features/sync.md`](docs/features/sync.md)
+- Export: [`docs/features/export.md`](docs/features/export.md)
+
+API
+- Overview: [`docs/api/overview.md`](docs/api/overview.md)
+
+Testing & Troubleshooting
+- Checklist: [`docs/testing/checklist.md`](docs/testing/checklist.md)
+- Troubleshooting: [`docs/troubleshooting.md`](docs/troubleshooting.md)
 
 ## API reference (internal)
 

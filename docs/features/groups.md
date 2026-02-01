@@ -13,3 +13,6 @@ Admins can update:
 - Group name
 - Join code
 - Timezone
+
+## Invite links
+Invite links are time-limited and can be regenerated anytime.

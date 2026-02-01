@@ -1,0 +1,65 @@
+site_name: Phase
+site_description: Group scheduling without exposing event details.
+site_url: ""
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.tabs
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+  palette:
+    - scheme: default
+      primary: deep purple
+      accent: deep purple
+    - scheme: slate
+      primary: deep purple
+      accent: deep purple
+  icon:
+    repo: fontawesome/brands/github
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - tables
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - Setup:
+      - Local development: setup/local.md
+      - Database: setup/database.md
+      - OAuth: setup/oauth.md
+      - Build: setup/build.md
+  - Features:
+      - Groups: features/groups.md
+      - Availability: features/availability.md
+      - Calendar sync: features/sync.md
+      - Export: features/export.md
+  - API:
+      - Overview: api/overview.md
+  - Testing:
+      - Checklist: testing/checklist.md
+  - Troubleshooting: troubleshooting.md

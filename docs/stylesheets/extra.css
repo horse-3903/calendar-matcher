@@ -1,0 +1,68 @@
+.md-typeset .hero {
+  font-size: 2.1rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.35rem;
+}
+
+.md-typeset .hero + p {
+  font-size: 1.05rem;
+  opacity: 0.85;
+}
+
+.md-typeset .cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.md-typeset .cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  background: var(--md-primary-fg-color);
+  color: #fff !important;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.md-typeset .cta.secondary {
+  background: transparent;
+  color: var(--md-primary-fg-color) !important;
+  border: 1px solid rgba(124, 58, 237, 0.35);
+}
+
+.md-typeset .card-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin: 1rem 0 1.5rem;
+}
+
+.md-typeset .card {
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 14px;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+}
+
+.md-typeset .card h3 {
+  margin-top: 0;
+  margin-bottom: 0.35rem;
+  font-size: 1rem;
+}
+
+.md-typeset .card p {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .card {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(148, 163, 184, 0.2);
+  box-shadow: 0 12px 30px rgba(2, 6, 23, 0.45);
+}

@@ -19,3 +19,6 @@ Scopes used:
 - `openid`, `email`, `profile`
 - `https://www.googleapis.com/auth/calendar.readonly`
 - `https://www.googleapis.com/auth/calendar` (for export)
+
+!!! tip
+    Make sure the redirect URI matches exactly, including scheme and port.

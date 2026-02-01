@@ -398,6 +398,7 @@ def group_members(group_id):
     return jsonify([{
         "user_id": u.id,
         "name": u.name,
+        "display_name": u.display_name,
         "email": u.email,
         "color": m.color_hex,
     } for u, m in rows])
@@ -561,6 +562,42 @@ def add_proposal(group_id):
         "proposal_id": p.id,
         "conflicts": [{"user_id": u.id, "name": u.name, "email": u.email} for u in conflicters]
     })
+
+@api_bp.post("/groups/<int:group_id>/events/delete")
+@login_required
+def delete_group_event(group_id):
+    membership = require_membership(group_id)
+    data = request.get_json(force=True) or {}
+    event_type = data.get("type")
+    event_id = data.get("id")
+    if not event_type or not event_id:
+        abort(400, "Missing event type or id")
+    try:
+        event_id_int = int(event_id)
+    except (TypeError, ValueError):
+        abort(400, "Invalid event id")
+
+    if event_type == "special":
+        event = SpecialEvent.query.filter_by(id=event_id_int, group_id=group_id).first()
+        if not event:
+            abort(404)
+        if event.user_id != current_user.id and membership.role != "admin":
+            abort(403)
+        db.session.delete(event)
+        db.session.commit()
+        return jsonify({"ok": True})
+
+    if event_type == "proposal":
+        event = MeetupProposal.query.filter_by(id=event_id_int, group_id=group_id).first()
+        if not event:
+            abort(404)
+        if event.created_by != current_user.id and membership.role != "admin":
+            abort(403)
+        db.session.delete(event)
+        db.session.commit()
+        return jsonify({"ok": True})
+
+    abort(400, "Event type not deletable")
 
 # ---------- Manual sync endpoint (useful for testing) ----------
 

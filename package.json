@@ -11,7 +11,11 @@
     "build:calendar": "node scripts/build-calendar.mjs",
     "build:js": "node scripts/build-main.mjs",
     "build:assets": "npm run build:calendar && npm run build:js",
-    "build": "npm run build:assets && npm run build:css"
+    "build": "npm run build:assets && npm run build:css",
+    "find": "rg",
+    "files": "rg --files",
+    "find:py": "rg --files -g \"*.py\"",
+    "find:js": "rg --files -g \"*.js\" -g \"*.mjs\""
   },
   "dependencies": {
     "@schedule-x/calendar": "^4.1.0",

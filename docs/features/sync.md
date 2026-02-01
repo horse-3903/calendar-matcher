@@ -5,7 +5,8 @@ Phase syncs **only FreeBusy** data.
 ## How it works
 - Fetches availability from selected Google calendars
 - Stores **busy ranges only**
-- Updates every 15 minutes (if auto‑sync enabled)
+- Client-side auto-sync is optional
+- Server-side background refresh runs every 15 minutes
 
 ## Sync range
 - Now → **6 months**
@@ -13,3 +14,6 @@ Phase syncs **only FreeBusy** data.
 
 ## Privacy
 No event titles, descriptions, or attendees are accessed.
+
+## Calendar selection
+Only calendars you select in the Sync dialog are included in FreeBusy requests.

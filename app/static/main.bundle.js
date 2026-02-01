@@ -12266,6 +12266,224 @@ function setTheme(theme) {
   }
 }
 window.setTheme = setTheme;
+var ignoreDocumentClick = false;
+var popoverAnchorEl = null;
+var popoverAnchorEvent = null;
+var currentEditEvent = null;
+function closeEventPopover() {
+  const popover = document.getElementById("eventPopover");
+  if (!popover) return;
+  popover.classList.remove("is-open");
+  popover.classList.remove("is-expanded");
+  popover.style.left = "";
+  popover.style.top = "";
+  popover.dataset.phaseType = "";
+  popover.dataset.phaseId = "";
+  popover.dataset.ownerId = "";
+  popoverAnchorEl = null;
+  popoverAnchorEvent = null;
+}
+function isAdminUser() {
+  return window.__IS_ADMIN__ === true || window.__IS_ADMIN__ === "true";
+}
+function canDeleteEvent(event) {
+  const phaseType = event?.phaseType || "";
+  if (phaseType !== "special" && phaseType !== "proposal") return false;
+  const ownerId = event?.ownerId;
+  if (ownerId == null) return false;
+  const currentUserId = window.__CURRENT_USER_ID__;
+  return isAdminUser() || String(ownerId) === String(currentUserId);
+}
+function formatEventTime(event) {
+  if (!event?.start || !event?.end) return "";
+  const toDate = (temporal) => {
+    if (!temporal) return null;
+    try {
+      if (temporal.toInstant) {
+        return new Date(temporal.toInstant().toString());
+      }
+      if (temporal.toString) {
+        return new Date(temporal.toString());
+      }
+    } catch (e5) {
+    }
+    return null;
+  };
+  const startDate = toDate(event.start);
+  const endDate = toDate(event.end);
+  if (!startDate || !endDate) return "";
+  const dateFmt = new Intl.DateTimeFormat(void 0, { month: "short", day: "numeric" });
+  const timeFmt = new Intl.DateTimeFormat(void 0, { hour: "numeric", minute: "2-digit" });
+  const dateStr = dateFmt.format(startDate);
+  const startStr = timeFmt.format(startDate);
+  const endStr = timeFmt.format(endDate);
+  return `${dateStr} \u2022 ${startStr} \u2013 ${endStr}`;
+}
+function formatEditDateTime(event) {
+  if (!event?.start || !event?.end) {
+    return { date: "", start: "", end: "" };
+  }
+  const toDate = (temporal) => {
+    if (!temporal) return null;
+    try {
+      if (temporal.toInstant) {
+        return new Date(temporal.toInstant().toString());
+      }
+      if (temporal.toString) {
+        return new Date(temporal.toString());
+      }
+    } catch (e5) {
+    }
+    return null;
+  };
+  const startDate = toDate(event.start);
+  const endDate = toDate(event.end);
+  if (!startDate || !endDate) {
+    return { date: "", start: "", end: "" };
+  }
+  const pad = (value) => String(value).padStart(2, "0");
+  const date = `${startDate.getFullYear()}-${pad(startDate.getMonth() + 1)}-${pad(startDate.getDate())}`;
+  const start = `${pad(startDate.getHours())}:${pad(startDate.getMinutes())}`;
+  const end = `${pad(endDate.getHours())}:${pad(endDate.getMinutes())}`;
+  return { date, start, end };
+}
+function getEventTypeLabel(event) {
+  const phaseType = event?.phaseType || "";
+  if (phaseType === "busy") return "Google Calendar - Busy";
+  if (phaseType === "special") {
+    const kind = event?.kind || event?.extendedProps?.kind;
+    if (kind === "block_off") return "Blocked time";
+    if (kind === "available") return "Available time";
+    return "Special time";
+  }
+  if (phaseType === "proposal") return "Proposed meetup";
+  return "Event";
+}
+function openEditDialog(event) {
+  const dialog = document.getElementById("eventEditDialog");
+  if (!dialog) return;
+  currentEditEvent = event || null;
+  const titleEl = document.getElementById("eventEditTitle");
+  const typeLabelEl = document.getElementById("eventEditTypeLabel");
+  const dateInput = document.getElementById("eventEditDate");
+  const startInput = document.getElementById("eventEditStart");
+  const endInput = document.getElementById("eventEditEnd");
+  const typeSelect = document.getElementById("eventEditType");
+  const typeHint = document.getElementById("eventEditTypeHint");
+  if (titleEl) titleEl.textContent = event?.title || "Event";
+  if (typeLabelEl) typeLabelEl.textContent = getEventTypeLabel(event);
+  const { date, start, end } = formatEditDateTime(event);
+  if (dateInput) dateInput.value = date;
+  if (startInput) startInput.value = start;
+  if (endInput) endInput.value = end;
+  const phaseType = event?.phaseType || "";
+  const isBusy = phaseType === "busy";
+  if (typeSelect) {
+    if (phaseType === "special") {
+      typeSelect.value = event?.kind || event?.extendedProps?.kind || "available";
+    } else if (phaseType === "proposal") {
+      typeSelect.value = "proposal";
+    } else if (phaseType === "busy") {
+      typeSelect.value = "busy";
+    } else {
+      typeSelect.value = "busy";
+    }
+    typeSelect.disabled = isBusy;
+  }
+  if (typeHint) {
+    typeHint.textContent = isBusy ? "Google Calendar busy blocks cannot be changed." : "You can change the type for app-created events.";
+  }
+  if (dialog.showModal) dialog.showModal();
+}
+function renderEventPopover(event) {
+  const popover = document.getElementById("eventPopover");
+  if (!popover) return;
+  const phaseType = event?.phaseType || "";
+  const phaseId = event?.phaseId || "";
+  const ownerId = event?.ownerId ?? "";
+  const canDelete = canDeleteEvent(event);
+  const title = event?.title || "Event";
+  const time = formatEventTime(event);
+  popover.dataset.phaseType = phaseType;
+  popover.dataset.phaseId = phaseId;
+  popover.dataset.ownerId = String(ownerId);
+  popover.classList.remove("is-expanded");
+  popover.innerHTML = `
+    <div class="event-popover-header">
+      <div>
+        <div class="event-popover-title">${title}</div>
+        <div class="event-popover-time">${time}</div>
+      </div>
+      <div class="event-popover-actions">
+        <button type="button" class="event-popover-btn" data-event-action="edit" aria-label="Edit event">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M4 20h4l10-10a2 2 0 0 0-4-4L4 16v4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 6l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button type="button" class="event-popover-btn is-danger ${canDelete ? "" : "is-disabled"}" data-event-action="delete" aria-label="Delete event" title="You can't delete events in users' Google Calendar." ${canDelete ? "" : "disabled"}>
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M8 6v-2h8v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M6 6l1 14h10l1-14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="event-popover-body"></div>
+  `;
+}
+function positionEventPopover() {
+  const popover = document.getElementById("eventPopover");
+  if (!popover || !popoverAnchorEl) return;
+  const calendarRoot = document.getElementById("calendar");
+  const container = calendarRoot?.parentElement;
+  const rect = popoverAnchorEl.getBoundingClientRect();
+  const containerRect = container ? container.getBoundingClientRect() : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+  const padding = 12;
+  const popoverWidth = popover.offsetWidth || 260;
+  const popoverHeight = popover.offsetHeight || 160;
+  const viewportWidth = containerRect.width || window.innerWidth;
+  const viewportHeight = containerRect.height || window.innerHeight;
+  let left = rect.right - containerRect.left + 12;
+  let top = rect.top - containerRect.top;
+  if (left + popoverWidth + padding > viewportWidth) {
+    left = rect.left - containerRect.left - popoverWidth - 12;
+  }
+  if (left < padding) left = padding;
+  if (top + popoverHeight + padding > viewportHeight) {
+    top = viewportHeight - popoverHeight - padding;
+  }
+  if (top < padding) top = padding;
+  popover.style.left = `${left}px`;
+  popover.style.top = `${top}px`;
+}
+function openEventPopover(event, uiEvent) {
+  const popover = document.getElementById("eventPopover");
+  if (!popover) return;
+  const calendarRoot = document.getElementById("calendar");
+  if (calendarRoot) {
+    const container = calendarRoot.parentElement;
+    if (container && container.classList.contains("min-w-0")) {
+      container.style.position = "relative";
+    }
+  }
+  renderEventPopover(event);
+  const eventTarget = uiEvent && uiEvent.target && uiEvent.target.closest ? uiEvent.target.closest(".sx__event") : null;
+  if (!eventTarget) return;
+  popoverAnchorEl = eventTarget;
+  popoverAnchorEvent = event;
+  popover.classList.add("is-open");
+  popover.style.visibility = "hidden";
+  popover.style.left = "0px";
+  popover.style.top = "0px";
+  positionEventPopover();
+  popover.style.visibility = "visible";
+  ignoreDocumentClick = true;
+  setTimeout(() => {
+    ignoreDocumentClick = false;
+  }, 0);
+}
 var dialogResolve = null;
 function showAppDialog(message) {
   const dialog = document.getElementById("appDialog");
@@ -12887,13 +13105,15 @@ async function submitAddTime(groupId) {
       const startDate = startIso ? new Date(startIso) : selectedRange?.start;
       const endDate = endIso ? new Date(endIso) : selectedRange?.end;
       if (startDate && endDate) {
-        eventsService.add({
+        const newEvent = {
           id: `demo-special:${Date.now()}`,
           title: kind === "block_off" ? "Blocked" : "Available",
           start: formatScheduleXDate(startDate),
           end: formatScheduleXDate(endDate),
           calendarId: kind === "block_off" ? "blocked" : "available"
-        });
+        };
+        eventsService.add(newEvent);
+        scrollToFirstEvent([newEvent]);
         showToast("Demo event added", "success");
       }
     }
@@ -12924,50 +13144,6 @@ async function submitAddTime(groupId) {
   if (window.refreshCalendarEvents) await window.refreshCalendarEvents();
 }
 window.submitAddTime = submitAddTime;
-function openRangeTypeDialog() {
-  const dialog = document.getElementById("rangeTypeDialog");
-  if (dialog) dialog.showModal();
-}
-function fillDateTimeInputs(startDate, endDate, dateInputId, startInputId, endInputId) {
-  if (!startDate || !endDate) return;
-  const dateInput = document.getElementById(dateInputId);
-  const startInput = document.getElementById(startInputId);
-  const endInput = document.getElementById(endInputId);
-  const yyyy = startDate.getFullYear();
-  const mm = String(startDate.getMonth() + 1).padStart(2, "0");
-  const dd = String(startDate.getDate()).padStart(2, "0");
-  const sh = String(startDate.getHours()).padStart(2, "0");
-  const sm = String(startDate.getMinutes()).padStart(2, "0");
-  const eh = String(endDate.getHours()).padStart(2, "0");
-  const em = String(endDate.getMinutes()).padStart(2, "0");
-  if (dateInput) dateInput.value = `${yyyy}-${mm}-${dd}`;
-  if (startInput) startInput.value = `${sh}:${sm}`;
-  if (endInput) endInput.value = `${eh}:${em}`;
-}
-function chooseRangeType(type) {
-  const dialog = document.getElementById("rangeTypeDialog");
-  if (dialog) dialog.close();
-  if (!selectedRange || !selectedRange.start || !selectedRange.end) {
-    return;
-  }
-  const startDate = selectedRange.start instanceof Date ? selectedRange.start : new Date(selectedRange.start);
-  const endDate = selectedRange.end instanceof Date ? selectedRange.end : new Date(selectedRange.end);
-  if (type === "proposal") {
-    fillDateTimeInputs(startDate, endDate, "proposalDate", "proposalStart", "proposalEnd");
-    const proposalDialog = document.getElementById("proposalDialog");
-    if (proposalDialog) proposalDialog.showModal();
-    return;
-  }
-  if (type === "available" || type === "blocked") {
-    if (typeof setTimeType === "function") {
-      setTimeType(type);
-    }
-    fillDateTimeInputs(startDate, endDate, "timeDate", "timeStart", "timeEnd");
-    const addDialog = document.getElementById("addTimeDialog");
-    if (addDialog) addDialog.showModal();
-  }
-}
-window.chooseRangeType = chooseRangeType;
 async function submitProposal(groupId) {
   if (!window.__DEMO__ && (!groupId || groupId === 0 || groupId === "0")) {
     showToast("Please log in to propose a meetup.", "error");
@@ -13022,13 +13198,15 @@ async function addSpecial(kind) {
     if (!eventsService) return;
     const start = selectedRange ? selectedRange.start : /* @__PURE__ */ new Date();
     const end = selectedRange ? selectedRange.end : new Date(Date.now() + 60 * 60 * 1e3);
-    eventsService.add({
+    const newEvent = {
       id: `special:demo:${Date.now()}`,
       title: kind === "block_off" ? "Blocked" : "Available",
       start: formatScheduleXDate(start),
       end: formatScheduleXDate(end),
       calendarId: kind === "block_off" ? "blocked" : "available"
-    });
+    };
+    eventsService.add(newEvent);
+    scrollToFirstEvent([newEvent]);
     showToast("Added time range", "success");
     return;
   }
@@ -13048,10 +13226,6 @@ window.addSpecial = addSpecial;
 document.addEventListener("DOMContentLoaded", async function() {
   window.__DEMO__ = document.body?.dataset?.demo === "1";
   calendarDebug = document.body?.dataset?.calDebug === "1";
-  const debugLog = function(...args) {
-    if (!calendarDebug) return;
-    console.log("[CalendarDebug]", ...args);
-  };
   let storedTheme = null;
   try {
     storedTheme = localStorage.getItem("theme");
@@ -13133,6 +13307,80 @@ document.addEventListener("DOMContentLoaded", async function() {
       }
     });
   });
+  const calendarScroll = document.querySelector(".calendar-scroll");
+  if (calendarScroll) {
+    calendarScroll.addEventListener("scroll", function() {
+      if (!popoverAnchorEl) return;
+      requestAnimationFrame(positionEventPopover);
+    }, true);
+  }
+  window.addEventListener("resize", function() {
+    if (!popoverAnchorEl) return;
+    requestAnimationFrame(positionEventPopover);
+  });
+  const eventPopover = document.getElementById("eventPopover");
+  if (eventPopover) {
+    eventPopover.addEventListener("click", async function(event) {
+      const btn = event.target.closest("button[data-event-action]");
+      if (!btn) return;
+      const action = btn.getAttribute("data-event-action");
+      if (action === "edit") {
+        openEditDialog(popoverAnchorEvent);
+        return;
+      }
+      if (action !== "delete") return;
+      const phaseType = eventPopover.dataset.phaseType;
+      const phaseId = eventPopover.dataset.phaseId;
+      const ownerId = eventPopover.dataset.ownerId;
+      const currentUserId = window.__CURRENT_USER_ID__;
+      const isAllowed = isAdminUser() || ownerId && String(ownerId) === String(currentUserId);
+      if (!isAllowed) {
+        showToast("You can only delete your own events.", "error");
+        return;
+      }
+      if (!phaseType || !phaseId) {
+        showToast("This event cannot be deleted.", "error");
+        return;
+      }
+      if (window.__DEMO__) {
+        showToast("Demo mode \u2022 Delete disabled", "error");
+        return;
+      }
+      try {
+        const r5 = await fetch(`/api/groups/${window.__GROUP_ID__}/events/delete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: phaseType, id: phaseId })
+        });
+        if (!r5.ok) {
+          showToast("Unable to delete event", "error");
+          return;
+        }
+        const j5 = await r5.json();
+        if (j5 && j5.ok) {
+          closeEventPopover();
+          showToast("Event deleted", "success");
+          if (window.refreshCalendarEvents) await window.refreshCalendarEvents();
+        } else {
+          showToast("Unable to delete event", "error");
+        }
+      } catch (e5) {
+        showToast("Unable to delete event", "error");
+      }
+    });
+  }
+  document.addEventListener("click", function(event) {
+    const popover = document.getElementById("eventPopover");
+    if (!popover || !popover.classList.contains("is-open")) return;
+    if (ignoreDocumentClick) return;
+    const clickedEvent = event.target.closest && event.target.closest(".sx__event");
+    if (clickedEvent || popover.contains(event.target)) return;
+    closeEventPopover();
+  });
+  document.addEventListener("keydown", function(event) {
+    if (event.key !== "Escape") return;
+    closeEventPopover();
+  });
   const appDialog = document.getElementById("appDialog");
   const appDialogCancel = document.getElementById("appDialogCancel");
   const appDialogOk = document.getElementById("appDialogOk");
@@ -13159,6 +13407,25 @@ document.addEventListener("DOMContentLoaded", async function() {
       copyWithFeedback(btn, btn.getAttribute("data-copy-value") || "");
     });
   });
+  const editSaveBtn = document.getElementById("eventEditSave");
+  if (editSaveBtn) {
+    editSaveBtn.addEventListener("click", function() {
+      showToast("Edit saving isn\u2019t wired yet.", "error");
+    });
+  }
+  function wirePickerTriggers() {
+    const inputs = document.querySelectorAll('input[type="date"], input[type="time"]');
+    inputs.forEach((input) => {
+      input.addEventListener("click", function(event) {
+        if (typeof input.showPicker === "function") {
+          input.showPicker();
+        } else {
+          input.focus();
+        }
+      });
+    });
+  }
+  wirePickerTriggers();
   const params = new URLSearchParams(window.location.search);
   const toast = params.get("toast");
   const name = params.get("name");
@@ -13198,7 +13465,6 @@ document.addEventListener("DOMContentLoaded", async function() {
   }
   async function loadCalendars() {
     if (isDemo) {
-      debugLog("Loading demo calendars");
       return {
         available: { colorName: "available", lightColors: { main: "#0d9488", container: "#ccfbf1", onContainer: "#115e59" }, darkColors: { main: "#2dd4bf", container: "#0b1220", onContainer: "#ccfbf1" } },
         blocked: { colorName: "blocked", lightColors: { main: "#ef4444", container: "#fee2e2", onContainer: "#7f1d1d" }, darkColors: { main: "#f87171", container: "#0b1220", onContainer: "#fee2e2" } },
@@ -13216,29 +13482,34 @@ document.addEventListener("DOMContentLoaded", async function() {
     members.forEach((m5) => {
       const key = `member${m5.user_id}`;
       const color = m5.color || "#64748b";
-      memberNameById[m5.user_id] = m5.name || m5.email || `Member ${m5.user_id}`;
+      memberNameById[m5.user_id] = m5.display_name || m5.name || m5.email || `Member ${m5.user_id}`;
       calendars2[key] = {
         colorName: key.toLowerCase(),
         lightColors: { main: color, container: "#eef2ff", onContainer: "#1f2937" },
         darkColors: { main: color, container: "#0b1220", onContainer: "#e2e8f0" }
       };
     });
-    debugLog("Loaded calendars", calendars2);
     return calendars2;
   }
   function mapApiEvents(apiEvents) {
     const normalEvents = [];
     const backgroundEvents = [];
-    debugLog("Raw API events", apiEvents);
     const normalizeId = (rawId, fallback) => {
       const base = String(rawId || fallback || "");
       if (!base) return `evt_${Math.random().toString(36).slice(2, 10)}`;
       return base.replace(/[^a-zA-Z0-9_-]/g, "_");
     };
+    const parsePhaseMeta = (rawId) => {
+      const base = String(rawId || "");
+      const parts = base.split(":");
+      if (parts.length < 2) return { phaseType: "", phaseId: "" };
+      return { phaseType: parts[0], phaseId: parts.slice(1).join(":") };
+    };
     apiEvents.forEach((ev) => {
       const start = toZonedDateTime(ev.start);
       const end = toZonedDateTime(ev.end);
       if (!start || !end) return;
+      const phaseMeta = parsePhaseMeta(ev.id);
       const type = ev.extendedProps?.type;
       if (type === "busy") {
         const userId = ev.extendedProps?.user_id;
@@ -13248,27 +13519,39 @@ document.addEventListener("DOMContentLoaded", async function() {
           title: `Busy - ${name2}`,
           start,
           end,
-          calendarId: userId ? `member${userId}` : "available"
+          calendarId: userId ? `member${userId}` : "available",
+          phaseType: phaseMeta.phaseType || "busy",
+          phaseId: phaseMeta.phaseId,
+          ownerId: userId
         });
         return;
       }
       if (type === "special") {
+        const ownerId = ev.extendedProps?.user_id;
         normalEvents.push({
           id: normalizeId(ev.id, `special_${start.epochMilliseconds}`),
           title: ev.title || "Special",
           start,
           end,
-          calendarId: ev.extendedProps?.kind === "block_off" ? "blocked" : "available"
+          calendarId: ev.extendedProps?.kind === "block_off" ? "blocked" : "available",
+          phaseType: phaseMeta.phaseType || "special",
+          phaseId: phaseMeta.phaseId,
+          ownerId,
+          kind: ev.extendedProps?.kind
         });
         return;
       }
       if (type === "proposal") {
+        const ownerId = ev.extendedProps?.created_by;
         normalEvents.push({
           id: normalizeId(ev.id, `proposal_${start.epochMilliseconds}`),
           title: ev.title || "Meetup Proposal",
           start,
           end,
-          calendarId: "proposal"
+          calendarId: "proposal",
+          phaseType: phaseMeta.phaseType || "proposal",
+          phaseId: phaseMeta.phaseId,
+          ownerId
         });
         return;
       }
@@ -13277,17 +13560,18 @@ document.addEventListener("DOMContentLoaded", async function() {
         title: ev.title || "Event",
         start,
         end,
-        calendarId: "available"
+        calendarId: "available",
+        phaseType: phaseMeta.phaseType || "",
+        phaseId: phaseMeta.phaseId,
+        ownerId: ev.extendedProps?.user_id || ev.extendedProps?.created_by
       });
     });
-    debugLog("Mapped events", { normal: normalEvents.length, background: backgroundEvents.length, normalEvents, backgroundEvents });
     return { normalEvents, backgroundEvents };
   }
   async function fetchEventsForRange(start, end) {
     const startIso = temporalToIso(start);
     const endIso = temporalToIso(end);
     if (!startIso || !endIso) return { normalEvents: [], backgroundEvents: [] };
-    debugLog("Fetching events", { start: startIso, end: endIso });
     const url = `/api/groups/${groupId}/events?start=${encodeURIComponent(startIso)}&end=${encodeURIComponent(endIso)}`;
     const r5 = await fetch(url);
     const j5 = await r5.json();
@@ -13300,6 +13584,7 @@ document.addEventListener("DOMContentLoaded", async function() {
       eventsService.set(data.normalEvents);
       eventsService.setBackgroundEvents(data.backgroundEvents);
     }
+    scrollToFirstEvent2(data.normalEvents);
   };
   eventsService = createEventsServicePlugin();
   calendarControls = createCalendarControlsPlugin();
@@ -13326,6 +13611,45 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
     return trimmed;
   }
+  function findScrollableCalendarContainer() {
+    const root = document.getElementById("calendar");
+    if (!root) return null;
+    const elements = root.querySelectorAll("*");
+    let best = null;
+    let bestScroll = 0;
+    elements.forEach((el2) => {
+      if (!(el2 instanceof HTMLElement)) return;
+      const canScroll = el2.scrollHeight - el2.clientHeight > 8;
+      if (!canScroll) return;
+      const style = window.getComputedStyle(el2);
+      if (style.overflowY === "hidden" || style.overflowY === "visible") return;
+      if (el2.scrollHeight > bestScroll) {
+        best = el2;
+        bestScroll = el2.scrollHeight;
+      }
+    });
+    return best;
+  }
+  function findScrollableAncestor(el2) {
+    let current = el2?.parentElement;
+    while (current) {
+      const canScroll = current.scrollHeight - current.clientHeight > 8;
+      if (canScroll) {
+        const style = window.getComputedStyle(current);
+        if (style.overflowY !== "hidden" && style.overflowY !== "visible") {
+          return current;
+        }
+      }
+      current = current.parentElement;
+    }
+    return null;
+  }
+  function findEventElementById(eventId) {
+    const root = document.getElementById("calendar");
+    if (!root || !eventId) return null;
+    const esc = window.CSS && window.CSS.escape ? window.CSS.escape(String(eventId)) : String(eventId).replace(/"/g, '\\"');
+    return root.querySelector(`[data-event-id="${esc}"]`);
+  }
   const calendarTimezone = resolveTimezone(el?.dataset?.timezone || "");
   function demoZdt(offsetDays, hour, minute) {
     const now = Temporal.Now.zonedDateTimeISO(calendarTimezone);
@@ -13347,24 +13671,29 @@ document.addEventListener("DOMContentLoaded", async function() {
       title: "Available - You",
       start: demoZdt(0, 13, 30),
       end: demoZdt(0, 16, 0),
-      calendarId: "available"
+      calendarId: "available",
+      phaseType: "demo",
+      phaseId: "demo-available"
     },
     {
       id: "demo-blocked",
       title: "Blocked - Sarah",
       start: demoZdt(0, 18, 0),
       end: demoZdt(0, 20, 0),
-      calendarId: "blocked"
+      calendarId: "blocked",
+      phaseType: "demo",
+      phaseId: "demo-blocked"
     },
     {
       id: "demo-proposal",
       title: "Proposed: Team Lunch",
       start: demoZdt(1, 12, 0),
       end: demoZdt(1, 13, 30),
-      calendarId: "proposal"
+      calendarId: "proposal",
+      phaseType: "demo",
+      phaseId: "demo-proposal"
     }
   ];
-  debugLog("Demo events", demoEvents);
   const viewWeek2 = createViewWeek ? createViewWeek() : null;
   const viewDay2 = createViewDay ? createViewDay() : null;
   const viewMonth = createViewMonthGrid ? createViewMonthGrid() : null;
@@ -13379,23 +13708,69 @@ document.addEventListener("DOMContentLoaded", async function() {
   if (calendarControls) plugins.push(calendarControls);
   if (eventsService) plugins.push(eventsService);
   if (scrollController) plugins.push(scrollController);
-  function scrollToFirstEvent(events) {
-    if (!scrollController || !events || !events.length) return;
-    const sorted = events.slice().sort((a5, b5) => Temporal.ZonedDateTime.compare(a5.start, b5.start));
-    const first = sorted[0]?.start;
+  function scrollToFirstEvent2(events) {
+    if (!scrollController) return;
+    if (!events || !events.length) {
+      const fallback = "12:00";
+      const container = findScrollableCalendarContainer();
+      if (container && container.scrollHeight > container.clientHeight) {
+        container.scrollTop = Math.max(0, (container.scrollHeight - container.clientHeight) / 2);
+        return;
+      }
+      if (!calendarReady) {
+        pendingScrollTime = fallback;
+        return;
+      }
+      try {
+        scrollController.scrollTo(fallback);
+      } catch (e5) {
+        pendingScrollTime = fallback;
+      }
+      return;
+    }
+    const sorted = events.slice().sort((a5, b5) => {
+      const aHour = a5.start?.hour ?? 0;
+      const aMinute = a5.start?.minute ?? 0;
+      const bHour = b5.start?.hour ?? 0;
+      const bMinute = b5.start?.minute ?? 0;
+      if (aHour !== bHour) return aHour - bHour;
+      return aMinute - bMinute;
+    });
+    const firstEvent = sorted[0];
+    const first = firstEvent?.start;
     if (!first) return;
     const hh = String(first.hour).padStart(2, "0");
     const mm = String(first.minute || 0).padStart(2, "0");
     const timeStr = `${hh}:${mm}`;
-    if (!calendarReady) {
-      pendingScrollTime = timeStr;
-      return;
-    }
-    try {
-      scrollController.scrollTo(timeStr);
-    } catch (e5) {
-      pendingScrollTime = timeStr;
-    }
+    const targetEventId = firstEvent?.id;
+    const attemptScroll = (triesLeft) => {
+      const eventEl = targetEventId ? findEventElementById(targetEventId) : null;
+      if (eventEl) {
+        const container = findScrollableAncestor(eventEl) || findScrollableCalendarContainer();
+        if (container) {
+          const containerRect = container.getBoundingClientRect();
+          const eventRect = eventEl.getBoundingClientRect();
+          const nextScrollTop = eventRect.top - containerRect.top + container.scrollTop;
+          container.scrollTop = Math.max(0, nextScrollTop);
+          return true;
+        }
+      }
+      if (triesLeft <= 0) {
+        if (!calendarReady) {
+          pendingScrollTime = timeStr;
+          return true;
+        }
+        try {
+          scrollController.scrollTo(timeStr);
+        } catch (e5) {
+          pendingScrollTime = timeStr;
+        }
+        return true;
+      }
+      setTimeout(() => attemptScroll(triesLeft - 1), 50);
+      return false;
+    };
+    attemptScroll(10);
   }
   const defaultView = (isMobile ? viewDay2 : viewWeek2) ? isMobile ? viewDay2.name : viewWeek2.name : views[0].name;
   calendarInstance = createCalendar({
@@ -13407,32 +13782,16 @@ document.addEventListener("DOMContentLoaded", async function() {
     callbacks: {
       fetchEvents: async function(range) {
         calendarRange = range;
-        debugLog("Range update", range);
         if (isDemo) {
-          scrollToFirstEvent(demoEvents);
+          scrollToFirstEvent2(demoEvents);
           return demoEvents;
         }
         const data = await fetchEventsForRange(range.start, range.end);
         if (eventsService) {
           eventsService.setBackgroundEvents([]);
         }
-        scrollToFirstEvent(data.normalEvents);
+        scrollToFirstEvent2(data.normalEvents);
         return data.normalEvents;
-      },
-      onSelectDateTimeRange: function(range) {
-        if (!range) return;
-        const start = range.start;
-        const end = range.end;
-        if (!start || !end) return;
-        const startInstant = start.toInstant().toString();
-        const endInstant = end.toInstant().toString();
-        selectedRange = {
-          start: new Date(startInstant),
-          end: new Date(endInstant),
-          startStr: startInstant,
-          endStr: endInstant
-        };
-        openRangeTypeDialog();
       },
       onClickDateTime: function(dateTime) {
         if (!dateTime) return;
@@ -13444,6 +13803,9 @@ document.addEventListener("DOMContentLoaded", async function() {
           startStr: startInstant,
           endStr: endInstant
         };
+      },
+      onEventClick: function(event, e5) {
+        openEventPopover(event, e5);
       }
     }
   }, plugins);
@@ -13456,7 +13818,6 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
     pendingScrollTime = null;
   }
-  debugLog("Calendar rendered", calendarInstance);
   window.__SXCAL__ = calendarInstance;
   const themeIsDark = document.documentElement.classList.contains("dark");
   if (calendarInstance.setTheme) {

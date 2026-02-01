@@ -11,3 +11,7 @@ These appear on the group calendar with distinct colors.
 Members can propose a time:
 - Optional location & description
 - Conflict warnings shown if other members are busy
+
+## Tips
+- Select a time range on the calendar before opening dialogs.
+- Proposals do not modify personal calendars until exported.

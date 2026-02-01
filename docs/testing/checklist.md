@@ -54,7 +54,7 @@ Use this checklist to validate **all interactive frontend features** work as int
 
 ---
 
-## Calendar Display (FullCalendar)
+## Calendar Display (Schedule-X)
 - [ ] Week view renders correctly
 - [ ] Day view renders correctly
 - [ ] Month view renders correctly
@@ -62,6 +62,7 @@ Use this checklist to validate **all interactive frontend features** work as int
 - [ ] Events show correct colors and labels
 - [ ] Events show correct time range
 - [ ] Calendar scroll works with dark mode
+ - [ ] Event click opens the event modal
 
 ---
 
@@ -101,4 +102,3 @@ Use this checklist to validate **all interactive frontend features** work as int
 ## Dev Console (if enabled)
 - [ ] Dev Console link visible in dev mode
 - [ ] Debug actions execute correctly
-
