@@ -12360,6 +12360,10 @@ function getEventTypeLabel(event) {
   return "Event";
 }
 function openEditDialog(event) {
+  if (window.__DEMO__) {
+    showToast("Demo mode \u2022 Editing disabled", "error");
+    return;
+  }
   const dialog = document.getElementById("eventEditDialog");
   if (!dialog) return;
   currentEditEvent = event || null;
@@ -12402,6 +12406,9 @@ function renderEventPopover(event) {
   const phaseId = event?.phaseId || "";
   const ownerId = event?.ownerId ?? "";
   const canDelete = canDeleteEvent(event);
+  const isDemo = window.__DEMO__ === true;
+  const editDisabled = isDemo;
+  const deleteDisabled = isDemo || !canDelete;
   const title = event?.title || "Event";
   const time = formatEventTime(event);
   popover.dataset.phaseType = phaseType;
@@ -12415,13 +12422,13 @@ function renderEventPopover(event) {
         <div class="event-popover-time">${time}</div>
       </div>
       <div class="event-popover-actions">
-        <button type="button" class="event-popover-btn" data-event-action="edit" aria-label="Edit event">
+        <button type="button" class="event-popover-btn ${editDisabled ? "is-disabled" : ""}" data-event-action="edit" aria-label="Edit event" title="${editDisabled ? "Demo mode: editing is disabled." : "Edit event"}" ${editDisabled ? "disabled" : ""} aria-disabled="${editDisabled ? "true" : "false"}">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M4 20h4l10-10a2 2 0 0 0-4-4L4 16v4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M14 6l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
-        <button type="button" class="event-popover-btn is-danger ${canDelete ? "" : "is-disabled"}" data-event-action="delete" aria-label="Delete event" title="You can't delete events in users' Google Calendar." ${canDelete ? "" : "disabled"}>
+        <button type="button" class="event-popover-btn is-danger ${deleteDisabled ? "is-disabled" : ""}" data-event-action="delete" aria-label="Delete event" title="${deleteDisabled ? isDemo ? "Demo mode: deleting is disabled." : "You can't delete events in users' Google Calendar." : "Delete event"}" ${deleteDisabled ? "disabled" : ""} aria-disabled="${deleteDisabled ? "true" : "false"}">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             <path d="M8 6v-2h8v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -13465,11 +13472,28 @@ document.addEventListener("DOMContentLoaded", async function() {
   }
   async function loadCalendars() {
     if (isDemo) {
-      return {
+      const demoMembers = [
+        { id: 1, color: "#7c3aed" },
+        { id: 2, color: "#38bdf8" },
+        { id: 3, color: "#f97316" },
+        { id: 4, color: "#22c55e" },
+        { id: 5, color: "#ef4444" },
+        { id: 6, color: "#a855f7" }
+      ];
+      const demoCalendars = {
         available: { colorName: "available", lightColors: { main: "#0d9488", container: "#ccfbf1", onContainer: "#115e59" }, darkColors: { main: "#2dd4bf", container: "#0b1220", onContainer: "#ccfbf1" } },
         blocked: { colorName: "blocked", lightColors: { main: "#ef4444", container: "#fee2e2", onContainer: "#7f1d1d" }, darkColors: { main: "#f87171", container: "#0b1220", onContainer: "#fee2e2" } },
         proposal: { colorName: "proposal", lightColors: { main: "#f97316", container: "#ffedd5", onContainer: "#7c2d12" }, darkColors: { main: "#fb923c", container: "#0b1220", onContainer: "#ffedd5" } }
       };
+      demoMembers.forEach((m5) => {
+        const key = `member${m5.id}`;
+        demoCalendars[key] = {
+          colorName: key.toLowerCase(),
+          lightColors: { main: m5.color, container: "#eef2ff", onContainer: "#1f2937" },
+          darkColors: { main: m5.color, container: "#0b1220", onContainer: "#e2e8f0" }
+        };
+      });
+      return demoCalendars;
     }
     const r5 = await fetch(`/api/groups/${groupId}/members`);
     const members = await r5.json();
@@ -13665,41 +13689,109 @@ document.addEventListener("DOMContentLoaded", async function() {
     });
     return base.add({ days: offsetDays });
   }
+  const DEMO_EVENT_LIMIT = 10;
   const demoEvents = [
     {
-      id: "demo-available",
+      id: "demo-available-day0-afternoon",
       title: "Available - You",
       start: demoZdt(0, 13, 30),
       end: demoZdt(0, 16, 0),
       calendarId: "available",
       phaseType: "demo",
-      phaseId: "demo-available"
+      phaseId: "demo-available-day0-afternoon"
     },
     {
-      id: "demo-blocked",
-      title: "Blocked - Sarah",
-      start: demoZdt(0, 18, 0),
-      end: demoZdt(0, 20, 0),
-      calendarId: "blocked",
+      id: "demo-busy-day0-morning",
+      title: "Google Calendar - Busy (Alex)",
+      start: demoZdt(0, 9, 0),
+      end: demoZdt(0, 10, 30),
+      calendarId: "member2",
       phaseType: "demo",
-      phaseId: "demo-blocked"
+      phaseId: "demo-busy-day0-morning",
+      ownerId: 2
     },
     {
-      id: "demo-proposal",
+      id: "demo-proposal-day1-lunch",
       title: "Proposed: Team Lunch",
       start: demoZdt(1, 12, 0),
       end: demoZdt(1, 13, 30),
       calendarId: "proposal",
       phaseType: "demo",
-      phaseId: "demo-proposal"
+      phaseId: "demo-proposal-day1-lunch"
+    },
+    {
+      id: "demo-blocked-day2-focus",
+      title: "Blocked - Focus time",
+      start: demoZdt(2, 10, 0),
+      end: demoZdt(2, 12, 0),
+      calendarId: "blocked",
+      phaseType: "demo",
+      phaseId: "demo-blocked-day2-focus"
+    },
+    {
+      id: "demo-busy-day2-review",
+      title: "Google Calendar - Busy (Morgan)",
+      start: demoZdt(2, 15, 0),
+      end: demoZdt(2, 16, 0),
+      calendarId: "member4",
+      phaseType: "demo",
+      phaseId: "demo-busy-day2-review",
+      ownerId: 4
+    },
+    {
+      id: "demo-proposal-day3-checkin",
+      title: "Proposed: Product Check-in",
+      start: demoZdt(3, 11, 0),
+      end: demoZdt(3, 11, 45),
+      calendarId: "proposal",
+      phaseType: "demo",
+      phaseId: "demo-proposal-day3-checkin"
+    },
+    {
+      id: "demo-busy-day3-client",
+      title: "Google Calendar - Busy (Client Call)",
+      start: demoZdt(3, 14, 0),
+      end: demoZdt(3, 15, 0),
+      calendarId: "member3",
+      phaseType: "demo",
+      phaseId: "demo-busy-day3-client",
+      ownerId: 3
+    },
+    {
+      id: "demo-proposal-day4-ideation",
+      title: "Proposed: Ideation Sprint",
+      start: demoZdt(4, 13, 0),
+      end: demoZdt(4, 14, 30),
+      calendarId: "proposal",
+      phaseType: "demo",
+      phaseId: "demo-proposal-day4-ideation"
+    },
+    {
+      id: "demo-available-day5-morning",
+      title: "Available - You",
+      start: demoZdt(5, 10, 0),
+      end: demoZdt(5, 12, 0),
+      calendarId: "available",
+      phaseType: "demo",
+      phaseId: "demo-available-day5-morning"
+    },
+    {
+      id: "demo-proposal-day6-brunch",
+      title: "Proposed: Sunday Brunch",
+      start: demoZdt(6, 11, 0),
+      end: demoZdt(6, 12, 30),
+      calendarId: "proposal",
+      phaseType: "demo",
+      phaseId: "demo-proposal-day6-brunch"
     }
   ];
+  const demoEventsLimited = demoEvents.slice(0, DEMO_EVENT_LIMIT);
   const viewWeek2 = createViewWeek ? createViewWeek() : null;
   const viewDay2 = createViewDay ? createViewDay() : null;
   const viewMonth = createViewMonthGrid ? createViewMonthGrid() : null;
   const viewList2 = createViewList ? createViewList() : null;
   const isMobile = window.matchMedia && window.matchMedia("(max-width: 640px)").matches;
-  const views = (isMobile ? [viewDay2, viewList2] : [viewWeek2, viewDay2, viewMonth, viewList2]).filter(Boolean);
+  const views = [viewWeek2, viewDay2, viewMonth, viewList2].filter(Boolean);
   if (!views.length) {
     showToast("Calendar views failed to load.", "error");
     return;
@@ -13778,13 +13870,13 @@ document.addEventListener("DOMContentLoaded", async function() {
     defaultView,
     views,
     calendars,
-    events: isDemo ? demoEvents : [],
+    events: isDemo ? demoEventsLimited : [],
     callbacks: {
       fetchEvents: async function(range) {
         calendarRange = range;
         if (isDemo) {
-          scrollToFirstEvent2(demoEvents);
-          return demoEvents;
+          scrollToFirstEvent2(demoEventsLimited);
+          return demoEventsLimited;
         }
         const data = await fetchEventsForRange(range.start, range.end);
         if (eventsService) {

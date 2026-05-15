@@ -84,9 +84,9 @@
           </div>
         </div>
 
-        <div class="grid gap-4 lg:grid-cols-[1.1fr_0.75fr_1.45fr]">
-          <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-5">
-            <div class="flex items-center justify-between mb-4">
+        <div class="grid gap-4 lg:grid-cols-[1.1fr_0.75fr_1.45fr] items-start">
+          <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-5 h-full flex flex-col invite-card">
+            <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <span class="w-8 h-8 rounded-lg bg-purple-600/10 text-purple-600 dark:text-purple-300 flex items-center justify-center">
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none">
@@ -100,39 +100,48 @@
                 </div>
               </div>
             </div>
-            <div class="flex items-center gap-2 mb-4">
-              <input id="inviteLink" value="" placeholder="Create an invite link" readOnly class="text-xs font-mono bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 w-full text-gray-600 dark:text-slate-300"/>
-              <button class="px-3 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white" onclick="copyInviteLink({{ group.id }}, this)">
-                <svg class="w-4 h-4 copy-icon text-white" viewBox="0 0 24 24" fill="none">
-                  <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/>
-                  <rect x="3" y="3" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/>
-                </svg>
-                <svg class="w-4 h-4 hidden check-icon text-white" viewBox="0 0 24 24" fill="none">
-                  <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
+            <div class="grid gap-4 invite-card-main">
+              <div class="flex items-center gap-2">
+                <input id="inviteLink" value="" placeholder="Create an invite link" readOnly class="text-xs font-mono bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 w-full text-gray-600 dark:text-slate-300"/>
+                <button class="px-3 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white" onclick="copyInviteLink({{ group.id }}, this)">
+                  <svg class="w-4 h-4 copy-icon text-white" viewBox="0 0 24 24" fill="none">
+                    <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/>
+                    <rect x="3" y="3" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                  <svg class="w-4 h-4 hidden check-icon text-white" viewBox="0 0 24 24" fill="none">
+                    <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-[auto_1fr_auto] gap-3 items-center">
+                <label class="text-xs text-gray-500 dark:text-slate-400">Expires in:</label>
+                <select id="inviteDays" class="h-9 text-xs bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg px-3 text-gray-700 dark:text-slate-200 w-full">
+                  <option value="1">1 day</option>
+                  <option value="3">3 days</option>
+                  <option value="7" selected>7 days</option>
+                  <option value="30">30 days</option>
+                </select>
+                <button class="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold" onclick="createInvite({{ group.id }})">Create</button>
+              </div>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-[auto_1fr_auto] gap-3 items-center">
-              <label class="text-xs text-gray-500 dark:text-slate-400">Expires in:</label>
-              <select id="inviteDays" class="h-9 text-xs bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg px-3 text-gray-700 dark:text-slate-200 w-full">
-                <option value="1">1 day</option>
-                <option value="3">3 days</option>
-                <option value="7" selected>7 days</option>
-                <option value="30">30 days</option>
-              </select>
-              <button class="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold" onclick="createInvite({{ group.id }})">Create</button>
+            <div class="invite-card-footer">
+              <div class="flex flex-wrap gap-2 text-[11px] uppercase tracking-wide font-semibold text-purple-700 dark:text-purple-200">
+                <span class="px-2 py-1 rounded-full bg-purple-100/70 dark:bg-purple-500/20">Code {{ group.join_code }}</span>
+                <span class="px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800">{{ member_count }} members</span>
+              </div>
+              <p class="text-[11px] text-gray-500 dark:text-slate-400 mt-2">Share the link or code—both stay active until the invite expires.</p>
             </div>
           </div>
 
-          <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-5">
-            <div class="flex items-center justify-between mb-4">
+          <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-5 h-full flex flex-col justify-between">
+            <div class="flex items-center justify-between">
               <div>
                 <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Legend</h3>
                 <p class="text-xs text-gray-500 dark:text-slate-400">Availability types</p>
               </div>
               <span class="text-[10px] uppercase tracking-wide px-2 py-1 rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-200 font-semibold">Live</span>
             </div>
-            <div class="grid gap-3 text-sm">
+            <div class="grid gap-3 text-sm legend-list">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
                   <span class="w-3.5 h-3.5 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 shadow-[0_0_10px_rgba(168,85,247,0.45)]"></span>
@@ -155,9 +164,12 @@
                 <span class="text-xs text-gray-500 dark:text-slate-400">Pending</span>
               </div>
             </div>
+            <div class="legend-note text-xs text-gray-500 dark:text-slate-400">
+              Member dots match the colors used on the calendar.
+            </div>
           </div>
 
-          <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-4">
+          <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-4 h-full">
             <div class="flex items-center justify-between mb-3">
               <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Members</h3>
               <span class="text-xs text-gray-500 dark:text-slate-400">{{ member_count }} total</span>
