@@ -456,6 +456,46 @@ See `.env.example` for the full list. Summary:
 
 ---
 
+## Deploying (Render + Supabase)
+
+Free stack: Render hosts the Flask app, Supabase provides a free PostgreSQL database with no expiry. Both have free tiers that require no credit card.
+
+**Free tier caveats:** Render free web services spin down after 15 minutes of inactivity. The first request after a period of idle takes ~30 seconds to cold-start. Fine for a portfolio demo.
+
+### 1. Set up Supabase
+
+1. Create a free account at [supabase.com](https://supabase.com)
+2. Create a new project
+3. Go to **Project Settings > Database > Connection string > URI** and copy the connection string
+4. It looks like: `postgresql://postgres:[PASSWORD]@db.[REF].supabase.co:5432/postgres`
+
+### 2. Deploy to Render
+
+1. Push this repo to GitHub
+2. Go to [render.com](https://render.com) and create a new **Web Service**
+3. Connect your GitHub repo - Render detects `render.yaml` automatically
+4. Fill in the environment variables it prompts for:
+
+| Variable | Value |
+|---|---|
+| `DATABASE_URL` | Supabase connection string from step 1 |
+| `GOOGLE_CLIENT_ID` | From Google Cloud Console |
+| `GOOGLE_CLIENT_SECRET` | From Google Cloud Console |
+| `GOOGLE_REDIRECT_URI` | `https://your-app.onrender.com/auth/callback` |
+| `APP_BASE_URL` | `https://your-app.onrender.com` |
+
+`SECRET_KEY` is generated automatically by Render.
+
+### 3. Update the Google OAuth redirect URI
+
+In [Google Cloud Console](https://console.cloud.google.com/), add `https://your-app.onrender.com/auth/callback` as an Authorized redirect URI on your OAuth client.
+
+### 4. Deploy
+
+Render deploys automatically on every push to your main branch. The database schema is created on first startup.
+
+---
+
 ## Deploying to Fly.io
 
 Fly.io's free allowance covers a single 256 MB shared-CPU machine, which is enough for this app. You will need a credit card on file to create an account, but a lightly-used instance stays within the free tier.
