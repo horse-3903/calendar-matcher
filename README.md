@@ -456,53 +456,82 @@ See `.env.example` for the full list. Summary:
 
 ---
 
-## Deploying to Heroku
+## Deploying to Fly.io
 
-**Cost:** Heroku no longer has a free tier. Expect ~$10/month (Eco dyno $5 + Postgres Essential-0 $5).
+Fly.io's free allowance covers a single 256 MB shared-CPU machine, which is enough for this app. You will need a credit card on file to create an account, but a lightly-used instance stays within the free tier.
 
-### 1. Create the app and add Postgres
+### Prerequisites
+
+Install the Fly CLI:
 
 ```bash
-heroku create your-app-name
-heroku addons:create heroku-postgresql:essential-0
+# macOS / Linux
+curl -L https://fly.io/install.sh | sh
+
+# Windows
+pwsh -Command "iwr https://fly.io/install.ps1 -useb | iex"
 ```
 
-### 2. Set environment variables
+Then sign in:
 
 ```bash
-heroku config:set SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')"
-heroku config:set GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
-heroku config:set GOOGLE_CLIENT_SECRET=your-client-secret
-heroku config:set GOOGLE_REDIRECT_URI=https://your-app-name.herokuapp.com/auth/callback
-heroku config:set APP_BASE_URL=https://your-app-name.herokuapp.com
-heroku config:set FLASK_ENV=production
+fly auth login
 ```
 
-`DATABASE_URL` is set automatically by the Heroku Postgres add-on.
+### 1. Launch the app
 
-### 3. Update the Google OAuth redirect URI
-
-In [Google Cloud Console](https://console.cloud.google.com/), add `https://your-app-name.herokuapp.com/auth/callback` as an Authorized redirect URI on your OAuth client.
-
-### 4. Deploy
+Run this once from the repo root. It reads `fly.toml` and prompts you to confirm the app name and region:
 
 ```bash
-git push heroku main
+fly launch --no-deploy
 ```
 
-The database schema is created automatically on first startup. No migration step needed.
+When asked if you want to tweak settings, say yes and set your preferred region. The app name in `fly.toml` defaults to `calendar-matcher` - change it to something unique if that name is taken.
 
-### 5. Open the app
+### 2. Create a Postgres database
 
 ```bash
-heroku open
+fly postgres create --name calendar-matcher-db --initial-cluster-size 1 --vm-size shared-cpu-1x --volume-size 1
+fly postgres attach calendar-matcher-db
+```
+
+`attach` automatically sets `DATABASE_URL` in your app's secrets.
+
+### 3. Set the remaining secrets
+
+```bash
+fly secrets set \
+  SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')" \
+  GOOGLE_CLIENT_ID="your-client-id.apps.googleusercontent.com" \
+  GOOGLE_CLIENT_SECRET="your-client-secret" \
+  GOOGLE_REDIRECT_URI="https://your-app-name.fly.dev/auth/callback" \
+  APP_BASE_URL="https://your-app-name.fly.dev"
+```
+
+### 4. Update the Google OAuth redirect URI
+
+In [Google Cloud Console](https://console.cloud.google.com/), add `https://your-app-name.fly.dev/auth/callback` as an Authorized redirect URI on your OAuth client.
+
+### 5. Deploy
+
+```bash
+fly deploy
+```
+
+The database schema is created automatically on first startup.
+
+### 6. Open the app
+
+```bash
+fly open
 ```
 
 ### Notes
 
-- The `Procfile` uses `--workers 1` intentionally. The background scheduler (APScheduler) starts inside the app factory; multiple worker processes would each run their own scheduler instance and duplicate the 15-minute sync jobs.
-- Profile picture uploads are saved to the local dyno filesystem, which is ephemeral on Heroku. Uploads will be lost on dyno restart. This does not affect core scheduling functionality.
-- While the Google OAuth consent screen is in "Testing" status, only accounts you have added as test users can sign in. Submit for verification to allow any Google account.
+- `fly.toml` sets `auto_stop_machines = true` - the machine sleeps when idle and wakes on the next request (cold start of a few seconds). Fine for a portfolio demo.
+- The Dockerfile uses `--workers 1` intentionally. APScheduler starts inside the app factory; multiple worker processes would each start their own scheduler and duplicate sync jobs.
+- Profile picture uploads save to the container filesystem, which is not persistent across deploys. This does not affect core scheduling functionality.
+- While the Google OAuth consent screen is in "Testing" status, only accounts you have added as test users can sign in.
 
 ---
 
