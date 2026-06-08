@@ -10,6 +10,8 @@ A privacy-preserving group scheduling app that finds shared free time from Googl
 [![License](https://img.shields.io/github/license/horse-3903/calendar-matcher?style=flat-square)](LICENSE)
 [![Last Commit](https://img.shields.io/github/last-commit/horse-3903/calendar-matcher?style=flat-square)](../../commits)
 
+### [Live App](https://calendar-matcher.onrender.com) - [Showcase](https://horse-3903.github.io/showcase/calendar-matcher)
+
 </div>
 
 ---
