@@ -456,6 +456,56 @@ See `.env.example` for the full list. Summary:
 
 ---
 
+## Deploying to Heroku
+
+**Cost:** Heroku no longer has a free tier. Expect ~$10/month (Eco dyno $5 + Postgres Essential-0 $5).
+
+### 1. Create the app and add Postgres
+
+```bash
+heroku create your-app-name
+heroku addons:create heroku-postgresql:essential-0
+```
+
+### 2. Set environment variables
+
+```bash
+heroku config:set SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')"
+heroku config:set GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+heroku config:set GOOGLE_CLIENT_SECRET=your-client-secret
+heroku config:set GOOGLE_REDIRECT_URI=https://your-app-name.herokuapp.com/auth/callback
+heroku config:set APP_BASE_URL=https://your-app-name.herokuapp.com
+heroku config:set FLASK_ENV=production
+```
+
+`DATABASE_URL` is set automatically by the Heroku Postgres add-on.
+
+### 3. Update the Google OAuth redirect URI
+
+In [Google Cloud Console](https://console.cloud.google.com/), add `https://your-app-name.herokuapp.com/auth/callback` as an Authorized redirect URI on your OAuth client.
+
+### 4. Deploy
+
+```bash
+git push heroku main
+```
+
+The database schema is created automatically on first startup. No migration step needed.
+
+### 5. Open the app
+
+```bash
+heroku open
+```
+
+### Notes
+
+- The `Procfile` uses `--workers 1` intentionally. The background scheduler (APScheduler) starts inside the app factory; multiple worker processes would each run their own scheduler instance and duplicate the 15-minute sync jobs.
+- Profile picture uploads are saved to the local dyno filesystem, which is ephemeral on Heroku. Uploads will be lost on dyno restart. This does not affect core scheduling functionality.
+- While the Google OAuth consent screen is in "Testing" status, only accounts you have added as test users can sign in. Submit for verification to allow any Google account.
+
+---
+
 ## Limitations
 
 - **Google OAuth required for full functionality** - demo mode lets you explore the UI but you still need Google credentials to sign in
