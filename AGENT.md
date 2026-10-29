@@ -1,4 +1,4 @@
-# Phase – Agent Guide
+# Phase - Agent Guide
 
 This file replaces `PROMPT.md` and is the single source of truth for repo context and working conventions.
 

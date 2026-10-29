@@ -18,7 +18,7 @@ A privacy-preserving group scheduling app that finds shared free time from Googl
 
 ## Overview
 
-**Calendar Matcher** is a group scheduling web app that connects to Google Calendar and displays shared availability across team members. It solves the coordination problem by computing when everyone is free using only busy/free interval data — event titles, descriptions, and attendees are never accessed or stored. Members see color-coded availability overlays and can propose meeting times with real-time conflict warnings.
+**Calendar Matcher** is a group scheduling web app that connects to Google Calendar and displays shared availability across team members. It solves the coordination problem by computing when everyone is free using only busy/free interval data, event titles, descriptions, and attendees are never accessed or stored. Members see color-coded availability overlays and can propose meeting times with real-time conflict warnings.
 
 ## Features
 
@@ -249,7 +249,7 @@ To reset the database:
 
 ### A. Demo mode (no Google Calendar required)
 
-Run with `FLASK_DEBUG=1` and a minimal `.env` (SQLite, no real Google credentials needed to explore the UI — you will need credentials to actually sign in):
+Run with `FLASK_DEBUG=1` and a minimal `.env` (SQLite, no real Google credentials needed to explore the UI, you will need credentials to actually sign in):
 
 ```bash
 FLASK_DEBUG=1 python run.py
@@ -265,11 +265,11 @@ python run.py
 
 1. Visit `http://127.0.0.1:5000`
 2. Click "Sign in with Google"
-3. Create a group — a join code is generated automatically
+3. Create a group: a join code is generated automatically
 4. Share the join code or click "Create invite link" to share a time-limited URL
 5. When a second member joins and signs in, their FreeBusy data syncs within 15 minutes (or trigger a manual sync)
 6. View the shared calendar to find common free time
-7. Propose a meeting time — the app reports which members have conflicts
+7. Propose a meeting time, the app reports which members have conflicts
 
 ---
 
@@ -293,7 +293,7 @@ python run.py
 
 On sign-in and every 15 minutes thereafter, the app calls the [Google Calendar FreeBusy API](https://developers.google.com/calendar/api/v3/reference/freebusy/query) for each user. The query covers a 6-month window (180 days forward), split into 90-day chunks to stay within API limits.
 
-The response contains only `{"busy": [{"start": "...", "end": "..."}]}` per calendar — no event titles, descriptions, or attendees.
+The response contains only `{"busy": [{"start": "...", "end": "..."}]}` per calendar: no event titles, descriptions, or attendees.
 
 ### Storage
 
@@ -319,7 +319,7 @@ blockoffs = SpecialEvent.query
     .all()
 ```
 
-Any member appearing in either result is returned as a conflict. The proposal is still saved — it is the user's choice whether to proceed.
+Any member appearing in either result is returned as a conflict. The proposal is still saved, it is the user's choice whether to proceed.
 
 ### Special event overrides
 
