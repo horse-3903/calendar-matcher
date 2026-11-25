@@ -23,6 +23,7 @@
 
   <!-- Schedule-X -->
   <link rel="stylesheet" href="/static/schedule-x.css"/>
+  <link rel="stylesheet" href="/static/phase.css"/>
 </head>
 <body class="min-h-screen font-sans bg-white text-gray-900 dark:bg-slate-950 dark:text-slate-100" data-demo="{{ '1' if demo_mode else '' }}" data-cal-debug="{{ '1' if config.APP_MODE == 'dev' else '' }}">
   {% set path = request.path %}
@@ -33,10 +34,10 @@
   {% set is_debug_active = path.startswith('/debug') %}
   {% set is_owner = current_user.is_authenticated and config.DEBUG_OWNER_EMAIL and current_user.email == config.DEBUG_OWNER_EMAIL %}
   {% set show_dev_console = (config.APP_MODE == 'dev') or (config.APP_MODE == 'prod' and is_owner) %}
-  <header class="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-gray-200/50 dark:border-slate-800/60">
-    <nav class="container mx-auto px-6 flex items-center justify-between h-16">
+  <header class="fixed top-0 left-0 right-0 z-50 phase-nav border-b border-gray-200/50 dark:border-slate-800/60">
+    <nav class="phase-nav-inner flex items-center justify-between h-16">
       <a href="/" class="flex items-center gap-2 font-semibold text-lg group">
-        <span class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 via-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
+        <span class="w-8 h-8 rounded-lg phase-logo flex items-center justify-center">
           <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2"></rect>
             <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"></line>
@@ -44,14 +45,14 @@
             <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"></line>
           </svg>
         </span>
-        <span class="bg-gradient-to-r from-purple-400 via-blue-400 to-indigo-300 bg-clip-text text-transparent tracking-tight">
+        <span class="phase-wordmark">
           Phase
         </span>
       </a>
 
       <div class="hidden md:flex items-center {{ 'gap-4' if is_group_page else 'gap-4' }} text-sm">
         {% if current_user.is_authenticated %}
-        <a href="/" class="px-3 py-2 font-semibold {% if is_dashboard_active %}text-purple-400{% else %}text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white{% endif %}">Dashboard</a>
+        <a href="/" class="px-3 py-2 font-semibold {% if is_dashboard_active %}text-purple-400{% else %}text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white{% endif %}">My groups</a>
         <a href="/settings" class="px-3 py-2 font-semibold {% if is_settings_active %}text-purple-400{% else %}text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white{% endif %}">Settings</a>
           {% if config.DEBUG %}
         <a href="/demo" class="px-3 py-2 font-semibold {% if is_demo_active %}text-purple-400{% else %}text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white{% endif %}">Demo</a>
@@ -67,7 +68,7 @@
                 {{ (current_user.display_name or current_user.name or "U")[0] }}
               </div>
             {% endif %}
-            <span>Signed in as {{ current_user.username or current_user.display_name or current_user.name }}</span>
+            <span>{{ current_user.username or current_user.display_name or current_user.name }}</span>
           </div>
           <a class="px-3 py-2 font-semibold text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white" href="/auth/logout">Sign Out</a>
         {% else %}
@@ -78,7 +79,7 @@
           {% if show_dev_console %}
             <a href="/debug" class="px-3 py-2 font-semibold text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white">Dev Console</a>
           {% endif %}
-          <a class="px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold" href="/auth/login">Login with Google</a>
+          <a class="px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold" href="/auth/login">Sign in with Google</a>
         {% endif %}
         <button id="themeToggle" class="p-2 rounded-full border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white" type="button" aria-label="Toggle theme">
           <svg class="w-4 h-4 hidden" data-theme-icon="sun" viewBox="0 0 24 24" fill="none">
@@ -103,7 +104,7 @@
     <div id="mobileMenu" class="md:hidden hidden bg-white dark:bg-slate-950 border-b border-gray-200 dark:border-slate-800">
       <div class="container mx-auto px-6 py-4 flex flex-col gap-4">
         {% if current_user.is_authenticated %}
-        <a href="/" class="text-sm font-medium {% if is_dashboard_active %}text-purple-400{% else %}text-gray-900 dark:text-white{% endif %}">Dashboard</a>
+        <a href="/" class="text-sm font-medium {% if is_dashboard_active %}text-purple-400{% else %}text-gray-900 dark:text-white{% endif %}">My groups</a>
         <a href="/settings" class="text-sm font-medium {% if is_settings_active %}text-purple-400{% else %}text-gray-900 dark:text-white{% endif %}">Settings</a>
           {% if config.DEBUG %}
         <a href="/demo" class="text-sm font-medium {% if is_demo_active %}text-purple-400{% else %}text-gray-900 dark:text-white{% endif %}">Demo</a>
@@ -120,7 +121,7 @@
           {% if show_dev_console %}
             <a href="/debug" class="text-sm font-medium text-gray-900 dark:text-white">Dev Console</a>
           {% endif %}
-          <a class="w-fit px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold" href="/auth/login">Login with Google</a>
+          <a class="w-fit px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold" href="/auth/login">Sign in with Google</a>
         {% endif %}
         <button id="themeToggleMobile" class="w-fit px-3 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300" type="button">
           <span class="inline-flex items-center gap-2 text-sm font-medium">
@@ -141,7 +142,7 @@
     {% block content %}{% endblock %}
   </main>
 
-  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3"></div>
+  <div id="toastContainer" aria-live="polite" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3"></div>
 
   <dialog id="appDialog" class="dialog">
     <div class="dialog-card">
@@ -157,5 +158,6 @@
   </dialog>
 
   <script type="module" src="/static/main.bundle.js"></script>
+  <script defer src="/static/phase.js"></script>
 </body>
 </html>

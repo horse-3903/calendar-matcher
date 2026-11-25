@@ -159,6 +159,7 @@ function openEditDialog(event) {
   const dialog = document.getElementById("eventEditDialog");
   if (!dialog) return;
   currentEditEvent = event || null;
+  window.phaseEditEvent = currentEditEvent;
   const titleEl = document.getElementById("eventEditTitle");
   const typeLabelEl = document.getElementById("eventEditTypeLabel");
   const dateInput = document.getElementById("eventEditDate");
@@ -187,7 +188,8 @@ function openEditDialog(event) {
     } else {
       typeSelect.value = "busy";
     }
-    typeSelect.disabled = isBusy;
+    typeSelect.disabled = isBusy || phaseType === "proposal";
+    Array.from(typeSelect.options).forEach(option => { option.disabled = phaseType === "special" && !["available", "block_off"].includes(option.value); });
   }
   if (typeHint) {
     typeHint.textContent = isBusy ? "Google Calendar busy blocks cannot be changed." : "You can change the type for app-created events.";
@@ -204,7 +206,7 @@ function renderEventPopover(event) {
   const ownerId = event?.ownerId ?? "";
   const canDelete = canDeleteEvent(event);
   const isDemo = window.__DEMO__ === true;
-  const editDisabled = isDemo;
+  const editDisabled = isDemo || !canDelete;
   const deleteDisabled = isDemo || !canDelete;
   const title = event?.title || "Event";
   const time = formatEventTime(event);
@@ -431,17 +433,13 @@ async function loadSyncCalendars() {
       container.innerHTML = `<div class="calendar-select-empty">No calendars found.</div>`;
       return;
     }
-    container.innerHTML = items.map((c) => {
-      const label = c.primary ? `${c.summary} (Primary)` : c.summary;
-      const checked = c.selected ? "checked" : "";
-      const disabled = c.accessRole === "none" ? "disabled" : "";
-      return `
-        <label class="calendar-select-item">
-          <input type="checkbox" ${checked} ${disabled} data-calendar-id="${c.id}">
-          <span class="calendar-select-name">${label}</span>
-        </label>
-      `;
-    }).join("");
+    container.replaceChildren();
+    items.forEach(c => {
+      const row = document.createElement("label"); row.className = "calendar-select-item";
+      const input = document.createElement("input"); input.type = "checkbox"; input.checked = Boolean(c.selected); input.disabled = c.accessRole === "none"; input.dataset.calendarId = c.id;
+      const name = document.createElement("span"); name.className = "calendar-select-name"; name.textContent = c.primary ? `${c.summary} (Primary)` : c.summary;
+      row.append(input, name); container.append(row);
+    });
   } catch (e) {
     container.innerHTML = `<div class="calendar-select-empty">Unable to load calendars.</div>`;
   }
@@ -683,6 +681,8 @@ async function regenerateJoinCode(groupId) {
     if (j && j.join_code) {
       const input = document.getElementById("groupJoinCode");
       if (input) input.value = j.join_code;
+      const shared = document.getElementById("phaseJoinCode"); if (shared) shared.value = j.join_code;
+      document.querySelectorAll("#shareDialog [data-copy-btn]").forEach(btn => btn.dataset.copyValue = j.join_code);
       showToast("Join code regenerated", "success");
     }
   } catch (e) {
@@ -884,6 +884,7 @@ function showToast(message, tone) {
   }, 2400);
 }
 
+window.phaseToast = showToast;
 function copyWithFeedback(btn, text) {
   if (!btn) return;
   navigator.clipboard.writeText(text || "");
@@ -1334,7 +1335,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   const editSaveBtn = document.getElementById("eventEditSave");
   if (editSaveBtn) {
     editSaveBtn.addEventListener("click", function () {
-      showToast("Edit saving isn’t wired yet.", "error");
+      window.phaseSaveEdit?.();
     });
   }
 
@@ -1377,6 +1378,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   function toZonedDateTime(iso) {
     if (!iso) return null;
     if (iso.includes("[")) return Temporal.ZonedDateTime.from(iso);
+    if (!/(Z|[+-]\d{2}:\d{2})$/.test(iso)) iso += "Z";
     if (iso.endsWith("Z")) {
       return Temporal.ZonedDateTime.from(iso.replace("Z", "+00:00[UTC]"));
     }
@@ -1515,7 +1517,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         ownerId: ev.extendedProps?.user_id || ev.extendedProps?.created_by
       });
     });
-    return { normalEvents, backgroundEvents };
+    return { normalEvents: normalEvents.filter(event => !window.phaseMemberSelected || event.phaseType === "proposal" || window.phaseMemberSelected(event.ownerId)), backgroundEvents };
   }
 
   async function fetchEventsForRange(start, end) {
@@ -1535,7 +1537,6 @@ document.addEventListener("DOMContentLoaded", async function () {
       eventsService.set(data.normalEvents);
       eventsService.setBackgroundEvents(data.backgroundEvents);
     }
-    scrollToFirstEvent(data.normalEvents);
   };
 
   eventsService = createEventsServicePlugin();
@@ -1835,6 +1836,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           startStr: startInstant,
           endStr: endInstant
         };
+        window.phaseSelectedRange = selectedRange;
       },
       onEventClick: function (event, e) {
         openEventPopover(event, e);
@@ -1851,6 +1853,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     pendingScrollTime = null;
   }
   window.__SXCAL__ = calendarInstance;
+  window.phaseCalendarBridge = {
+    setDate: date => calendarControls.setDate(Temporal.PlainDate.from(date)),
+    add: event => eventsService.add(event),
+    refresh: () => window.refreshCalendarEvents(),
+  };
 
   const themeIsDark = document.documentElement.classList.contains("dark");
   if (calendarInstance.setTheme) {

@@ -2,7 +2,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime, timezone, timedelta
 
 from app.extensions import db
-from app.models import User, BusyInterval
+from app.services.availability import utc
+from app.models import User, BusyInterval, CalendarSyncState
 from app.services.google_calendar import is_expired, refresh_access_token, freebusy_query_chunked, list_calendar_ids
 
 def start_scheduler(app):
@@ -11,7 +12,7 @@ def start_scheduler(app):
     def job():
         with app.app_context():
             # sync a ~6-month window per user
-            time_min = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+            time_min = (datetime.now(timezone.utc) - timedelta(days=7)).replace(microsecond=0).isoformat()
             time_max = (datetime.now(timezone.utc) + timedelta(days=180)).replace(microsecond=0).isoformat()
 
             users = User.query.all()
@@ -45,6 +46,7 @@ def start_scheduler(app):
                                 start=datetime.fromisoformat(blk["start"].replace("Z", "+00:00")),
                                 end=datetime.fromisoformat(blk["end"].replace("Z", "+00:00")),
                             ))
+                    db.session.merge(CalendarSyncState(user_id=user.id, synced_at=datetime.now(timezone.utc), range_start=utc(time_min), range_end=utc(time_max)))
                     db.session.commit()
                 except Exception:
                     db.session.rollback()

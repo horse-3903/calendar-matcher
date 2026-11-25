@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-950 dark:to-indigo-950">
-  <div class="container mx-auto px-6 pt-24 pb-16">
+<div class="phase-settings-page">
+  <div class="container mx-auto px-6 pt-10 pb-16">
     <div class="mb-10">
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-200 text-xs font-semibold">
-        Debug mode only
+        Restricted access
       </div>
       <h1 class="text-3xl font-bold mt-4 text-slate-900 dark:text-white">Dev Console</h1>
       <p class="text-slate-600 dark:text-slate-300">Power tools for testing, resets, and quick actions.</p>
     </div>
 
-    <div class="grid lg:grid-cols-2 gap-6">
-      <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6">
+    <div class="phase-debug-list">
+      <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800  p-6">
         <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Calendar sync</h2>
-        <div class="grid sm:grid-cols-2 gap-3">
+        <div class="phase-debug-actions">
           <button class="px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold" onclick="debugSyncNow()">Sync now</button>
           <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugResetCalendarSelection()">Reset calendar selection</button>
           <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugClearBusy()">Clear busy cache</button>
@@ -21,9 +21,9 @@
         </div>
       </div>
 
-      <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6">
+      <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800  p-6">
         <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Theme & UI</h2>
-        <div class="grid sm:grid-cols-2 gap-3">
+        <div class="phase-debug-actions">
           <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugSetTheme('light')">Force light theme</button>
           <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugSetTheme('dark')">Force dark theme</button>
           <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugClearTheme()">Clear theme preference</button>
@@ -31,7 +31,7 @@
         </div>
       </div>
 
-      <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6 lg:col-span-2">
+      <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800  p-6 lg:col-span-2">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
           <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Group actions</h2>
           <div class="flex items-center gap-3">
@@ -56,7 +56,7 @@
         </div>
       </div>
 
-      <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6 lg:col-span-2">
+      <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800  p-6 lg:col-span-2">
         <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Data resets</h2>
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugClearBusy()">Clear busy cache</button>

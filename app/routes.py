@@ -10,7 +10,8 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import func
 
 from app.extensions import db
-from app.models import Group, Membership, BusyInterval, SpecialEvent, MeetupProposal, InviteLink, User
+from app.models import Group, Membership, BusyInterval, SpecialEvent, MeetupProposal, InviteLink, User, CalendarSyncState
+from app.services.availability import utc, member_state
 from app.services.invites import make_join_code, make_invite_token, verify_invite_token, expiry_from_days
 from app.services.colors import generate_distinct_colors
 import requests
@@ -153,7 +154,7 @@ def index():
     has_synced = False
     if current_user.is_authenticated:
         groups = _get_user_groups(current_user.id)
-        has_synced = BusyInterval.query.filter_by(user_id=current_user.id).first() is not None
+        has_synced = db.session.get(CalendarSyncState, current_user.id) is not None
     title = "Phase: The collaborative calendar"
     if current_user.is_authenticated:
         title = "Phase: Dashboard"
@@ -239,7 +240,7 @@ def invite_link_join(token):
     link = InviteLink.query.filter_by(token=token).first()
     if not link:
         abort(404, "Invite not found")
-    if link.expires_at <= datetime.now(timezone.utc):
+    if utc(link.expires_at) <= datetime.now(timezone.utc):
         abort(410, "Invite expired")
 
     g = Group.query.get(link.group_id)
@@ -501,6 +502,8 @@ def add_special(group_id):
     if not start or not end:
         abort(400, "start/end required")
 
+    if utc(end) <= utc(start):
+        abort(400, "End must be after start")
     s = SpecialEvent(
         user_id=current_user.id,
         group_id=group_id,
@@ -526,23 +529,10 @@ def add_proposal(group_id):
     location = data.get("location")
     description = data.get("description")
 
-    # Conflict detection against cached busy intervals (plus block_off)
-    memberships = Membership.query.filter_by(group_id=group_id).all()
-    user_ids = [m.user_id for m in memberships]
-
-    busy = (BusyInterval.query
-            .filter(BusyInterval.user_id.in_(user_ids))
-            .filter(BusyInterval.end > start)
-            .filter(BusyInterval.start < end)
-            .all())
-
-    blockoffs = (SpecialEvent.query
-                 .filter_by(group_id=group_id, kind="block_off")
-                 .filter(SpecialEvent.end > start)
-                 .filter(SpecialEvent.start < end)
-                 .all())
-
-    conflict_user_ids = set([b.user_id for b in busy] + [s.user_id for s in blockoffs])
+    if utc(end) <= utc(start):
+        abort(400, "End must be after start")
+    states = _phase_states(group_id, [(utc(start), utc(end))])[0]
+    conflict_user_ids = [int(uid) for uid, state in states.items() if state == "busy"]
 
     p = MeetupProposal(
         group_id=group_id,
@@ -560,7 +550,8 @@ def add_proposal(group_id):
     return jsonify({
         "ok": True,
         "proposal_id": p.id,
-        "conflicts": [{"user_id": u.id, "name": u.name, "email": u.email} for u in conflicters]
+        "conflicts": [{"user_id": u.id, "name": u.name, "email": u.email} for u in conflicters],
+        "unverified": [int(uid) for uid, state in states.items() if state == "unknown"]
     })
 
 @api_bp.post("/groups/<int:group_id>/events/delete")
@@ -648,6 +639,7 @@ def sync_me():
                 end=datetime.fromisoformat(blk["end"].replace("Z", "+00:00")),
             ))
             total_blocks += 1
+    db.session.merge(CalendarSyncState(user_id=user.id, synced_at=datetime.now(timezone.utc), range_start=utc(time_min), range_end=utc(time_max)))
     db.session.commit()
     return jsonify({"ok": True, "busy_blocks": total_blocks})
 
@@ -661,6 +653,7 @@ def _require_debug():
 def debug_clear_busy():
     user = _require_debug_access()
     BusyInterval.query.filter_by(user_id=user.id).delete()
+    CalendarSyncState.query.filter_by(user_id=user.id).delete()
     db.session.commit()
     return jsonify({"ok": True})
 
@@ -711,6 +704,7 @@ def debug_clear_invites():
 def debug_reset_calendar_selection():
     user = _require_debug_access()
     user.calendar_ids_json = None
+    CalendarSyncState.query.filter_by(user_id=user.id).delete()
     db.session.commit()
     return jsonify({"ok": True})
 
@@ -756,6 +750,7 @@ def debug_clear_all():
     SpecialEvent.query.filter_by(user_id=user.id).delete()
     MeetupProposal.query.filter_by(created_by=user.id).delete()
     user.calendar_ids_json = None
+    CalendarSyncState.query.filter_by(user_id=user.id).delete()
     db.session.commit()
     return jsonify({"ok": True})
 
@@ -1044,6 +1039,87 @@ def save_calendar_selection():
     if not isinstance(ids, list):
         abort(400, "calendar_ids must be a list")
     filtered = [cid for cid in ids if isinstance(cid, str) and cid.strip()]
+    if not filtered:
+        abort(400, "Select at least one calendar")
+    if set(_parse_calendar_selection(current_user) or []) != set(filtered):
+        CalendarSyncState.query.filter_by(user_id=current_user.id).delete()
     current_user.calendar_ids_json = __import__("json").dumps(filtered)
     db.session.commit()
     return jsonify({"ok": True, "selected": filtered})
+
+
+# Aggregate availability endpoints. Membership is enforced before any data access.
+def _phase_states(group_id, slots):
+    ids = [m.user_id for m in Membership.query.filter_by(group_id=group_id).all()]
+    lo, hi = min(a for a, b in slots), max(b for a, b in slots)
+    data = {uid: {"busy": [], "available": [], "block_off": []} for uid in ids}
+    for b in BusyInterval.query.filter(BusyInterval.user_id.in_(ids), BusyInterval.end > lo, BusyInterval.start < hi).all():
+        data[b.user_id]["busy"].append((b.start, b.end))
+    for e in SpecialEvent.query.filter(SpecialEvent.group_id == group_id, SpecialEvent.user_id.in_(ids), SpecialEvent.end > lo, SpecialEvent.start < hi).all():
+        if e.kind in ("available", "block_off"):
+            data[e.user_id][e.kind].append((e.start, e.end))
+    records = {r.user_id: r for r in CalendarSyncState.query.filter(CalendarSyncState.user_id.in_(ids)).all()}
+    now = datetime.now(timezone.utc)
+    output = []
+    for a, b in slots:
+        states = {}
+        for uid in ids:
+            r = records.get(uid)
+            verified = bool(r and utc(r.synced_at) >= now - timedelta(minutes=45) and utc(r.range_start) <= a and utc(r.range_end) >= b)
+            d = data[uid]
+            states[str(uid)] = member_state(a, b, d["busy"], d["available"], d["block_off"], verified)
+        output.append(states)
+    return output
+
+@api_bp.post('/groups/<int:group_id>/availability')
+@login_required
+def phase_availability(group_id):
+    require_membership(group_id)
+    try:
+        raw = request.get_json()['slots']
+        if not isinstance(raw, list) or not 1 <= len(raw) <= 400:
+            raise ValueError()
+        slots = [(utc(x['start']), utc(x['end'])) for x in raw]
+        if any(a >= b or b-a > timedelta(days=1) for a,b in slots) or max(b for a,b in slots)-min(a for a,b in slots) > timedelta(days=8):
+            raise ValueError()
+    except (ValueError, TypeError, KeyError, AttributeError, OverflowError):
+        abort(400, 'Invalid availability range')
+    proposals = MeetupProposal.query.filter(MeetupProposal.group_id == group_id, MeetupProposal.end > min(a for a,b in slots), MeetupProposal.start < max(b for a,b in slots)).all()
+    return jsonify({'states': _phase_states(group_id, slots), 'proposals': [{'start': utc(p.start).isoformat(), 'end': utc(p.end).isoformat()} for p in proposals]})
+
+@api_bp.get('/sync/status')
+@login_required
+def phase_sync_status():
+    state = db.session.get(CalendarSyncState, current_user.id)
+    return jsonify({'synced_at': utc(state.synced_at).isoformat() if state else None, 'stale': bool(state and utc(state.synced_at) < datetime.now(timezone.utc)-timedelta(minutes=45))})
+
+
+@api_bp.post('/groups/<int:group_id>/events/edit')
+@login_required
+def phase_edit_event(group_id):
+    membership = require_membership(group_id)
+    data = request.get_json(force=True) or {}
+    try:
+        event_id = int(data['id'])
+        start, end = utc(data['start']), utc(data['end'])
+        if start >= end:
+            raise ValueError()
+    except (KeyError, TypeError, ValueError, AttributeError):
+        abort(400, 'Invalid time range')
+    kind = data.get('type')
+    if kind == 'special':
+        event = SpecialEvent.query.filter_by(id=event_id, group_id=group_id).first_or_404()
+        if event.user_id != current_user.id and membership.role != 'admin':
+            abort(403)
+        if data.get('kind') not in ('available', 'block_off'):
+            abort(400, 'Invalid availability type')
+        event.kind = data['kind']
+    elif kind == 'proposal':
+        event = MeetupProposal.query.filter_by(id=event_id, group_id=group_id).first_or_404()
+        if event.created_by != current_user.id and membership.role != 'admin':
+            abort(403)
+    else:
+        abort(400, 'Imported busy intervals are read-only')
+    event.start, event.end = start, end
+    db.session.commit()
+    return jsonify({'ok': True})

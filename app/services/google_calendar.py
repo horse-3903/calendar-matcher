@@ -154,7 +154,11 @@ def freebusy_query_chunked(access_token: str, time_min_iso: str, time_max_iso: s
         chunk_end = min(cursor + __import__("datetime").timedelta(days=chunk_days), end)
         fb = freebusy_query(access_token, cursor.isoformat(), chunk_end.isoformat(), calendar_ids=calendar_ids)
         calendars = fb.get("calendars", {})
+        if not calendars or any(cid not in calendars for cid in (calendar_ids or ["primary"])) and len(calendars) < len(calendar_ids or ["primary"]):
+            raise ValueError("Google returned incomplete calendar availability")
         for cid, data in calendars.items():
+            if data.get("errors") or "busy" not in data:
+                raise ValueError("Google could not verify one or more calendars")
             merged.setdefault(cid, {"busy": []})
             merged[cid]["busy"].extend(data.get("busy", []))
         cursor = chunk_end

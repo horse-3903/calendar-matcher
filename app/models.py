@@ -128,3 +128,11 @@ class InviteLink(db.Model):
     expires_at = db.Column(db.DateTime(timezone=True), nullable=False)
 
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow, nullable=False)
+
+class CalendarSyncState(db.Model):
+    """Successful cache coverage, including completely empty calendars."""
+    __tablename__ = 'calendar_sync_state'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    synced_at = db.Column(db.DateTime(timezone=True), nullable=False)
+    range_start = db.Column(db.DateTime(timezone=True), nullable=False)
+    range_end = db.Column(db.DateTime(timezone=True), nullable=False)
