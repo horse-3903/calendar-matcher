@@ -1,72 +1,151 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="phase-settings-page">
-  <div class="container mx-auto px-6 pt-10 pb-16">
-    <div class="mb-10">
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-200 text-xs font-semibold">
-        Restricted access
-      </div>
-      <h1 class="text-3xl font-bold mt-4 text-slate-900 dark:text-white">Dev Console</h1>
-      <p class="text-slate-600 dark:text-slate-300">Power tools for testing, resets, and quick actions.</p>
+  <div class="phase-console">
+    <div class="phase-console-head">
+      <h1>Developer console</h1>
+      <p>Manage test data, calendar synchronization and application preferences.</p>
     </div>
 
-    <div class="phase-debug-list">
-      <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800  p-6">
-        <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Calendar sync</h2>
-        <div class="phase-debug-actions">
-          <button class="px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold" onclick="debugSyncNow()">Sync now</button>
-          <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugResetCalendarSelection()">Reset calendar selection</button>
-          <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugClearBusy()">Clear busy cache</button>
-          <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugClearAutoSync()">Clear auto-sync setting</button>
-        </div>
-      </div>
+    <div class="phase-console-body">
+      <nav class="phase-console-nav" aria-label="Console sections">
+        <button type="button" data-section="sync" aria-current="true">Calendar sync</button>
+        <button type="button" data-section="appearance">Appearance</button>
+        <button type="button" data-section="demo">Demo &amp; groups</button>
+        <button type="button" data-section="data">Data management</button>
+      </nav>
 
-      <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800  p-6">
-        <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Theme & UI</h2>
-        <div class="phase-debug-actions">
-          <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugSetTheme('light')">Force light theme</button>
-          <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugSetTheme('dark')">Force dark theme</button>
-          <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugClearTheme()">Clear theme preference</button>
-          <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugEnsureDemo()">Ensure demo group</button>
-        </div>
-      </div>
-
-      <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800  p-6 lg:col-span-2">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
-          <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Group actions</h2>
-          <div class="flex items-center gap-3">
-            <select id="debugGroupSelect" class="rounded-full border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm text-slate-700 dark:text-slate-100">
-              {% if groups %}
-                {% for g in groups %}
-                  <option value="{{ g.id }}">{{ g.name }} ({{ g.join_code }})</option>
-                {% endfor %}
-              {% else %}
-                <option value="">No groups</option>
-              {% endif %}
-            </select>
-            <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugOpenGroup()">Open group</button>
+      <div class="phase-console-main">
+        <section class="phase-console-section" data-section-panel="sync">
+          <h2>Calendar sync</h2>
+          <p class="phase-note">Manage synchronization and locally cached availability.</p>
+          <div class="phase-console-rows">
+            <div class="phase-console-row">
+              <div><h3>Manual synchronization</h3><p>Fetch the latest busy intervals from Google Calendar.</p></div>
+              <button class="phase-primary" type="button" onclick="debugSyncNow()" {{ 'disabled' if not current_user.is_authenticated }}>Sync now</button>
+            </div>
+            <div class="phase-console-row">
+              <div><h3>Calendar selection</h3><p>Restore the default selection of connected calendars.</p></div>
+              <button class="phase-secondary" type="button" onclick="debugResetCalendarSelection()" {{ 'disabled' if not current_user.is_authenticated }}>Reset</button>
+            </div>
+            <div class="phase-console-row">
+              <div><h3>Busy-time cache</h3><p>Remove locally cached calendar availability.</p></div>
+              <button class="phase-secondary" type="button" onclick="debugClearBusy()" {{ 'disabled' if not current_user.is_authenticated }}>Clear cache</button>
+            </div>
+            <div class="phase-console-row">
+              <div><h3>Automatic synchronization</h3><p>Restore the default synchronization interval.</p></div>
+              <button class="phase-secondary" type="button" onclick="debugClearAutoSync()">Reset</button>
+            </div>
           </div>
-        </div>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugClearSpecials()">Clear specials</button>
-          <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugClearProposals()">Clear proposals</button>
-          <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugClearInvites()">Clear invite links</button>
-          <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugLeaveGroup()">Leave group</button>
-          <button class="px-4 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white text-sm font-semibold" onclick="debugDeleteGroup()">Delete group (owner)</button>
-        </div>
-      </div>
+          {% if not current_user.is_authenticated %}
+          <div class="phase-console-banner">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg>
+            <div><strong>Authentication required</strong><p>Sign in to perform operations on your connected calendars.</p></div>
+          </div>
+          {% endif %}
+        </section>
 
-      <div class="bg-white dark:bg-slate-950 rounded-xl border border-gray-200 dark:border-slate-800  p-6 lg:col-span-2">
-        <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Data resets</h2>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugClearBusy()">Clear busy cache</button>
-          <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugClearSpecials()">Clear specials</button>
-          <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugClearProposals()">Clear proposals</button>
-          <button class="px-4 py-2 rounded-full border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-700 dark:text-slate-200" onclick="debugResetCalendarSelection()">Reset calendar selection</button>
-          <button class="px-4 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white text-sm font-semibold" onclick="debugClearAll()">Clear all my data</button>
-        </div>
+        <section class="phase-console-section" data-section-panel="appearance" hidden>
+          <h2>Appearance</h2>
+          <p class="phase-note">Override application appearance for testing.</p>
+          <div class="phase-console-rows">
+            <div class="phase-console-row">
+              <div><h3>Color theme</h3><p>Override the current theme preference.</p></div>
+              <div class="phase-segment" role="group" aria-label="Color theme" id="debugThemeSegment">
+                <button type="button" data-theme-option="system" onclick="debugConsoleSetTheme(this,'system')">System</button>
+                <button type="button" data-theme-option="light" onclick="debugConsoleSetTheme(this,'light')">Light</button>
+                <button type="button" data-theme-option="dark" onclick="debugConsoleSetTheme(this,'dark')">Dark</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="phase-console-section" data-section-panel="demo" hidden>
+          <h2>Demo &amp; groups</h2>
+          <p class="phase-note">Create or restore the demo environment.</p>
+          <div class="phase-console-rows">
+            <div class="phase-console-row">
+              <div><h3>Demo group</h3><p>Create or restore the demo environment.</p></div>
+              <button class="phase-secondary" type="button" onclick="debugEnsureDemo()">Initialize demo</button>
+            </div>
+            <div class="phase-console-row">
+              <div><h3>Target group</h3><p>Choose which group the operations below apply to.</p></div>
+              <select id="debugGroupSelect" class="dialog-input" {{ 'disabled' if not groups }}>
+                {% if groups %}
+                  {% for g in groups %}
+                    <option value="{{ g.id }}">{{ g.name }} ({{ g.join_code }})</option>
+                  {% endfor %}
+                {% else %}
+                  <option value="">No groups available</option>
+                {% endif %}
+              </select>
+            </div>
+            <div class="phase-console-row">
+              <div><h3>Availability overrides</h3><p>Remove special available and blocked-off time entries.</p></div>
+              <button class="phase-secondary" type="button" onclick="debugClearSpecials()" {{ 'disabled' if not groups }}>Clear</button>
+            </div>
+            <div class="phase-console-row">
+              <div><h3>Meetup proposals</h3><p>Remove proposed meeting times for this group.</p></div>
+              <button class="phase-secondary" type="button" onclick="debugClearProposals()" {{ 'disabled' if not groups }}>Clear</button>
+            </div>
+            <div class="phase-console-row">
+              <div><h3>Invite links</h3><p>Revoke shareable invite links for this group.</p></div>
+              <button class="phase-secondary" type="button" onclick="debugClearInvites()" {{ 'disabled' if not groups }}>Revoke</button>
+            </div>
+            <div class="phase-console-row">
+              <div><h3>Open group</h3><p>Go to this group's calendar workspace.</p></div>
+              <button class="phase-secondary" type="button" onclick="debugOpenGroup()" {{ 'disabled' if not groups }}>Open</button>
+            </div>
+            <div class="phase-console-row">
+              <div><h3>Leave group</h3><p>Remove yourself as a member of this group.</p></div>
+              <button class="phase-secondary" type="button" onclick="debugLeaveGroup()" {{ 'disabled' if not groups }}>Leave</button>
+            </div>
+          </div>
+          {% if not groups %}<p class="phase-note">Select a group to enable these operations.</p>{% endif %}
+        </section>
+
+        <section class="phase-console-section" data-section-panel="data" hidden>
+          <h2>Data management</h2>
+          <p class="phase-note">Permanently remove data. These actions cannot be undone.</p>
+          <div class="phase-console-rows">
+            <div class="phase-console-row">
+              <div><h3>Delete group</h3><p>Permanently remove the selected group, its invites, proposals and membership.</p></div>
+              <button class="phase-danger-btn" type="button" onclick="debugDeleteGroup()" {{ 'disabled' if not groups }}>Delete group</button>
+            </div>
+            <div class="phase-console-row">
+              <div><h3>Reset account data</h3><p>Remove your cached availability, overrides and proposals.</p></div>
+              <button class="phase-danger-btn" type="button" onclick="debugClearAll()">Reset data</button>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   </div>
 </div>
+<script>
+  (function () {
+    var nav = document.querySelector('.phase-console-nav');
+    if (!nav) return;
+    nav.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-section]');
+      if (!btn) return;
+      nav.querySelectorAll('button[data-section]').forEach(function (b) { b.setAttribute('aria-current', String(b === btn)); });
+      document.querySelectorAll('[data-section-panel]').forEach(function (panel) {
+        panel.hidden = panel.dataset.sectionPanel !== btn.dataset.section;
+      });
+    });
+    var stored = null;
+    try { stored = localStorage.getItem('theme'); } catch (e) {}
+    var active = stored === 'dark' ? 'dark' : stored === 'light' ? 'light' : 'system';
+    document.querySelectorAll('#debugThemeSegment [data-theme-option]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.dataset.themeOption === active));
+    });
+  })();
+  window.debugConsoleSetTheme = function (el, theme) {
+    if (theme === 'system') { window.debugClearTheme(); } else { window.debugSetTheme(theme); }
+    el.closest('.phase-segment').querySelectorAll('[data-theme-option]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b === el));
+    });
+  };
+</script>
 {% endblock %}
